@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart'; // Models import karne ke liye
+import 'home_screen.dart';
+import 'items_screen.dart'; // Models import karne ke liye
 
 class SearchScreen extends StatefulWidget {
   final int initialTab;
@@ -278,14 +279,32 @@ class _SearchScreenState extends State<SearchScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(section.title, style: TextStyle(color: _textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFFE0E0E0) : const Color(0xFFEEEEEE),
-                  shape: BoxShape.circle,
+              
+              // ── REDIRECT KE LIYE ARROW KA NAYA CODE YAHAN HAI ──
+              GestureDetector(
+                onTap: () {
+                  // Yahan se page redirect hota hai ItemsScreen par
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ItemsScreen(
+                        categoryTitle: section.title, // Jo section hai uska naam bhejega
+                        tabIndex: widget.initialTab,  // Grocery/Restaurant ka data filter karega
+                      ),
+                    ),
+                  );
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFFE0E0E0) : const Color(0xFFEEEEEE),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.keyboard_arrow_right_rounded, color: Colors.black, size: 20),
                 ),
-                child: const Icon(Icons.keyboard_arrow_right_rounded, color: Colors.black, size: 20),
               ),
+              // ──────────────────────────────────────────────────
+              
             ],
           ),
         )
@@ -344,4 +363,4 @@ class _SearchScreenState extends State<SearchScreen> {
     }
     return rows;
   }
-}
+} 
