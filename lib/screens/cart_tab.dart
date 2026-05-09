@@ -43,10 +43,10 @@ class _CartTabState extends State<CartTab> {
   bool _noBagOpted = false;
 
   // ── USER DELIVERY DETAILS STATE ──
-  String _addressType = 'Home';
-  String _userName = 'Mukesh Bala';
-  String _userPhone = '+91 98765 43210';
-  String _userAddress = '7/1, Baharagora, Near Main Market, Pin - 832101';
+  String _addressType = '';
+  String _userName = '';
+  String _userPhone = '';
+  String _userAddress = '';
 
   // ── CROSS SELL ITEMS ("Did you forget?") ──
   List<Map<String, dynamic>> get _crossSellItems {
