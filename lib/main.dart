@@ -7,6 +7,17 @@ import 'screens/home_screen.dart';
 void main() async {
   // Flutter engine ko properly start karne ke liye (kyunki hum await use kar rahe hain)
   WidgetsFlutterBinding.ensureInitialized(); 
+import 'package:firebase_core/firebase_core.dart';
+
+import 'firebase_options.dart';
+import 'screens/home_screen.dart';
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -20,6 +31,7 @@ void main() async {
   bool loggedIn = prefs.getBool('isLoggedIn') ?? false;
 
   runApp(CartkaroApp(isLoggedIn: loggedIn));
+  runApp(const CartkaroApp());
 }
 
 class CartkaroApp extends StatelessWidget {

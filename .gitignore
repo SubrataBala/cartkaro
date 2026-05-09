@@ -43,3 +43,19 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+# Firebase
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+lib/firebase_options.dart
+
+# Dart/Flutter
+.dart_tool/
+.packages
+build/
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+# Firebase
