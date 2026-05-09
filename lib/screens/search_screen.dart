@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_models.dart';
 import 'items_screen.dart';
 
-// YAHAN BHI JELLY EFFECT OFF
+// NO JELLY EFFECT BEHAVIOR
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
   Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
@@ -33,12 +33,14 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _searchController = TextEditingController();
 
-  bool get isDark => widget.initialTab == 0;
-  Color get _bgColor => isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA);
-  Color get _searchBgColor => isDark ? const Color(0xFF252525) : Colors.white;
-  Color get _textPrimary => isDark ? Colors.white : const Color(0xFF1A1A1A);
-  Color get _textSecondary => isDark ? const Color(0xFFAAAAAA) : const Color(0xFF757575);
-  Color get _borderColor => isDark ? Colors.white.withOpacity(0.05) : Colors.grey.withOpacity(0.15);
+  // --- UPDATED LOGIC: Always false for White Background ---
+  bool get isDark => false; 
+  
+  Color get _bgColor => const Color(0xFFF8F9FA); // Light background
+  Color get _searchBgColor => Colors.white;
+  Color get _textPrimary => const Color(0xFF1A1A1A); // Dark text
+  Color get _textSecondary => const Color(0xFF757575);
+  Color get _borderColor => Colors.grey.withOpacity(0.15);
 
   final List<Color> _pastelColors = [
     const Color(0xFFFFE082), const Color(0xFFFFCDD2), const Color(0xFFF8BBD0),
@@ -88,7 +90,6 @@ class _SearchScreenState extends State<SearchScreen> {
     ];
   }
 
-  // ── YE DEKHO AAPKA POORA PURANA DATA JO SCREENSHOT MEIN THA ──
   List<SearchSection> get _searchCategories {
     if (widget.initialTab == 1) { 
       return [
@@ -120,13 +121,13 @@ class _SearchScreenState extends State<SearchScreen> {
       backgroundColor: _bgColor,
       body: SafeArea(
         child: ScrollConfiguration(
-          behavior: NoJellyScrollBehavior(), // JELLY EFFECT OFF IN SEARCH
+          behavior: NoJellyScrollBehavior(),
           child: Column(
             children: [
               _buildSearchHeader(),
               Expanded(
                 child: SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(), // JELLY OFF
+                  physics: const ClampingScrollPhysics(),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -205,7 +206,7 @@ class _SearchScreenState extends State<SearchScreen> {
         const SizedBox(height: 14),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          physics: const ClampingScrollPhysics(), // Horizontal Jelly Off
+          physics: const ClampingScrollPhysics(),
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -259,7 +260,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 },
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(color: isDark ? const Color(0xFFE0E0E0) : const Color(0xFFEEEEEE), shape: BoxShape.circle),
+                  decoration: BoxDecoration(color: const Color(0xFFEEEEEE), shape: BoxShape.circle),
                   child: const Icon(Icons.keyboard_arrow_right_rounded, color: Colors.black, size: 20),
                 ),
               ),
@@ -274,7 +275,7 @@ class _SearchScreenState extends State<SearchScreen> {
           height: 110,
           child: ListView.separated(
             scrollDirection: Axis.horizontal, 
-            physics: const ClampingScrollPhysics(), // Horizontal Jelly Off
+            physics: const ClampingScrollPhysics(),
             padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: section.items.length, separatorBuilder: (_, __) => const SizedBox(width: 14),
             itemBuilder: (ctx, i) {

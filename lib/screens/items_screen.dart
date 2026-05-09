@@ -64,10 +64,11 @@ class _ItemsScreenState extends State<ItemsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  bool get _isDark => widget.tabIndex == 0;
-  Color get _bgColor => _isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA);
-  Color get _textColor => _isDark ? Colors.white : const Color(0xFF1A1A1A);
-  Color get _iconColor => _isDark ? Colors.white : Colors.black;
+  // --- UPDATED: Force Light Theme (isDark = false) ---
+  bool get _isDark => false; 
+  Color get _bgColor => const Color(0xFFF8F9FA); 
+  Color get _textColor => const Color(0xFF1A1A1A);
+  Color get _iconColor => Colors.black;
 
   Color get _themeColor {
     if (widget.tabIndex == 1) return const Color(0xFFE53935); 
@@ -94,8 +95,8 @@ class _ItemsScreenState extends State<ItemsScreen> {
     return Scaffold(
       backgroundColor: _bgColor,
       appBar: AppBar(
-        backgroundColor: _bgColor,
-        elevation: 0,
+        backgroundColor: Colors.white,
+        elevation: 0.5, // Subtle shadow for better separation on white
         leading: IconButton(icon: Icon(Icons.arrow_back_ios_new_rounded, color: _iconColor, size: 20), onPressed: () => Navigator.pop(context)),
         title: Text(widget.categoryTitle, style: TextStyle(color: _textColor, fontSize: 18, fontWeight: FontWeight.w800)),
         centerTitle: true,
@@ -103,10 +104,14 @@ class _ItemsScreenState extends State<ItemsScreen> {
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Container(
-              height: 48, 
-              decoration: BoxDecoration(color: _isDark ? Colors.white10 : Colors.grey[200], borderRadius: BorderRadius.circular(12)),
+              height: 50, 
+              decoration: BoxDecoration(
+                color: Colors.white, 
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200)
+              ),
               alignment: Alignment.center,
               child: TextField(
                 controller: _searchController,
@@ -116,8 +121,8 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 decoration: InputDecoration(
                   isDense: true, contentPadding: EdgeInsets.zero, 
                   hintText: "Search in ${widget.categoryTitle}...",
-                  hintStyle: TextStyle(color: _textColor.withOpacity(0.4)),
-                  prefixIcon: Icon(Icons.search_rounded, color: _themeColor, size: 20),
+                  hintStyle: TextStyle(color: Colors.grey.shade500),
+                  prefixIcon: Icon(Icons.search_rounded, color: _themeColor, size: 22),
                   border: InputBorder.none,
                 ),
               ),
@@ -128,14 +133,14 @@ class _ItemsScreenState extends State<ItemsScreen> {
             child: _filteredItems.isEmpty 
               ? Center(child: Text("No items available", style: TextStyle(color: _textColor.withOpacity(0.5), fontSize: 16)))
               : GridView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
                   physics: const ClampingScrollPhysics(), 
                   itemCount: _filteredItems.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3, 
                     mainAxisSpacing: 16, 
                     crossAxisSpacing: 12, 
-                    mainAxisExtent: 245, // ── FIX: OVERFLOW ERROR SOLVED ──
+                    mainAxisExtent: 245, 
                   ),
                   itemBuilder: (context, index) {
                     return PremiumItemCard(
@@ -174,9 +179,9 @@ class _PremiumItemCardState extends State<PremiumItemCard> {
     
     final String cartItemId = "${item['id']}|$_selectedVariantIndex";
 
-    Color cardBgColor = widget.isDark ? const Color(0xFF1E1E1E) : Colors.white;
-    Color imageBoxBg = widget.isDark ? Colors.white10 : const Color(0xFFF3F4F6); 
-    Color textColor = widget.isDark ? Colors.white : const Color(0xFF1A1A1A);
+    Color cardBgColor = Colors.white;
+    Color imageBoxBg = const Color(0xFFF3F4F6); 
+    Color textColor = const Color(0xFF1A1A1A);
 
     int price = int.parse(currentVariant['price'].toString());
     int oldPrice = price + 20;
@@ -185,20 +190,18 @@ class _PremiumItemCardState extends State<PremiumItemCard> {
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: cardBgColor, borderRadius: BorderRadius.circular(12),
-        border: !widget.isDark ? Border.all(color: Colors.grey.shade200) : null,
-        boxShadow: !widget.isDark ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))] : null,
+        border: Border.all(color: Colors.grey.shade200),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── IMAGE SECTION ──
           Container(
-            height: 90, // Fixed height for image
+            height: 90, 
             decoration: BoxDecoration(color: imageBoxBg),
             child: Stack(
               children: [
                 Center(child: Padding(padding: const EdgeInsets.all(12), child: Image.asset(item['image']))),
-                
                 Positioned(
                   top: 6, left: 6,
                   child: ValueListenableBuilder(
@@ -216,7 +219,6 @@ class _PremiumItemCardState extends State<PremiumItemCard> {
                     }
                   ),
                 ),
-
                 if (item['isBestseller'] == true)
                   Positioned(
                     bottom: 0, left: 0, right: 0,
@@ -230,29 +232,28 @@ class _PremiumItemCardState extends State<PremiumItemCard> {
             ),
           ),
           
-          // ── DETAILS SECTION ──
-          Expanded( // Automatically adjusts spacing to prevent overflow
+          Expanded(
             child: Padding(
               padding: const EdgeInsets.all(8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space distribute karega
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, 
                 children: [
                   Text(item['name'], style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 10, height: 1.2), maxLines: 2, overflow: TextOverflow.ellipsis),
                   
                   Container(
                     height: 24, padding: const EdgeInsets.symmetric(horizontal: 4),
-                    decoration: BoxDecoration(color: widget.isDark ? Colors.white10 : Colors.grey.shade100, borderRadius: BorderRadius.circular(4), border: Border.all(color: widget.isDark ? Colors.transparent : Colors.grey.shade300)),
+                    decoration: BoxDecoration(color: Colors.grey.shade100, borderRadius: BorderRadius.circular(4), border: Border.all(color: Colors.grey.shade300)),
                     child: hasVariants 
                       ? DropdownButtonHideUnderline(
                           child: DropdownButton<int>(
-                            isExpanded: true, value: _selectedVariantIndex, icon: Icon(Icons.keyboard_arrow_down, size: 12, color: textColor.withOpacity(0.6)), dropdownColor: cardBgColor,
-                            style: TextStyle(color: textColor.withOpacity(0.8), fontSize: 9, fontWeight: FontWeight.w600),
+                            isExpanded: true, value: _selectedVariantIndex, icon: const Icon(Icons.keyboard_arrow_down, size: 12, color: Colors.black54), dropdownColor: cardBgColor,
+                            style: const TextStyle(color: Colors.black87, fontSize: 9, fontWeight: FontWeight.w600),
                             items: variants.asMap().entries.map((e) => DropdownMenuItem<int>(value: e.key, child: Text(e.value['weight']))).toList(),
                             onChanged: (val) => setState(() => _selectedVariantIndex = val!),
                           ),
                         )
-                      : Align(alignment: Alignment.centerLeft, child: Text(item['weight'], style: TextStyle(color: textColor.withOpacity(0.8), fontSize: 9, fontWeight: FontWeight.w600))),
+                      : Align(alignment: Alignment.centerLeft, child: Text(item['weight'], style: const TextStyle(color: Colors.black87, fontSize: 9, fontWeight: FontWeight.w600))),
                   ),
                   
                   Row(
@@ -266,7 +267,6 @@ class _PremiumItemCardState extends State<PremiumItemCard> {
                   
                   const Text('15% OFF', style: TextStyle(color: Colors.green, fontSize: 8, fontWeight: FontWeight.bold)),
                   
-                  // ── FIX: ADD BUTTON NEXT TO PRICE ──
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.end,
@@ -291,7 +291,6 @@ class _PremiumItemCardState extends State<PremiumItemCard> {
   }
 }
 
-// ── COMPACT CART ADD BUTTON ──
 class CartAddButton extends StatelessWidget {
   final String itemId;
   final Color themeColor;

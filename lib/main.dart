@@ -1,5 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
+
+void main() async {
+  // Flutter engine ko properly start karne ke liye (kyunki hum await use kar rahe hain)
+  WidgetsFlutterBinding.ensureInitialized(); 
 import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
@@ -19,11 +26,17 @@ Future<void> main() async {
     ),
   );
 
+  // ── CHECK KAREGA KI KYA USER PEHLE SE LOGIN HAI ──
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  bool loggedIn = prefs.getBool('isLoggedIn') ?? false;
+
+  runApp(CartkaroApp(isLoggedIn: loggedIn));
   runApp(const CartkaroApp());
 }
 
 class CartkaroApp extends StatelessWidget {
-  const CartkaroApp({super.key});
+  final bool isLoggedIn;
+  const CartkaroApp({super.key, required this.isLoggedIn});
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +46,8 @@ class CartkaroApp extends StatelessWidget {
       theme: ThemeData(
         fontFamily: 'Poppins',
       ),
-      home: const HomeScreen(),
+      // ── AGAR PEHLE SE LOGIN HAI TOH DIRECT HOME, WARNA LOGIN SCREEN ──
+      home: isLoggedIn ? const HomeScreen() : const LoginScreen(),
     );
   }
 }
