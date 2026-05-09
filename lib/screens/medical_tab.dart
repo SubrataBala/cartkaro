@@ -2,14 +2,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'app_models.dart';
 
-// Removes the stretch/glow effect globally for this page
-class NoJellyScrollBehavior extends ScrollBehavior {
-  @override
-  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
-    return child;
-  }
-}
-
 class MedicalTab extends StatefulWidget {
   const MedicalTab({super.key});
   @override
@@ -21,25 +13,68 @@ class _MedicalTabState extends State<MedicalTab> {
   Timer? _bannerTimer;
   int _bannerIndex = 0;
 
-  // Styling Constants
   final Color _textColor = const Color(0xFF1A1A1A);
   final Color _gridItemBgColor = const Color(0xFFF0F0F0);
   final Color _borderColor = Colors.grey.withOpacity(0.15);
 
-  // --- DATA LISTS (Easy to update) ---
-
   final List<BannerData> _banners = const [
-    BannerData('24/7 Medicines', 'Delivered in 10 mins', kMedicalBlue, 'assets/images/broccoli.png'),
-    BannerData('Free Checkups', 'Book a lab test now', Colors.teal, 'assets/images/broccoli.png'),
-    BannerData('First Aid Kits', 'Flat 20% off today', Color(0xFF00897B), 'assets/images/broccoli.png'),
+    BannerData(
+      '24/7 Medicines',
+      'Delivered in 10 mins',
+      kMedicalBlue,
+      'assets/images/broccoli.png',
+    ),
+    BannerData(
+      'Free Checkups',
+      'Book a lab test now',
+      Colors.teal,
+      'assets/images/broccoli.png',
+    ),
+    BannerData(
+      'First Aid Kits',
+      'Flat 20% off today',
+      Color(0xFF00897B),
+      'assets/images/broccoli.png',
+    ),
   ];
 
   final List<SpotlightItem> _spotlights = [
-    SpotlightItem('Daily\nMedicines', 'assets/images/broccoli.png', const Color(0xFFBBDEFB), Colors.blue.shade900),
-    SpotlightItem('Vitamins &\nSupplements', 'assets/images/broccoli.png', const Color(0xFFC8E6C9), Colors.green.shade900),
-    SpotlightItem('Diabetes\nCare', 'assets/images/broccoli.png', const Color(0xFFFFF9C4), Colors.orange.shade900),
-    SpotlightItem('First Aid\nKits', 'assets/images/broccoli.png', const Color(0xFFFFCCBC), Colors.deepOrange.shade900),
-    SpotlightItem('Health\nDevices', 'assets/images/broccoli.png', const Color(0xFFD1C4E9), Colors.deepPurple.shade900),
+    SpotlightItem(
+      'Daily\nMedicines',
+      'assets/images/broccoli.png',
+      const Color(0xFFBBDEFB),
+      Color(0xFF0D47A1),
+    ),
+    SpotlightItem(
+      'Vitamins &\nSupplements',
+      'assets/images/broccoli.png',
+      const Color(0xFFC8E6C9),
+      Color(0xFF1B5E20),
+    ),
+    SpotlightItem(
+      'Diabetes\nCare',
+      'assets/images/broccoli.png',
+      const Color(0xFFFFF9C4),
+      Color(0xFFE65100),
+    ),
+    SpotlightItem(
+      'First Aid\nKits',
+      'assets/images/broccoli.png',
+      const Color(0xFFFFCCBC),
+      Color(0xFFBF360C),
+    ),
+    SpotlightItem(
+      'Health\nDevices',
+      'assets/images/broccoli.png',
+      const Color(0xFFD1C4E9),
+      Color(0xFF4A148C),
+    ),
+    SpotlightItem(
+      'Lab\nTests',
+      'assets/images/broccoli.png',
+      const Color(0xFFE1F5FE),
+      Color(0xFF01579B),
+    ),
   ];
 
   final List<GridSectionData> _grids = const [
@@ -63,7 +98,6 @@ class _MedicalTabState extends State<MedicalTab> {
       CategoryItem('Face Masks', 'assets/images/broccoli.png'),
       CategoryItem('Sanitizers', 'assets/images/broccoli.png'),
     ]),
-    // Health Monitoring now comes after Personal Care
     GridSectionData('Health Monitoring', [
       CategoryItem('BP Monitor', 'assets/images/broccoli.png'),
       CategoryItem('Sugar Test', 'assets/images/broccoli.png'),
@@ -73,18 +107,44 @@ class _MedicalTabState extends State<MedicalTab> {
   ];
 
   final List<StoreItem> _stores = const [
-    StoreItem('Pharmacy\nStore', 'assets/images/broccoli.png', Color(0xFFBBDEFB)),
-    StoreItem('Organic\nStore', 'assets/images/broccoli.png', Color(0xFFC8E6C9)),
-    StoreItem('Surgical\nStore', 'assets/images/broccoli.png', Color(0xFFE1BEE7)),
-    StoreItem('Wellness\nStore', 'assets/images/broccoli.png', Color(0xFFFFCCBC)),
+    StoreItem(
+      'Pharmacy\nStore',
+      'assets/images/broccoli.png',
+      Color(0xFFBBDEFB),
+    ),
+    StoreItem(
+      'Organic\nStore',
+      'assets/images/broccoli.png',
+      Color(0xFFC8E6C9),
+    ),
+    StoreItem(
+      'Surgical\nStore',
+      'assets/images/broccoli.png',
+      Color(0xFFE1BEE7),
+    ),
+    StoreItem(
+      'Wellness\nStore',
+      'assets/images/broccoli.png',
+      Color(0xFFFFCCBC),
+    ),
     StoreItem('Baby\nStore', 'assets/images/broccoli.png', Color(0xFFF8BBD0)),
+    StoreItem('Homeo\nStore', 'assets/images/broccoli.png', Color(0xFFB2DFDB)),
   ];
 
   @override
   void initState() {
     super.initState();
     _bannerController = PageController();
-    _startTimer();
+    _bannerTimer = Timer.periodic(const Duration(seconds: 3), (t) {
+      if (_bannerController.hasClients) {
+        _bannerIndex = (_bannerIndex + 1) % _banners.length;
+        _bannerController.animateToPage(
+          _bannerIndex,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   @override
@@ -94,43 +154,30 @@ class _MedicalTabState extends State<MedicalTab> {
     super.dispose();
   }
 
-  void _startTimer() {
-    _bannerTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      if (_bannerController.hasClients) {
-        _bannerIndex = (_bannerIndex + 1) % _banners.length;
-        _bannerController.animateToPage(_bannerIndex, duration: const Duration(milliseconds: 600), curve: Curves.easeInOut);
-      }
-    });
-  }
-
-  Future<void> _handleRefresh() async {
-    await Future.delayed(const Duration(milliseconds: 1500));
-    if (mounted) setState(() {});
-  }
-
   @override
   Widget build(BuildContext context) {
     return ScrollConfiguration(
       behavior: NoJellyScrollBehavior(),
       child: RefreshIndicator(
-        onRefresh: _handleRefresh,
+        onRefresh: () async => await Future.delayed(const Duration(seconds: 1)),
         color: kMedicalBlue,
         child: SingleChildScrollView(
-          physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+          physics: const ClampingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
+          ),
           padding: const EdgeInsets.only(bottom: 30),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SizedBox(height: 16),
               _buildBanners(),
-              const SizedBox(height: 28),
-              _buildHeader('Now Spotlight', true),
-              const SizedBox(height: 16),
+              const SizedBox(height: 25),
+              _buildHeader('Now Spotlight', true, kMedicalBlue),
+              const SizedBox(height: 14),
               _buildSpotlights(),
-              const SizedBox(height: 32),
-              // This dynamically builds Top Categories, Personal Care, and Health Monitoring
-              ..._buildGridSections(),
-              _buildHeader('Shop Store', true), // Added See All to Shop Store too
+              const SizedBox(height: 30),
+              ..._buildGridSections(kMedicalBlue),
+              _buildHeader('Shop Store', true, kMedicalBlue),
               const SizedBox(height: 16),
               _buildStores(),
             ],
@@ -142,10 +189,9 @@ class _MedicalTabState extends State<MedicalTab> {
 
   Widget _buildBanners() {
     return SizedBox(
-      height: 180,
+      height: 150,
       child: PageView.builder(
         controller: _bannerController,
-        onPageChanged: (i) => _bannerIndex = i,
         itemCount: _banners.length,
         itemBuilder: (ctx, i) {
           final b = _banners[i];
@@ -153,8 +199,11 @@ class _MedicalTabState extends State<MedicalTab> {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Container(
-              decoration: BoxDecoration(color: b.bgColor, borderRadius: BorderRadius.circular(20)),
-              padding: const EdgeInsets.fromLTRB(20, 25, 10, 20),
+              decoration: BoxDecoration(
+                color: b.bgColor,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.all(15),
               child: Row(
                 children: [
                   Expanded(
@@ -163,19 +212,49 @@ class _MedicalTabState extends State<MedicalTab> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(b.title, maxLines: 2, style: TextStyle(color: color, fontSize: 20, fontWeight: FontWeight.w800, height: 1.1)),
-                        const SizedBox(height: 6),
-                        Text(b.subtitle, maxLines: 1, style: TextStyle(color: color.withOpacity(0.7), fontSize: 12, fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 16),
+                        Text(
+                          b.title,
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          b.subtitle,
+                          style: TextStyle(
+                            color: color.withOpacity(0.7),
+                            fontSize: 11,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                          decoration: BoxDecoration(color: kMedicalBlue, borderRadius: BorderRadius.circular(8)),
-                          child: const Text('Shop Now', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: kMedicalBlue,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'Shop Now',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ),
                       ],
                     ),
                   ),
-                  Expanded(flex: 3, child: Image.asset(b.imagePath, fit: BoxFit.contain)),
+                  Expanded(
+                    flex: 2,
+                    child: Image.asset(b.imagePath, fit: BoxFit.contain),
+                  ),
                 ],
               ),
             ),
@@ -187,33 +266,40 @@ class _MedicalTabState extends State<MedicalTab> {
 
   Widget _buildSpotlights() {
     return SizedBox(
-      height: 165,
+      height: 140,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _spotlights.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 14),
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (ctx, i) {
           final item = _spotlights[i];
           return Container(
-            width: 115,
-            decoration: BoxDecoration(color: item.bgColor, borderRadius: BorderRadius.circular(16)),
+            width: 110,
+            decoration: BoxDecoration(
+              color: item.bgColor,
+              borderRadius: BorderRadius.circular(12),
+            ),
             child: Stack(
               children: [
                 Positioned(
-                  top: 12,
-                  left: 12,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('FEATURED', style: TextStyle(color: item.textColor.withOpacity(0.6), fontSize: 8, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
-                      const SizedBox(height: 4),
-                      Text(item.title, style: TextStyle(color: item.textColor, fontSize: 11, fontWeight: FontWeight.w800, height: 1.2)),
-                    ],
+                  top: 10,
+                  left: 10,
+                  child: Text(
+                    item.title,
+                    style: TextStyle(
+                      color: item.textColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      height: 1.2,
+                    ),
                   ),
                 ),
-                Positioned(bottom: -10, right: -10, child: Image.asset(item.imagePath, height: 90, width: 90, fit: BoxFit.contain)),
+                Positioned(
+                  bottom: -5,
+                  right: -5,
+                  child: Image.asset(item.imagePath, height: 75),
+                ),
               ],
             ),
           );
@@ -222,81 +308,108 @@ class _MedicalTabState extends State<MedicalTab> {
     );
   }
 
-  List<Widget> _buildGridSections() {
-    return _grids.map((section) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // showSeeAll is true if section has 4 or more items
-          _buildHeader(section.title, section.items.length >= 4),
-          const SizedBox(height: 14),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: section.items.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 4,
-                mainAxisSpacing: 16,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.60,
+  List<Widget> _buildGridSections(Color themeColor) {
+    return _grids
+        .map(
+          (section) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(
+                section.title,
+                section.items.length >= 4,
+                themeColor,
               ),
-              itemBuilder: (ctx, i) {
-                final c = section.items[i];
-                return Column(
-                  children: [
-                    Container(
-                      height: 80,
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: _gridItemBgColor,
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: _borderColor),
-                      ),
-                      child: Center(child: Image.asset(c.imagePath, fit: BoxFit.contain)),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(c.label, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: _textColor, fontSize: 10, fontWeight: FontWeight.w700, height: 1.3)),
-                  ],
-                );
-              },
-            ),
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: section.items.length,
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    mainAxisSpacing: 12,
+                    crossAxisSpacing: 10,
+                    childAspectRatio: 0.62,
+                  ),
+                  itemBuilder: (ctx, i) {
+                    final c = section.items[i];
+                    return Column(
+                      children: [
+                        Container(
+                          height: 75,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: _gridItemBgColor,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: _borderColor),
+                          ),
+                          child: Center(
+                            child: Image.asset(c.imagePath, height: 45),
+                          ),
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          c.label,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          style: TextStyle(
+                            color: _textColor,
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 25),
+            ],
           ),
-          const SizedBox(height: 28),
-        ],
-      );
-    }).toList();
+        )
+        .toList();
   }
 
   Widget _buildStores() {
     return SizedBox(
-      height: 165,
+      height: 155,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _stores.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 16),
+        separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (ctx, i) {
           final item = _stores[i];
           return SizedBox(
-            width: 95,
+            width: 90,
             child: Column(
               children: [
                 Container(
-                  height: 110,
-                  width: 95,
-                  padding: const EdgeInsets.all(14),
+                  height: 100,
                   decoration: BoxDecoration(
                     color: item.bgColor,
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(50), bottom: Radius.circular(16)),
+                    borderRadius: const BorderRadius.vertical(
+                      top: Radius.circular(45),
+                      bottom: Radius.circular(12),
+                    ),
                   ),
-                  child: Align(alignment: Alignment.bottomCenter, child: Image.asset(item.imagePath, height: 65)),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Image.asset(item.imagePath, height: 60),
+                  ),
                 ),
-                const SizedBox(height: 10),
-                Text(item.label, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: _textColor, fontSize: 11, fontWeight: FontWeight.w700, height: 1.2)),
+                const SizedBox(height: 8),
+                Text(
+                  item.label,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: TextStyle(
+                    color: _textColor,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           );
@@ -305,22 +418,40 @@ class _MedicalTabState extends State<MedicalTab> {
     );
   }
 
-  Widget _buildHeader(String title, bool showSeeAll) {
+  Widget _buildHeader(String title, bool showSeeAll, Color themeColor) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: TextStyle(color: _textColor, fontSize: 18, fontWeight: FontWeight.w800)),
+          Text(
+            title,
+            style: TextStyle(
+              color: _textColor,
+              fontSize: 17,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
           if (showSeeAll)
-            InkWell(
-              onTap: () {
-                // Add your navigation logic here
-              },
-              child: const Text('See all', style: TextStyle(color: kMedicalBlue, fontSize: 13, fontWeight: FontWeight.w700)),
+            Text(
+              'See all',
+              style: TextStyle(
+                color: themeColor,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+              ),
             ),
         ],
       ),
     );
   }
+}
+
+class NoJellyScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(
+    BuildContext context,
+    Widget child,
+    ScrollableDetails details,
+  ) => child;
 }
