@@ -1,51 +1,64 @@
 import 'package:flutter/material.dart';
+import 'app_models.dart'; // Colors laane ke liye
 
-// ── GLOBAL STATE & DATA (Home Screen bhi inko use karega) ──
+// ── GLOBAL STATE & DATA ──
 ValueNotifier<Map<String, int>> cartCountNotifier = ValueNotifier({});
 ValueNotifier<Set<String>> watchlistNotifier = ValueNotifier({});
 
-// ── NAYA: UNIQUE IDs KE SATH DATA ──
-// Dhyan rakhein: Har item ki 'id' ekdum alag hai taaki ek sath sab select na hon
+// ── FULL CATEGORY DATA FOR ALL TABS ──
 final Map<int, Map<String, List<Map<String, dynamic>>>> globalAllCategoryData = {
-  0: { // ── GROCERY TAB DATA (Index 0) ──
+  0: { // ── GROCERY (Index 0) ──
     'Vegetables': [
       {'id': 'g_v1', 'name': 'Potato', 'weight': '1kg', 'price': '30', 'image': 'assets/images/broccoli.png'},
       {'id': 'g_v2', 'name': 'Carrot', 'weight': '500g', 'price': '40', 'image': 'assets/images/broccoli.png'},
       {'id': 'g_v3', 'name': 'Onion', 'weight': '1kg', 'price': '35', 'image': 'assets/images/broccoli.png'},
-    ],
-    'Grocery': [
-      {'id': 'g_g1', 'name': 'Basmati Rice', 'weight': '1kg', 'price': '120', 'image': 'assets/images/broccoli.png'},
-      {'id': 'g_g2', 'name': 'Buckwheat', 'weight': '500g', 'price': '90', 'image': 'assets/images/broccoli.png'},
-    ],
-    'For home': [
-      {'id': 'g_h1', 'name': 'Rug', 'weight': '1 pc', 'price': '499', 'image': 'assets/images/broccoli.png'},
-      {'id': 'g_h2', 'name': 'Screwdriver', 'weight': '1 pc', 'price': '150', 'image': 'assets/images/broccoli.png'},
+      {'id': 'g_v4', 'name': 'Cabbage', 'weight': '1 pc', 'price': '45', 'image': 'assets/images/broccoli.png'},
     ],
     'Fruits': [
       {'id': 'g_f1', 'name': 'Banana', 'weight': '1 Dozen', 'price': '60', 'image': 'assets/images/broccoli.png'},
       {'id': 'g_f2', 'name': 'Apple', 'weight': '1kg', 'price': '160', 'image': 'assets/images/broccoli.png'},
+      {'id': 'g_f3', 'name': 'Guava', 'weight': '1kg', 'price': '50', 'image': 'assets/images/broccoli.png'},
+    ],
+    'Grocery': [
+      {'id': 'g_g1', 'name': 'Basmati Rice', 'weight': '1kg', 'price': '120', 'image': 'assets/images/broccoli.png'},
+      {'id': 'g_g2', 'name': 'Arhar Dal', 'weight': '500g', 'price': '85', 'image': 'assets/images/broccoli.png'},
+      {'id': 'g_g3', 'name': 'Mustard Oil', 'weight': '1L', 'price': '155', 'image': 'assets/images/broccoli.png'},
+    ],
+    'For home': [
+      {'id': 'g_h1', 'name': 'Floor Cleaner', 'weight': '1L', 'price': '199', 'image': 'assets/images/broccoli.png'},
+      {'id': 'g_h2', 'name': 'Towels', 'weight': 'Pack of 2', 'price': '250', 'image': 'assets/images/broccoli.png'},
     ],
   },
-  1: { // ── RESTAURANT TAB DATA (Index 1) ──
-    'Biryani': [
+  1: { // ── RESTAURANT (Index 1) ──
+    'Biryani & Pulao': [
       {'id': 'r_b1', 'name': 'Chicken Biryani', 'weight': 'Full', 'price': '280', 'image': 'assets/images/broccoli.png'},
       {'id': 'r_b2', 'name': 'Mutton Biryani', 'weight': 'Full', 'price': '350', 'image': 'assets/images/broccoli.png'},
+      {'id': 'r_b3', 'name': 'Veg Pulao', 'weight': 'Full', 'price': '180', 'image': 'assets/images/broccoli.png'},
     ],
-    'Fast Food': [
-      {'id': 'r_f1', 'name': 'Burger', 'weight': '1 pc', 'price': '80', 'image': 'assets/images/broccoli.png'},
-      {'id': 'r_f2', 'name': 'Pizza', 'weight': 'Medium', 'price': '199', 'image': 'assets/images/broccoli.png'},
+    'Pizzas & Burgers': [
+      {'id': 'r_p1', 'name': 'Cheese Burger', 'weight': '1 pc', 'price': '99', 'image': 'assets/images/broccoli.png'},
+      {'id': 'r_p2', 'name': 'Margherita Pizza', 'weight': 'Medium', 'price': '249', 'image': 'assets/images/broccoli.png'},
+    ],
+    'Noodles & Momos': [
+      {'id': 'r_n1', 'name': 'Hakka Noodles', 'weight': 'Full', 'price': '120', 'image': 'assets/images/broccoli.png'},
+      {'id': 'r_n2', 'name': 'Chicken Steam Momo', 'weight': '8 pcs', 'price': '110', 'image': 'assets/images/broccoli.png'},
     ],
   },
-  2: { // ── MEDICAL TAB DATA (Index 2) ──
-    'Medicines': [
-      {'id': 'm_m1', 'name': 'Paracetamol', 'weight': '10 strip', 'price': '20', 'image': 'assets/images/broccoli.png'},
+  2: { // ── MEDICAL (Index 2) ──
+    'Daily Medicines': [
+      {'id': 'm_m1', 'name': 'Paracetamol 500mg', 'weight': '10 Tabs', 'price': '20', 'image': 'assets/images/broccoli.png'},
       {'id': 'm_m2', 'name': 'Cough Syrup', 'weight': '100ml', 'price': '85', 'image': 'assets/images/broccoli.png'},
       {'id': 'm_m3', 'name': 'Vicks Vaporub', 'weight': '50g', 'price': '95', 'image': 'assets/images/broccoli.png'},
     ],
-    'First Aid': [
-      {'id': 'm_fa1', 'name': 'Band-Aid', 'weight': '5 Pcs', 'price': '10', 'image': 'assets/images/broccoli.png'},
-      {'id': 'm_fa2', 'name': 'Dettol', 'weight': '250ml', 'price': '120', 'image': 'assets/images/broccoli.png'},
+    'First Aid Kits': [
+      {'id': 'm_fa1', 'name': 'Band-Aid', 'weight': '20 Pcs', 'price': '40', 'image': 'assets/images/broccoli.png'},
+      {'id': 'm_fa2', 'name': 'Dettol Antiseptic', 'weight': '250ml', 'price': '120', 'image': 'assets/images/broccoli.png'},
+      {'id': 'm_fa3', 'name': 'Cotton Roll', 'weight': '100g', 'price': '35', 'image': 'assets/images/broccoli.png'},
     ],
+    'Vitamins & Supplements': [
+      {'id': 'm_v1', 'name': 'Vitamin C Tablets', 'weight': '20 Tabs', 'price': '55', 'image': 'assets/images/broccoli.png'},
+      {'id': 'm_v2', 'name': 'Fish Oil Omega 3', 'weight': '60 Caps', 'price': '499', 'image': 'assets/images/broccoli.png'},
+    ]
   }
 };
 
@@ -64,18 +77,17 @@ class _ItemsScreenState extends State<ItemsScreen> {
   String _searchQuery = "";
 
   bool get _isDark => widget.tabIndex == 0;
-  Color get _bgColor => _isDark ? const Color(0xFF121212) : Colors.white;
-  Color get _cardColor => _isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF5F5F5); 
-  Color get _textColor => _isDark ? Colors.white : Colors.black;
+  Color get _bgColor => _isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA);
+  Color get _cardColor => _isDark ? const Color(0xFF1E1E1E) : Colors.white; 
+  Color get _textColor => _isDark ? Colors.white : const Color(0xFF1A1A1A);
   Color get _iconColor => _isDark ? Colors.white : Colors.black;
 
   Color get _themeColor {
-    if (widget.tabIndex == 1) return const Color(0xFFE53935); // Restaurant: Red
-    if (widget.tabIndex == 2) return const Color(0xFF1565C0); // Medical: Blue
-    return const Color(0xFF4CAF50); // Grocery: Green
+    if (widget.tabIndex == 1) return kRestaurantRed; 
+    if (widget.tabIndex == 2) return kMedicalBlue; 
+    return kGroceryGreen; 
   }
 
-  // Filter Data Logic based on Search
   List<Map<String, dynamic>> get _filteredItems {
     final tabData = globalAllCategoryData[widget.tabIndex] ?? {};
     List<Map<String, dynamic>> categoryItems = tabData[widget.categoryTitle] ?? [];
@@ -98,16 +110,14 @@ class _ItemsScreenState extends State<ItemsScreen> {
         title: Text(widget.categoryTitle, style: TextStyle(color: _textColor, fontSize: 18, fontWeight: FontWeight.w800)),
         centerTitle: true,
       ),
-      // Yahan koi Bottom Navigation (Footer) nahi hai
       body: Column(
         children: [
-          // ── SEARCH BAR ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Container(
-              height: 50, // Fixed height for perfect alignment
+              height: 50, 
               decoration: BoxDecoration(
-                color: _isDark ? Colors.white10 : Colors.grey[100],
+                color: _isDark ? Colors.white10 : Colors.grey[200],
                 borderRadius: BorderRadius.circular(12),
               ),
               child: TextField(
@@ -126,10 +136,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
             ),
           ),
           
-          // ── ITEMS GRID ──
           Expanded(
             child: _filteredItems.isEmpty 
-              ? Center(child: Text("No items found", style: TextStyle(color: _textColor)))
+              ? Center(child: Text("No items available", style: TextStyle(color: _textColor.withOpacity(0.5), fontSize: 16)))
               : GridView.builder(
                   padding: const EdgeInsets.all(16),
                   physics: const BouncingScrollPhysics(),
@@ -161,6 +170,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
             color: _cardColor,
             borderRadius: BorderRadius.circular(20),
             border: !_isDark ? Border.all(color: Colors.grey.shade200) : null,
+            boxShadow: !_isDark ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))] : null,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -169,7 +179,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
                 child: Stack(
                   children: [
                     Center(child: Image.asset(item['image'], height: 75)),
-                    // ── WATCHLIST HEART ICON (Bada size) ──
                     Positioned(
                       top: 10, right: 10,
                       child: GestureDetector(
@@ -181,7 +190,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
                         child: Icon(
                           isFav ? Icons.favorite : Icons.favorite_border_rounded,
                           color: isFav ? Colors.red : _textColor.withOpacity(0.3),
-                          size: 28, // Fix: Icon bada kiya
+                          size: 28, 
                         ),
                       ),
                     ),
@@ -215,11 +224,9 @@ class _ItemsScreenState extends State<ItemsScreen> {
   }
 }
 
-// ── ADD TO CART BUTTON LOGIC (- 1 + FIX WALA) ──
 class _AddToCartButton extends StatelessWidget {
   final String itemId;
   final Color themeColor;
-  
   const _AddToCartButton({required this.itemId, required this.themeColor});
 
   @override
@@ -228,14 +235,10 @@ class _AddToCartButton extends StatelessWidget {
       valueListenable: cartCountNotifier,
       builder: (context, Map<String, int> counts, _) {
         final count = counts[itemId] ?? 0;
-        
         if (count == 0) {
-          // ADD Button State
           return GestureDetector(
             onTap: () {
-              var current = {...cartCountNotifier.value};
-              current[itemId] = 1;
-              cartCountNotifier.value = current;
+              var current = {...cartCountNotifier.value}; current[itemId] = 1; cartCountNotifier.value = current;
             },
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -244,11 +247,10 @@ class _AddToCartButton extends StatelessWidget {
             ),
           );
         } else {
-          // - 1 + State (FIX: MainAxisSize.min added)
           return Container(
             decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(8)),
             child: Row(
-              mainAxisSize: MainAxisSize.min, // Fix: Button failega nahi
+              mainAxisSize: MainAxisSize.min, 
               children: [
                 GestureDetector(
                   onTap: () {
@@ -257,22 +259,14 @@ class _AddToCartButton extends StatelessWidget {
                     if (current[itemId]! <= 0) current.remove(itemId);
                     cartCountNotifier.value = current;
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: Text('-', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
+                  child: const Padding(padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6), child: Text('-', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),
                 ),
                 Text('$count', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
                 GestureDetector(
                   onTap: () {
-                    var current = {...cartCountNotifier.value};
-                    current[itemId] = (current[itemId] ?? 0) + 1;
-                    cartCountNotifier.value = current;
+                    var current = {...cartCountNotifier.value}; current[itemId] = (current[itemId] ?? 0) + 1; cartCountNotifier.value = current;
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: Text('+', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
+                  child: const Padding(padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6), child: Text('+', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold))),
                 ),
               ],
             ),
