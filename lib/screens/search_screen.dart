@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 import 'app_models.dart';
 import 'items_screen.dart';
 
+// YAHAN BHI JELLY EFFECT OFF
+class NoJellyScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
+}
+
 class SearchCategoryItem {
   final String label;
   final String imagePath;
@@ -15,7 +23,7 @@ class SearchSection {
 }
 
 class SearchScreen extends StatefulWidget {
-  final int initialTab; // 0: Grocery, 1: Restaurant, 2: Medical
+  final int initialTab; 
   const SearchScreen({super.key, required this.initialTab});
 
   @override
@@ -38,9 +46,8 @@ class _SearchScreenState extends State<SearchScreen> {
     const Color(0xFFC8E6C9), const Color(0xFFDCEDC8), const Color(0xFFFFF9C4),
   ];
 
-  // ── MORE DATA: FULL PAST SEARCHES ──
   List<Map<String, dynamic>> get _pastSearches {
-    if (widget.initialTab == 1) { // Restaurant
+    if (widget.initialTab == 1) { 
       return [
         {'label': 'Biryani', 'icon': Icons.rice_bowl, 'color': const Color(0xFFFFCDD2)},
         {'label': 'Pizza', 'icon': Icons.local_pizza, 'color': const Color(0xFFFFF9C4)},
@@ -53,7 +60,7 @@ class _SearchScreenState extends State<SearchScreen> {
         {'label': 'Rolls', 'icon': Icons.breakfast_dining, 'color': const Color(0xFFC5CAE9)},
         {'label': 'Cake', 'icon': Icons.cake, 'color': const Color(0xFFFFCDD2)},
       ];
-    } else if (widget.initialTab == 2) { // Medical
+    } else if (widget.initialTab == 2) { 
       return [
         {'label': 'Paracetamol', 'icon': Icons.medication, 'color': const Color(0xFFBBDEFB)},
         {'label': 'Vicks', 'icon': Icons.healing, 'color': const Color(0xFFC8E6C9)},
@@ -67,7 +74,6 @@ class _SearchScreenState extends State<SearchScreen> {
         {'label': 'Dettol', 'icon': Icons.clean_hands, 'color': const Color(0xFFDCEDC8)},
       ];
     }
-    // Grocery (Default)
     return [
       {'label': 'Milk', 'icon': Icons.water_drop, 'color': const Color(0xFFFFCDD2)},
       {'label': 'Egg', 'icon': Icons.egg, 'color': const Color(0xFFC8E6C9)},
@@ -82,6 +88,7 @@ class _SearchScreenState extends State<SearchScreen> {
     ];
   }
 
+  // ── YE DEKHO AAPKA POORA PURANA DATA JO SCREENSHOT MEIN THA ──
   List<SearchSection> get _searchCategories {
     if (widget.initialTab == 1) { 
       return [
@@ -112,24 +119,27 @@ class _SearchScreenState extends State<SearchScreen> {
     return Scaffold(
       backgroundColor: _bgColor,
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildSearchHeader(),
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 16),
-                    _buildPastSearches(),
-                    const SizedBox(height: 30),
-                    ..._buildSearchCategoryRows(),
-                  ],
+        child: ScrollConfiguration(
+          behavior: NoJellyScrollBehavior(), // JELLY EFFECT OFF IN SEARCH
+          child: Column(
+            children: [
+              _buildSearchHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(), // JELLY OFF
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+                      _buildPastSearches(),
+                      const SizedBox(height: 30),
+                      ..._buildSearchCategoryRows(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -179,7 +189,6 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // ── NAYA LOGIC: 2 ROW PAST SEARCHES ──
   Widget _buildPastSearches() {
     final searches = _pastSearches;
     final half = (searches.length / 2).ceil();
@@ -196,7 +205,7 @@ class _SearchScreenState extends State<SearchScreen> {
         const SizedBox(height: 14),
         SingleChildScrollView(
           scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
+          physics: const ClampingScrollPhysics(), // Horizontal Jelly Off
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -204,7 +213,7 @@ class _SearchScreenState extends State<SearchScreen> {
               Row(
                 children: row1.map((search) => _buildSearchChip(search)).toList(),
               ),
-              const SizedBox(height: 10), // Rows ke beech ka gap
+              const SizedBox(height: 10), 
               Row(
                 children: row2.map((search) => _buildSearchChip(search)).toList(),
               ),
@@ -215,10 +224,9 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  // ── PAST SEARCH CHIP ──
   Widget _buildSearchChip(Map<String, dynamic> search) {
     return Container(
-      margin: const EdgeInsets.only(right: 10), // Chips ke beech ka gap
+      margin: const EdgeInsets.only(right: 10), 
       height: 38,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(color: search['color'], borderRadius: BorderRadius.circular(20)),
@@ -247,15 +255,7 @@ class _SearchScreenState extends State<SearchScreen> {
               Text(section.title, style: TextStyle(color: _textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ItemsScreen(
-                        categoryTitle: section.title,
-                        tabIndex: widget.initialTab, 
-                      ),
-                    ),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ItemsScreen(categoryTitle: section.title, tabIndex: widget.initialTab)));
                 },
                 child: Container(
                   padding: const EdgeInsets.all(4),
@@ -273,7 +273,9 @@ class _SearchScreenState extends State<SearchScreen> {
         SizedBox(
           height: 110,
           child: ListView.separated(
-            scrollDirection: Axis.horizontal, physics: const BouncingScrollPhysics(), padding: const EdgeInsets.symmetric(horizontal: 20),
+            scrollDirection: Axis.horizontal, 
+            physics: const ClampingScrollPhysics(), // Horizontal Jelly Off
+            padding: const EdgeInsets.symmetric(horizontal: 20),
             itemCount: section.items.length, separatorBuilder: (_, __) => const SizedBox(width: 14),
             itemBuilder: (ctx, i) {
               final c = section.items[i];
@@ -281,15 +283,7 @@ class _SearchScreenState extends State<SearchScreen> {
               
               return GestureDetector(
                 onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ItemsScreen(
-                        categoryTitle: section.title,
-                        tabIndex: widget.initialTab, 
-                      ),
-                    ),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ItemsScreen(categoryTitle: section.title, tabIndex: widget.initialTab)));
                 },
                 child: Container(
                   width: 115, decoration: BoxDecoration(color: boxColor, borderRadius: BorderRadius.circular(16)),

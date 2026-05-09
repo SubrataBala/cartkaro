@@ -2,6 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'app_models.dart';
 
+class NoJellyScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
+}
+
 class GroceryTab extends StatefulWidget {
   const GroceryTab({super.key});
   @override
@@ -13,19 +20,16 @@ class _GroceryTabState extends State<GroceryTab> {
   Timer? _bannerTimer;
   int _bannerIndex = 0;
 
-  // Grocery is Dark Theme
   final Color _textColor = Colors.white;
   final Color _gridItemBgColor = const Color(0xFF1E1E1E);
   final Color _borderColor = Colors.white.withOpacity(0.05);
 
-  // ── 1. BANNERS DATA ──
   final List<BannerData> _banners = const [ 
     BannerData('Up to 30% offer', 'Enjoy our big offer', Color(0xFFD7FFD9), 'assets/images/broccoli.png', isLightBanner: true),
     BannerData('Daily Essentials', 'Get milk & bread fast', Color(0xFFFFF0C2), 'assets/images/broccoli.png', isLightBanner: true),
     BannerData('Super Saver Pack', 'Monthly groceries', Color(0xFFFFD1D1), 'assets/images/broccoli.png', isLightBanner: true),
   ];
 
-  // ── 2. SPOTLIGHT DATA ──
   final List<SpotlightItem> _spotlights = [
     SpotlightItem('Fruits &\nVegetables', 'assets/images/broccoli.png', const Color(0xFFFCAEAE), const Color(0xFFD32F2F)),
     SpotlightItem('Dairy Bread\n& Eggs', 'assets/images/broccoli.png', const Color(0xFFFFF59D), const Color(0xFFF57F17)),
@@ -33,7 +37,6 @@ class _GroceryTabState extends State<GroceryTab> {
     SpotlightItem('Cooking\nEssentials', 'assets/images/broccoli.png', const Color(0xFFA5D6A7), const Color(0xFF1B5E20)),
   ];
 
-  // ── 3. GRIDS DATA ──
   final List<GridSectionData> _grids = const [
     GridSectionData('Grocery & Kitchen', [
       CategoryItem('Vegitables\n& Fruits', 'assets/images/broccoli.png'), 
@@ -47,15 +50,8 @@ class _GroceryTabState extends State<GroceryTab> {
       CategoryItem('Drinks &\nJuices', 'assets/images/broccoli.png'), 
       CategoryItem('Tea,\nCoffee', 'assets/images/broccoli.png'),
     ]),
-    GridSectionData('Household Essentials', [
-      CategoryItem('Cleaners', 'assets/images/broccoli.png'), 
-      CategoryItem('Electronics', 'assets/images/broccoli.png'),
-      CategoryItem('Puja Items', 'assets/images/broccoli.png'), 
-      CategoryItem('Pet Care', 'assets/images/broccoli.png'),
-    ]),
   ];
 
-  // ── 4. STORES DATA ──
   final List<StoreItem> _stores = const [
     StoreItem('Winter\nStore', 'assets/images/broccoli.png', Color(0xFFBBDEFB)), 
     StoreItem('Gourmet\nStore', 'assets/images/broccoli.png', Color(0xFFFFCCBC)),
@@ -85,7 +81,6 @@ class _GroceryTabState extends State<GroceryTab> {
     });
   }
 
-  // ── RELOAD FUNCTION ──
   Future<void> _handleRefresh() async {
     await Future.delayed(const Duration(milliseconds: 1500));
     setState(() {});
@@ -93,22 +88,24 @@ class _GroceryTabState extends State<GroceryTab> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: _handleRefresh,
-      color: kGroceryGreen, // Loader color Green
-      backgroundColor: const Color(0xFF2C2C2C),
-      child: SingleChildScrollView(
-        // FIX: ClampingScrollPhysics + AlwaysScrollable
-        physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), 
-        padding: const EdgeInsets.only(bottom: 30),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16), _buildBanners(), const SizedBox(height: 28),
-            _buildHeader('Now Spotlight', true), const SizedBox(height: 16), _buildSpotlights(), const SizedBox(height: 32),
-            ..._buildGrids(), const SizedBox(height: 10),
-            _buildHeader('Shop Store', false), const SizedBox(height: 16), _buildStores(),
-          ],
+    return ScrollConfiguration(
+      behavior: NoJellyScrollBehavior(),
+      child: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        color: kGroceryGreen, 
+        backgroundColor: const Color(0xFF2C2C2C),
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), 
+          padding: const EdgeInsets.only(bottom: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16), _buildBanners(), const SizedBox(height: 28),
+              _buildHeader('Now Spotlight', true), const SizedBox(height: 16), _buildSpotlights(), const SizedBox(height: 32),
+              ..._buildGrids(), const SizedBox(height: 10),
+              _buildHeader('Shop Store', false), const SizedBox(height: 16), _buildStores(),
+            ],
+          ),
         ),
       ),
     );
@@ -148,7 +145,7 @@ class _GroceryTabState extends State<GroceryTab> {
       height: 165,
       child: ListView.separated(
         scrollDirection: Axis.horizontal, 
-        physics: const ClampingScrollPhysics(), // FIX: No jelly effect horizontally
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _spotlights.length, separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (ctx, i) {
@@ -199,7 +196,7 @@ class _GroceryTabState extends State<GroceryTab> {
       height: 165,
       child: ListView.separated(
         scrollDirection: Axis.horizontal, 
-        physics: const ClampingScrollPhysics(), // FIX: No jelly effect horizontally
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _stores.length, separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (ctx, i) {

@@ -2,6 +2,13 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'app_models.dart';
 
+class NoJellyScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
+}
+
 class RestaurantTab extends StatefulWidget {
   const RestaurantTab({super.key});
   @override
@@ -17,14 +24,12 @@ class _RestaurantTabState extends State<RestaurantTab> {
   final Color _gridItemBgColor = const Color(0xFFF0F0F0);
   final Color _borderColor = Colors.grey.withOpacity(0.15);
 
-  // ── 1. BANNERS DATA ──
   final List<BannerData> _banners = const [ 
     BannerData('Flat 50% offer', 'On your first 3 orders', kRestaurantRed, 'assets/images/broccoli.png'),
     BannerData('Spicy Deals', 'Best biryanis in town', Colors.orange, 'assets/images/broccoli.png'),
     BannerData('Midnight Cravings', 'Open till 3 AM', Color(0xFF673AB7), 'assets/images/broccoli.png'),
   ];
 
-  // ── 2. SPOTLIGHT DATA ──
   final List<SpotlightItem> _spotlights = [
     SpotlightItem('Biryani &\nPulao', 'assets/images/broccoli.png', const Color(0xFFFFCDD2), Colors.red.shade900),
     SpotlightItem('Pizzas &\nBurgers', 'assets/images/broccoli.png', const Color(0xFFFFF9C4), Colors.orange.shade900),
@@ -32,29 +37,17 @@ class _RestaurantTabState extends State<RestaurantTab> {
     SpotlightItem('Desserts &\nIce Creams', 'assets/images/broccoli.png', const Color(0xFFE1BEE7), Colors.purple.shade900),
   ];
 
-  // ── 3. GRIDS DATA ──
   final List<GridSectionData> _grids = const [
     GridSectionData('Top Cuisines', [
-      CategoryItem('North Indian', 'assets/images/broccoli.png'), 
-      CategoryItem('South Indian', 'assets/images/broccoli.png'),
-      CategoryItem('Chinese', 'assets/images/broccoli.png'), 
-      CategoryItem('Italian', 'assets/images/broccoli.png'),
+      CategoryItem('North Indian', 'assets/images/broccoli.png'), CategoryItem('South Indian', 'assets/images/broccoli.png'),
+      CategoryItem('Chinese', 'assets/images/broccoli.png'), CategoryItem('Italian', 'assets/images/broccoli.png'),
     ]),
     GridSectionData('Quick Bites', [
-      CategoryItem('Burgers', 'assets/images/broccoli.png'), 
-      CategoryItem('Pizzas', 'assets/images/broccoli.png'),
-      CategoryItem('Rolls', 'assets/images/broccoli.png'), 
-      CategoryItem('Momos', 'assets/images/broccoli.png'),
-    ]),
-    GridSectionData('Sweet Cravings', [
-      CategoryItem('Cakes', 'assets/images/broccoli.png'), 
-      CategoryItem('Ice Creams', 'assets/images/broccoli.png'),
-      CategoryItem('Shakes', 'assets/images/broccoli.png'), 
-      CategoryItem('Mithai', 'assets/images/broccoli.png'),
+      CategoryItem('Burgers', 'assets/images/broccoli.png'), CategoryItem('Pizzas', 'assets/images/broccoli.png'),
+      CategoryItem('Rolls', 'assets/images/broccoli.png'), CategoryItem('Momos', 'assets/images/broccoli.png'),
     ]),
   ];
 
-  // ── 4. STORES DATA ──
   final List<StoreItem> _stores = const [
     StoreItem('Local\nFavourites', 'assets/images/broccoli.png', Color(0xFFFFCDD2)), 
     StoreItem('Premium\nDining', 'assets/images/broccoli.png', Color(0xFFFFF9C4)),
@@ -84,7 +77,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
     });
   }
 
-  // ── RELOAD FUNCTION ──
   Future<void> _handleRefresh() async {
     await Future.delayed(const Duration(milliseconds: 1500));
     setState(() {});
@@ -92,22 +84,24 @@ class _RestaurantTabState extends State<RestaurantTab> {
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: _handleRefresh,
-      color: kRestaurantRed, // Loader color Red
-      backgroundColor: Colors.white,
-      child: SingleChildScrollView(
-        // FIX: ClampingScrollPhysics + AlwaysScrollable
-        physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), 
-        padding: const EdgeInsets.only(bottom: 30),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16), _buildBanners(), const SizedBox(height: 28),
-            _buildHeader('Now Spotlight', true), const SizedBox(height: 16), _buildSpotlights(), const SizedBox(height: 32),
-            ..._buildGrids(), const SizedBox(height: 10),
-            _buildHeader('Shop Store', false), const SizedBox(height: 16), _buildStores(),
-          ],
+    return ScrollConfiguration(
+      behavior: NoJellyScrollBehavior(),
+      child: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        color: kRestaurantRed, 
+        backgroundColor: Colors.white,
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), 
+          padding: const EdgeInsets.only(bottom: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16), _buildBanners(), const SizedBox(height: 28),
+              _buildHeader('Now Spotlight', true), const SizedBox(height: 16), _buildSpotlights(), const SizedBox(height: 32),
+              ..._buildGrids(), const SizedBox(height: 10),
+              _buildHeader('Shop Store', false), const SizedBox(height: 16), _buildStores(),
+            ],
+          ),
         ),
       ),
     );
@@ -147,7 +141,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
       height: 165,
       child: ListView.separated(
         scrollDirection: Axis.horizontal, 
-        physics: const ClampingScrollPhysics(), // FIX: No jelly effect horizontally
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _spotlights.length, separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (ctx, i) {
@@ -182,7 +176,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
               final c = section.items[i];
               return Column(
                 children: [
-                  Container(height: 80, width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: _gridItemBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: _borderColor), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 5, offset: const Offset(0, 2))]), child: Center(child: Image.asset(c.imagePath, fit: BoxFit.contain))),
+                  Container(height: 80, width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: _gridItemBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: _borderColor)), child: Center(child: Image.asset(c.imagePath, fit: BoxFit.contain))),
                   const SizedBox(height: 6), Text(c.label, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: _textColor, fontSize: 10, fontWeight: FontWeight.w700, height: 1.3)),
                 ],
               );
@@ -198,7 +192,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
       height: 165,
       child: ListView.separated(
         scrollDirection: Axis.horizontal, 
-        physics: const ClampingScrollPhysics(), // FIX: No jelly effect horizontally
+        physics: const ClampingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _stores.length, separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (ctx, i) {

@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'search_screen.dart'; 
 import 'items_screen.dart'; 
 import 'app_models.dart';
-import 'grocery_tab.dart';     // Naya Import
-import 'restaurant_tab.dart';  // Naya Import
-import 'medical_tab.dart';     // Naya Import
+import 'grocery_tab.dart';     
+import 'restaurant_tab.dart';  
+import 'medical_tab.dart';     
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,6 +33,12 @@ class _HomeScreenState extends State<HomeScreen> {
   Color get _textSecondary => isDark ? const Color(0xFFAAAAAA) : const Color(0xFF757575);
   Color get _borderColor => isDark ? Colors.white.withOpacity(0.05) : Colors.grey.withOpacity(0.15);
 
+  ValueNotifier<Map<String, int>> get _activeCartNotifier {
+    if (_selectedTab == 1) return restaurantCartNotifier;
+    if (_selectedTab == 2) return medicalCartNotifier;
+    return groceryCartNotifier;
+  }
+
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
@@ -43,19 +49,22 @@ class _HomeScreenState extends State<HomeScreen> {
         body: SafeArea(
           child: Column(
             children: [
-              _buildTopBar(),
-              _buildSearchBar(), 
-              const SizedBox(height: 16),
-              _buildTabRow(),
-              const SizedBox(height: 8),
+              if (_bottomNav == 0) ...[
+                _buildTopBar(),
+                _buildSearchBar(), 
+                const SizedBox(height: 16),
+                _buildTabRow(),
+                const SizedBox(height: 8),
+              ],
               
-              // ── THE MAGIC: Clean Component Switching ──
               Expanded(
                 child: _bottomNav == 0 
                     ? (_selectedTab == 0 ? const GroceryTab() : _selectedTab == 1 ? const RestaurantTab() : const MedicalTab())
                     : _bottomNav == 1 
                         ? _buildWatchlistTab() 
-                        : Center(child: Text("Coming Soon", style: TextStyle(color: _textPrimary, fontSize: 18))),
+                        : _bottomNav == 2
+                            ? _buildCartTab() 
+                            : Center(child: Text("Profile Page", style: TextStyle(color: _textPrimary, fontSize: 18))),
               ),
             ],
           ),
@@ -168,8 +177,25 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: SizedBox(
                     width: 70,
                     child: active
-                        ? Transform.translate(offset: const Offset(0, -22), child: Column(mainAxisSize: MainAxisSize.min, children: [Container(padding: const EdgeInsets.all(15), decoration: BoxDecoration(color: _activeColor, shape: BoxShape.circle, border: Border.all(color: _bgColor, width: 6), boxShadow: [BoxShadow(color: _activeColor.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))]), child: Icon(items[i].icon, color: Colors.white, size: 26))]))
-                        : Column(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.end, children: [Icon(items[i].icon, color: _textSecondary, size: 25), const SizedBox(height: 4), Text(items[i].label, style: TextStyle(color: _textSecondary, fontSize: 11, fontWeight: FontWeight.w600)), const SizedBox(height: 12)]),
+                        ? Transform.translate(
+                            offset: const Offset(0, -22), 
+                            child: Column(mainAxisSize: MainAxisSize.min, children: [
+                              Container(
+                                padding: const EdgeInsets.all(15), 
+                                decoration: BoxDecoration(color: _activeColor, shape: BoxShape.circle, border: Border.all(color: _bgColor, width: 6), boxShadow: [BoxShadow(color: _activeColor.withOpacity(0.4), blurRadius: 12, offset: const Offset(0, 4))]), 
+                                child: _buildNavIcon(i, Colors.white, 26, true)
+                              )
+                            ])
+                          )
+                        : Column(
+                            mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.end, 
+                            children: [
+                              _buildNavIcon(i, _textSecondary, 25, false), 
+                              const SizedBox(height: 4), 
+                              Text(items[i].label, style: TextStyle(color: _textSecondary, fontSize: 11, fontWeight: FontWeight.w600)), 
+                              const SizedBox(height: 12)
+                            ]
+                          ),
                   ),
                 );
               }),
@@ -180,82 +206,188 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // Watchlist Rendering Logic stays here because it changes when tabs change
-  Widget _buildWatchlistTab() {
+  Widget _buildNavIcon(int index, Color iconColor, double size, bool isActive) {
+    if (index == 2) { 
+      return ValueListenableBuilder(
+        valueListenable: _activeCartNotifier, 
+        builder: (context, Map<String, int> cart, _) {
+          int totalItems = cart.values.fold(0, (sum, count) => sum + count);
+          return Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Icon(Icons.shopping_bag_outlined, color: iconColor, size: size),
+              if (totalItems > 0)
+                Positioned(
+                  right: -4, top: -4,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(color: isActive ? Colors.white : Colors.red, shape: BoxShape.circle),
+                    child: Text('$totalItems', style: TextStyle(color: isActive ? _activeColor : Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                  ),
+                )
+            ],
+          );
+        }
+      );
+    }
+    return Icon([Icons.home_rounded, Icons.favorite_border_rounded, Icons.shopping_bag_outlined, Icons.person_outline_rounded][index], color: iconColor, size: size);
+  }
+
+  Widget _buildCartTab() {
     return ValueListenableBuilder(
-      valueListenable: watchlistNotifier,
-      builder: (context, Set<String> favorites, _) {
+      valueListenable: _activeCartNotifier,
+      builder: (context, Map<String, int> cart, _) {
+        if (cart.isEmpty) {
+          return Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.shopping_cart_outlined, size: 80, color: _textSecondary.withOpacity(0.3)),
+                const SizedBox(height: 16),
+                Text("Your ${_tabs[_selectedTab].label} Cart is empty", style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
+              ],
+            )
+          );
+        }
+
         final currentTabData = globalAllCategoryData[_selectedTab] ?? {};
-        List<Map<String, dynamic>> favoriteItemsForThisTab = [];
+        double totalAmount = 0;
+        List<Widget> cartList = [];
 
-        for (var categoryItems in currentTabData.values) {
-          for (var item in categoryItems) {
-            if (favorites.contains(item['id'])) favoriteItemsForThisTab.add(item);
+        cart.forEach((cartItemId, count) {
+          final parts = cartItemId.split('|');
+          final baseId = parts[0];
+          final vIndex = parts.length > 1 ? int.parse(parts[1]) : 0;
+
+          Map<String, dynamic>? foundItem;
+          for (var categoryItems in currentTabData.values) {
+            for (var item in categoryItems) {
+              if (item['id'] == baseId) { foundItem = item; break; }
+            }
+            if (foundItem != null) break;
           }
-        }
 
-        if (favoriteItemsForThisTab.isEmpty) {
-          return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.favorite_border_rounded, size: 80, color: _textSecondary.withOpacity(0.3)), const SizedBox(height: 16), Text("Your ${_tabs[_selectedTab].label} Watchlist is empty", style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w600))]));
-        }
+          if (foundItem != null) {
+            final variants = foundItem.containsKey('variants') ? foundItem['variants'] : [{'weight': foundItem['weight'], 'price': foundItem['price']}];
+            final variant = variants[vIndex];
+            final price = double.parse(variant['price'].toString());
+            totalAmount += price * count;
 
-        return GridView.builder(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 80), physics: const BouncingScrollPhysics(), itemCount: favoriteItemsForThisTab.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 0.72),
-          itemBuilder: (context, index) {
-            final item = favoriteItemsForThisTab[index];
-            return Container(
-              decoration: BoxDecoration(color: _cardBgColor, borderRadius: BorderRadius.circular(20), border: isDark ? null : Border.all(color: Colors.grey.shade200), boxShadow: isDark ? null : [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10)]),
-              child: Stack(
-                children: [
-                  Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                    const SizedBox(height: 20), Center(child: Image.asset(item['image'], height: 75)), const Spacer(),
-                    Padding(
-                      padding: const EdgeInsets.all(12),
+            cartList.add(
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: _cardBgColor, borderRadius: BorderRadius.circular(16), border: isDark ? null : Border.all(color: _borderColor)),
+                child: Row(
+                  children: [
+                    Image.asset(foundItem['image'], height: 50, width: 50),
+                    const SizedBox(width: 16),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item['name'], style: TextStyle(color: _textPrimary, fontWeight: FontWeight.w700, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis), const SizedBox(height: 2), Text(item['weight'], style: TextStyle(color: _textPrimary.withOpacity(0.5), fontSize: 11)), const SizedBox(height: 8),
-                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text('₹${item['price']}', style: TextStyle(color: _textPrimary, fontWeight: FontWeight.w800, fontSize: 15)), _WatchlistAddButton(itemId: item['id'], themeColor: _activeColor)]),
+                          Text(foundItem['name'], style: TextStyle(color: _textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 4),
+                          Text(variant['weight'], style: TextStyle(color: _textSecondary, fontSize: 12)),
+                          const SizedBox(height: 4),
+                          Text('₹$price', style: TextStyle(color: _textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
                         ],
                       ),
-                    )
-                  ]),
-                  Positioned(top: 10, right: 10, child: GestureDetector(onTap: () { var newFavs = Set<String>.from(watchlistNotifier.value); newFavs.remove(item['id']); watchlistNotifier.value = newFavs; }, child: const Icon(Icons.favorite, color: Colors.red, size: 28))),
+                    ),
+                    CartAddButton(itemId: cartItemId, themeColor: _activeColor, cartNotifier: _activeCartNotifier),
+                  ],
+                ),
+              )
+            );
+          }
+        });
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+              child: Text('${_tabs[_selectedTab].label} Cart', style: TextStyle(color: _textPrimary, fontSize: 22, fontWeight: FontWeight.w800)),
+            ),
+            Expanded(
+              child: ListView(
+                physics: const ClampingScrollPhysics(),
+                children: [
+                  ...cartList,
+                  const SizedBox(height: 20),
+                  Container(
+                    margin: const EdgeInsets.all(20), padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(color: _searchBgColor, borderRadius: BorderRadius.circular(16), border: isDark ? null : Border.all(color: _borderColor)),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Total Amount', style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                        Text('₹$totalAmount', style: TextStyle(color: _activeColor, fontSize: 18, fontWeight: FontWeight.w900)),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Container(
+                      width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 16),
+                      decoration: BoxDecoration(color: _activeColor, borderRadius: BorderRadius.circular(16)),
+                      alignment: Alignment.center,
+                      child: const Text('Proceed to Checkout', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                    ),
+                  ),
+                  const SizedBox(height: 80), 
                 ],
               ),
-            );
-          },
+            ),
+          ],
         );
       }
     );
   }
-}
 
-class _WatchlistAddButton extends StatelessWidget {
-  final String itemId; final Color themeColor;
-  const _WatchlistAddButton({required this.itemId, required this.themeColor});
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: cartCountNotifier,
-      builder: (context, Map<String, int> counts, _) {
-        final count = counts[itemId] ?? 0;
-        if (count == 0) {
-          return GestureDetector(onTap: () { var current = {...cartCountNotifier.value}; current[itemId] = 1; cartCountNotifier.value = current; }, child: Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6), decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(8)), child: const Text('ADD', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12))));
-        } else {
-          return Container(
-            decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(8)),
-            child: Row(
-              mainAxisSize: MainAxisSize.min, 
-              children: [
-                GestureDetector(onTap: () { var current = {...cartCountNotifier.value}; current[itemId] = (current[itemId] ?? 0) - 1; if (current[itemId]! <= 0) current.remove(itemId); cartCountNotifier.value = current; }, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6), child: Text('-', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)))),
-                Text('$count', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                GestureDetector(onTap: () { var current = {...cartCountNotifier.value}; current[itemId] = (current[itemId] ?? 0) + 1; cartCountNotifier.value = current; }, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6), child: Text('+', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)))),
-              ],
-            ),
-          );
-        }
-      },
+  Widget _buildWatchlistTab() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
+          child: Text('${_tabs[_selectedTab].label} Watchlist', style: TextStyle(color: _textPrimary, fontSize: 22, fontWeight: FontWeight.w800)),
+        ),
+        Expanded(
+          child: ValueListenableBuilder(
+            valueListenable: watchlistNotifier,
+            builder: (context, Set<String> favorites, _) {
+              final currentTabData = globalAllCategoryData[_selectedTab] ?? {};
+              List<Map<String, dynamic>> favoriteItemsForThisTab = [];
+
+              for (var categoryItems in currentTabData.values) {
+                for (var item in categoryItems) {
+                  if (favorites.contains(item['id'])) favoriteItemsForThisTab.add(item);
+                }
+              }
+
+              if (favoriteItemsForThisTab.isEmpty) {
+                return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(Icons.favorite_border_rounded, size: 80, color: _textSecondary.withOpacity(0.3)), const SizedBox(height: 16), Text("Your ${_tabs[_selectedTab].label} Watchlist is empty", style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w600))]));
+              }
+
+              return GridView.builder(
+                padding: const EdgeInsets.fromLTRB(20, 10, 20, 80), physics: const ClampingScrollPhysics(), itemCount: favoriteItemsForThisTab.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3, 
+                  mainAxisSpacing: 16, 
+                  crossAxisSpacing: 12, 
+                  mainAxisExtent: 245, // ── FIX: OVERFLOW ERROR SOLVED ──
+                ),
+                itemBuilder: (context, index) {
+                  return PremiumItemCard(
+                    item: favoriteItemsForThisTab[index], isDark: isDark, themeColor: _activeColor, cartNotifier: _activeCartNotifier,
+                  );
+                },
+              );
+            }
+          ),
+        ),
+      ],
     );
   }
 }
