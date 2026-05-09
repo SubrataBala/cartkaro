@@ -6,7 +6,7 @@ import 'grocery_tab.dart';
 import 'restaurant_tab.dart';  
 import 'medical_tab.dart';     
 import 'cart_tab.dart'; 
-import 'address_screen.dart'; // IMPORT FOR ADDRESS STATE
+import 'address_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,14 +25,16 @@ class _HomeScreenState extends State<HomeScreen> {
     TabData('Medical',    kMedicalBlue,   Icons.medical_services_rounded),
   ];
 
-  bool get isDark => _selectedTab == 0; 
+  // ── UPDATED: Now returns false for all tabs to keep them white ──
+  bool get isDark => false; 
+
   Color get _activeColor => _tabs[_selectedTab].color;
-  Color get _bgColor => isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA);
-  Color get _cardBgColor => isDark ? const Color(0xFF1E1E1E) : Colors.white;
-  Color get _searchBgColor => isDark ? const Color(0xFF252525) : Colors.white;
-  Color get _textPrimary => isDark ? Colors.white : const Color(0xFF1A1A1A); 
-  Color get _textSecondary => isDark ? const Color(0xFFAAAAAA) : const Color(0xFF757575);
-  Color get _borderColor => isDark ? Colors.white.withOpacity(0.05) : Colors.grey.withOpacity(0.15);
+  Color get _bgColor => const Color(0xFFF8F9FA); // Standard Light Grey/White
+  Color get _cardBgColor => Colors.white;
+  Color get _searchBgColor => Colors.white;
+  Color get _textPrimary => const Color(0xFF1A1A1A); 
+  Color get _textSecondary => const Color(0xFF757575);
+  Color get _borderColor => Colors.grey.withOpacity(0.15);
 
   ValueNotifier<Map<String, int>> get _activeCartNotifier {
     if (_selectedTab == 1) return restaurantCartNotifier;
@@ -76,7 +78,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── DYNAMIC HOME TOP BAR ──
+  // ... (Rest of your helper methods like _buildTopBar, _buildSearchBar remain the same)
+  // They will now automatically use the Light Mode colors because isDark is false.
+
   Widget _buildTopBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
@@ -86,8 +90,6 @@ class _HomeScreenState extends State<HomeScreen> {
             child: ValueListenableBuilder<int>(
               valueListenable: selectedAddressNotifier,
               builder: (context, selectedIndex, _) {
-                
-                // Fetch correct display text based on global state
                 bool hasAddress = selectedIndex >= 0 && selectedIndex < globalSavedAddresses.length;
                 String displayAddress = hasAddress ? globalSavedAddresses[selectedIndex].shortAddress : "Set your delivery address";
                 String title = hasAddress ? "Delivering to ${globalSavedAddresses[selectedIndex].type}" : "Welcome";
@@ -133,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
         behavior: HitTestBehavior.opaque,
         onTap: () => Navigator.push(context, MaterialPageRoute(builder: (context) => SearchScreen(initialTab: _selectedTab))),
         child: Container(
-          height: 52, decoration: BoxDecoration(color: _searchBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: _borderColor, width: 1.2), boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))]),
+          height: 52, decoration: BoxDecoration(color: _searchBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: _borderColor, width: 1.2), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))]),
           child: Row(
             children: [
               const SizedBox(width: 16), Icon(Icons.search_rounded, color: _textSecondary, size: 22), const SizedBox(width: 10),
@@ -143,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextStyle(color: _textPrimary, fontSize: 14), decoration: InputDecoration(hintText: 'What do you want to order..', hintStyle: TextStyle(color: _textSecondary, fontSize: 14), border: InputBorder.none, isDense: true),
                 ),
               ),
-              Container(width: 1, height: 24, color: isDark ? Colors.grey[800] : Colors.grey[300]), const SizedBox(width: 14), Icon(Icons.mic_none_rounded, color: _textSecondary, size: 22), const SizedBox(width: 16),
+              Container(width: 1, height: 24, color: Colors.grey[300]), const SizedBox(width: 14), Icon(Icons.mic_none_rounded, color: _textSecondary, size: 22), const SizedBox(width: 16),
             ],
           ),
         ),
@@ -182,7 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          Container(height: 70, decoration: BoxDecoration(color: _searchBgColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(28)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(isDark ? 0.4 : 0.08), blurRadius: 20, offset: const Offset(0, -5))])),
+          Container(height: 70, decoration: BoxDecoration(color: _searchBgColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(28)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 20, offset: const Offset(0, -5))])),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
             child: Row(

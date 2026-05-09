@@ -166,7 +166,7 @@ class _MapPickerScreenState extends State<MapPickerScreen> {
 
           // ── 2. FIXED CENTER MARKER (Zepto Style) ──
           Positioned(
-            top: (MediaQuery.of(context).size.height / 2) - 80, 
+            top: (MediaQuery.of(context).size.height / 2) - 80,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // ── MEMORY IMPORT ──
 import 'signup_screen.dart';
-import 'home_screen.dart'; 
+import 'home_screen.dart';
 
 // ── GLOBAL LOGIN STATE ──
 bool isUserLoggedIn = false;
@@ -22,7 +22,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final List<FocusNode> _otpFocusNodes = List.generate(6, (_) => FocusNode());
 
   bool _isLoading = false;
-  bool _otpSent = false;          
+  bool _otpSent = false;
   bool _canResend = false;
   int _resendSeconds = 30;
   Timer? _resendTimer;
@@ -153,16 +153,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      GestureDetector(
-                        onTap: _otpSent ? _changeNumber : () {
-                          if (Navigator.canPop(context)) { Navigator.pop(context); }
-                        },
-                        child: Container(
-                          width: 44, height: 44,
-                          decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(12)),
-                          child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: kTextDark),
-                        ),
-                      ),
+                      // GestureDetector(
+                      //   onTap: _otpSent ? _changeNumber : () {
+                      //     if (Navigator.canPop(context)) { Navigator.pop(context); }
+                      //   },
+                      //   child: Container(
+                      //     width: 44, height: 44,
+                      //     decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(12)),
+                      //     child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: kTextDark),
+                      //   ),
+                      // ),
                       // Skip button
                       if (!_otpSent)
                         TextButton(

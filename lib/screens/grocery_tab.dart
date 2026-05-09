@@ -13,9 +13,9 @@ class _GroceryTabState extends State<GroceryTab> {
   Timer? _bannerTimer;
   int _bannerIndex = 0;
 
-  final Color _textColor = Colors.white;
-  final Color _gridItemBgColor = const Color(0xFF1E1E1E);
-  final Color _borderColor = Colors.white.withOpacity(0.05);
+  final Color _textColor = const Color(0xFF1A1A1A);
+  final Color _gridItemBgColor = const Color(0xFFF0F0F0);
+  final Color _borderColor = Colors.grey.withOpacity(0.15);
 
   final List<BannerData> _banners = const [
     BannerData(
@@ -44,31 +44,31 @@ class _GroceryTabState extends State<GroceryTab> {
   final List<SpotlightItem> _spotlights = [
     SpotlightItem(
       'Fruits &\nVegetables',
-      'assets/images/broccoli.png',
+      'assets/images/carrot.png',
       Color(0xFFFCAEAE),
       Color(0xFFD32F2F),
     ),
     SpotlightItem(
       'Dairy Bread\n& Eggs',
-      'assets/images/broccoli.png',
-      Color(0xFFFFF59D),
+      'assets/images/eggs.png',
+      Color.fromARGB(255, 170, 169, 162),
       Color(0xFFF57F17),
     ),
     SpotlightItem(
       'Meat &\nSeafood',
-      'assets/images/broccoli.png',
+      'assets/images/fish.png',
       Color(0xFFFFCCBC),
       Color(0xFFBF360C),
     ),
     SpotlightItem(
       'Munchies &\nCold Drinks',
-      'assets/images/broccoli.png',
+      'assets/images/sprite.png',
       Color(0xFFC5E1A5),
       Color(0xFF33691E),
     ),
     SpotlightItem(
       'Cooking\nEssentials',
-      'assets/images/broccoli.png',
+      'assets/images/cooker.png',
       Color(0xFFA5D6A7),
       Color(0xFF1B5E20),
     ),
@@ -77,13 +77,13 @@ class _GroceryTabState extends State<GroceryTab> {
   final List<GridSectionData> _grids = const [
     GridSectionData('Grocery & Kitchen', [
       CategoryItem('Vegitables\n& Fruits', 'assets/images/broccoli.png'),
-      CategoryItem('Atta, Rice\n& Dal', 'assets/images/broccoli.png'),
-      CategoryItem('Oil, Ghee\n& Masala', 'assets/images/broccoli.png'),
-      CategoryItem('Dairy, Milk\n& Bread', 'assets/images/broccoli.png'),
-      CategoryItem('Dry Fruits\n& Seeds', 'assets/images/broccoli.png'),
-      CategoryItem('Bakery\nItems', 'assets/images/broccoli.png'),
-      CategoryItem('Organic\nGrains', 'assets/images/broccoli.png'),
-      CategoryItem('Spices &\nHerbs', 'assets/images/broccoli.png'),
+      CategoryItem('Atta, Rice\n& Dal', 'assets/images/aata.png'),
+      CategoryItem('Oil, Ghee\n& Masala', 'assets/images/oil.png'),
+      CategoryItem('Dairy, Milk\n& Bread', 'assets/images/braed.png'),
+      CategoryItem('Dry Fruits\n& Seeds', 'assets/images/cashew.png'),
+      CategoryItem('Bakery\nItems', 'assets/images/cake.png'),
+      CategoryItem('Organic\nGrains', 'assets/images/seeds.png'),
+      CategoryItem('Spices &\nHerbs', 'assets/images/spices.png'),
     ]),
     GridSectionData('Household & Pet', [
       CategoryItem('Cleaning\nEssentials', 'assets/images/broccoli.png'),
@@ -271,7 +271,7 @@ class _GroceryTabState extends State<GroceryTab> {
                     item.title,
                     style: TextStyle(
                       color: item.textColor,
-                      fontSize: 10,
+                      fontSize: 12,
                       fontWeight: FontWeight.w800,
                     ),
                   ),
@@ -279,7 +279,7 @@ class _GroceryTabState extends State<GroceryTab> {
                 Positioned(
                   bottom: -5,
                   right: -5,
-                  child: Image.asset(item.imagePath, height: 75),
+                  child: Image.asset(item.imagePath, height: 95),
                 ),
               ],
             ),
