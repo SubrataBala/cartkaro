@@ -5,6 +5,7 @@ import 'app_models.dart';
 import 'grocery_tab.dart';     
 import 'restaurant_tab.dart';  
 import 'medical_tab.dart';     
+import 'cart_tab.dart'; // ── FIX: NAYA CART PAGE IMPORT KIYA ──
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -63,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : _bottomNav == 1 
                         ? _buildWatchlistTab() 
                         : _bottomNav == 2
-                            ? _buildCartTab() 
+                            ? CartTab(selectedTab: _selectedTab) // ── FIX: ALAG FILE CALL KI ──
                             : Center(child: Text("Profile Page", style: TextStyle(color: _textPrimary, fontSize: 18))),
               ),
             ],
@@ -233,118 +234,6 @@ class _HomeScreenState extends State<HomeScreen> {
     return Icon([Icons.home_rounded, Icons.favorite_border_rounded, Icons.shopping_bag_outlined, Icons.person_outline_rounded][index], color: iconColor, size: size);
   }
 
-  Widget _buildCartTab() {
-    return ValueListenableBuilder(
-      valueListenable: _activeCartNotifier,
-      builder: (context, Map<String, int> cart, _) {
-        if (cart.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.shopping_cart_outlined, size: 80, color: _textSecondary.withOpacity(0.3)),
-                const SizedBox(height: 16),
-                Text("Your ${_tabs[_selectedTab].label} Cart is empty", style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w600)),
-              ],
-            )
-          );
-        }
-
-        final currentTabData = globalAllCategoryData[_selectedTab] ?? {};
-        double totalAmount = 0;
-        List<Widget> cartList = [];
-
-        cart.forEach((cartItemId, count) {
-          final parts = cartItemId.split('|');
-          final baseId = parts[0];
-          final vIndex = parts.length > 1 ? int.parse(parts[1]) : 0;
-
-          Map<String, dynamic>? foundItem;
-          for (var categoryItems in currentTabData.values) {
-            for (var item in categoryItems) {
-              if (item['id'] == baseId) { foundItem = item; break; }
-            }
-            if (foundItem != null) break;
-          }
-
-          if (foundItem != null) {
-            final variants = foundItem.containsKey('variants') ? foundItem['variants'] : [{'weight': foundItem['weight'], 'price': foundItem['price']}];
-            final variant = variants[vIndex];
-            final price = double.parse(variant['price'].toString());
-            totalAmount += price * count;
-
-            cartList.add(
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(color: _cardBgColor, borderRadius: BorderRadius.circular(16), border: isDark ? null : Border.all(color: _borderColor)),
-                child: Row(
-                  children: [
-                    Image.asset(foundItem['image'], height: 50, width: 50),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(foundItem['name'], style: TextStyle(color: _textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 4),
-                          Text(variant['weight'], style: TextStyle(color: _textSecondary, fontSize: 12)),
-                          const SizedBox(height: 4),
-                          Text('₹$price', style: TextStyle(color: _textPrimary, fontSize: 14, fontWeight: FontWeight.bold)),
-                        ],
-                      ),
-                    ),
-                    CartAddButton(itemId: cartItemId, themeColor: _activeColor, cartNotifier: _activeCartNotifier),
-                  ],
-                ),
-              )
-            );
-          }
-        });
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-              child: Text('${_tabs[_selectedTab].label} Cart', style: TextStyle(color: _textPrimary, fontSize: 22, fontWeight: FontWeight.w800)),
-            ),
-            Expanded(
-              child: ListView(
-                physics: const ClampingScrollPhysics(),
-                children: [
-                  ...cartList,
-                  const SizedBox(height: 20),
-                  Container(
-                    margin: const EdgeInsets.all(20), padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(color: _searchBgColor, borderRadius: BorderRadius.circular(16), border: isDark ? null : Border.all(color: _borderColor)),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Total Amount', style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
-                        Text('₹$totalAmount', style: TextStyle(color: _activeColor, fontSize: 18, fontWeight: FontWeight.w900)),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Container(
-                      width: double.infinity, padding: const EdgeInsets.symmetric(vertical: 16),
-                      decoration: BoxDecoration(color: _activeColor, borderRadius: BorderRadius.circular(16)),
-                      alignment: Alignment.center,
-                      child: const Text('Proceed to Checkout', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                    ),
-                  ),
-                  const SizedBox(height: 80), 
-                ],
-              ),
-            ),
-          ],
-        );
-      }
-    );
-  }
-
   Widget _buildWatchlistTab() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,7 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   crossAxisCount: 3, 
                   mainAxisSpacing: 16, 
                   crossAxisSpacing: 12, 
-                  mainAxisExtent: 245, // ── FIX: OVERFLOW ERROR SOLVED ──
+                  mainAxisExtent: 245, 
                 ),
                 itemBuilder: (context, index) {
                   return PremiumItemCard(
