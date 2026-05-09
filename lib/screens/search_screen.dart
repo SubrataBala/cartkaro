@@ -1,9 +1,29 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'items_screen.dart'; // Models import karne ke liye
+import 'app_models.dart';
+import 'items_screen.dart';
+
+// YAHAN BHI JELLY EFFECT OFF
+class NoJellyScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
+}
+
+class SearchCategoryItem {
+  final String label;
+  final String imagePath;
+  SearchCategoryItem(this.label, this.imagePath);
+}
+
+class SearchSection {
+  final String title;
+  final List<SearchCategoryItem> items;
+  SearchSection(this.title, this.items);
+}
 
 class SearchScreen extends StatefulWidget {
-  final int initialTab;
+  final int initialTab; 
   const SearchScreen({super.key, required this.initialTab});
 
   @override
@@ -11,257 +31,211 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  late bool isDark;
-  
-  @override
-  void initState() {
-    super.initState();
-    isDark = widget.initialTab == 0; 
-  }
+  final TextEditingController _searchController = TextEditingController();
 
+  bool get isDark => widget.initialTab == 0;
   Color get _bgColor => isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA);
   Color get _searchBgColor => isDark ? const Color(0xFF252525) : Colors.white;
-  Color get _textPrimary => isDark ? Colors.white : const Color(0xFF1A1A1A); 
+  Color get _textPrimary => isDark ? Colors.white : const Color(0xFF1A1A1A);
   Color get _textSecondary => isDark ? const Color(0xFFAAAAAA) : const Color(0xFF757575);
   Color get _borderColor => isDark ? Colors.white.withOpacity(0.05) : Colors.grey.withOpacity(0.15);
 
-  // ─── PASTEL COLORS LIST ───
-  final List<Color> _pastelColors = const [
-    Color(0xFFFFCDD2), // Light Red/Pink
-    Color(0xFFF8BBD0), // Light Pink
-    Color(0xFFE1BEE7), // Light Purple
-    Color(0xFFD1C4E9), // Light Deep Purple
-    Color(0xFFC5CAE9), // Light Indigo
-    Color(0xFFBBDEFB), // Light Blue
-    Color(0xFFB2EBF2), // Light Cyan
-    Color(0xFFB2DFDB), // Light Teal
-    Color(0xFFC8E6C9), // Light Green
-    Color(0xFFDCEDC8), // Light Lime
-    Color(0xFFF0F4C3), // Light Yellow-Green
-    Color(0xFFFFF9C4), // Light Yellow
-    Color(0xFFFFECB3), // Light Amber
-    Color(0xFFFFE0B2), // Light Orange
-    Color(0xFFFFCCBC), // Light Deep Orange
+  final List<Color> _pastelColors = [
+    const Color(0xFFFFE082), const Color(0xFFFFCDD2), const Color(0xFFF8BBD0),
+    const Color(0xFFE1BEE7), const Color(0xFFC5CAE9), const Color(0xFFB2EBF2),
+    const Color(0xFFC8E6C9), const Color(0xFFDCEDC8), const Color(0xFFFFF9C4),
   ];
 
-  // ─── DYNAMIC PAST SEARCHES ───
-  List<CategoryItem> get _pastSearches {
-    // Agar aap is list ko empty [] return karoge (jaise naye user ke liye), 
-    // toh Past Searches section apne aap hide ho jayega!
-    
-    if (widget.initialTab == 1) { 
-      return const [
-        CategoryItem('Biryani', 'assets/images/broccoli.png'),
-        CategoryItem('Pizza', 'assets/images/broccoli.png'),
-        CategoryItem('Burger', 'assets/images/broccoli.png'),
-        CategoryItem('Coke', 'assets/images/broccoli.png'),
-        CategoryItem('Fries', 'assets/images/broccoli.png'),
-        CategoryItem('Momos', 'assets/images/broccoli.png'),
-        CategoryItem('Rolls', 'assets/images/broccoli.png'),
-        CategoryItem('Pasta', 'assets/images/broccoli.png'),
-        CategoryItem('Noodles', 'assets/images/broccoli.png'),
-        CategoryItem('Ice Cream', 'assets/images/broccoli.png'),
-      ];
-    } else if (widget.initialTab == 2) { 
-      return const [
-        CategoryItem('Paracetamol', 'assets/images/broccoli.png'),
-        CategoryItem('Vicks', 'assets/images/broccoli.png'),
-        CategoryItem('Band-Aid', 'assets/images/broccoli.png'),
-        CategoryItem('Dettol', 'assets/images/broccoli.png'),
-        CategoryItem('Inhaler', 'assets/images/broccoli.png'),
-        CategoryItem('Cough Syrup', 'assets/images/broccoli.png'),
-        CategoryItem('Cotton', 'assets/images/broccoli.png'),
-        CategoryItem('Thermometer', 'assets/images/broccoli.png'),
-        CategoryItem('Mask', 'assets/images/broccoli.png'),
-        CategoryItem('Sanitizer', 'assets/images/broccoli.png'),
-      ];
-    }
-    return const [
-      CategoryItem('Milk', 'assets/images/broccoli.png'),
-      CategoryItem('Egg', 'assets/images/broccoli.png'),
-      CategoryItem('Cookie', 'assets/images/broccoli.png'),
-      CategoryItem('Dry Fruits', 'assets/images/broccoli.png'),
-      CategoryItem('Bags', 'assets/images/broccoli.png'),
-      CategoryItem('Cold Drink', 'assets/images/broccoli.png'),
-      CategoryItem('Ice Cream', 'assets/images/broccoli.png'),
-      CategoryItem('Soap', 'assets/images/broccoli.png'),
-      CategoryItem('Iron', 'assets/images/broccoli.png'),
-      CategoryItem('Towel', 'assets/images/broccoli.png'),
-    ];
-  }
-
-  // ─── DYNAMIC SEARCH CATEGORIES ───
-  List<GridSectionData> get _searchCategories {
+  List<Map<String, dynamic>> get _pastSearches {
     if (widget.initialTab == 1) { 
       return [
-        GridSectionData('Biryani', [
-          CategoryItem('Chicken', 'assets/images/broccoli.png'), CategoryItem('Mutton', 'assets/images/broccoli.png'), CategoryItem('Veg', 'assets/images/broccoli.png'), 
-          CategoryItem('Paneer', 'assets/images/broccoli.png'), CategoryItem('Egg', 'assets/images/broccoli.png'), CategoryItem('Handi', 'assets/images/broccoli.png'),
-        ]),
-        GridSectionData('Fast Food', [
-          CategoryItem('Burgers', 'assets/images/broccoli.png'), CategoryItem('Pizza', 'assets/images/broccoli.png'), CategoryItem('Fries', 'assets/images/broccoli.png'), 
-          CategoryItem('Hot Dog', 'assets/images/broccoli.png'), CategoryItem('Tacos', 'assets/images/broccoli.png'), CategoryItem('Wraps', 'assets/images/broccoli.png'),
-        ]),
+        {'label': 'Biryani', 'icon': Icons.rice_bowl, 'color': const Color(0xFFFFCDD2)},
+        {'label': 'Pizza', 'icon': Icons.local_pizza, 'color': const Color(0xFFFFF9C4)},
+        {'label': 'Burger', 'icon': Icons.fastfood, 'color': const Color(0xFFDCEDC8)},
+        {'label': 'Cold Drink', 'icon': Icons.local_drink, 'color': const Color(0xFFB2EBF2)},
+        {'label': 'Ice Cream', 'icon': Icons.icecream, 'color': const Color(0xFFE1BEE7)},
+        {'label': 'Momos', 'icon': Icons.set_meal, 'color': const Color(0xFFFFE082)},
+        {'label': 'Noodles', 'icon': Icons.ramen_dining, 'color': const Color(0xFFC8E6C9)},
+        {'label': 'Pasta', 'icon': Icons.restaurant, 'color': const Color(0xFFF8BBD0)},
+        {'label': 'Rolls', 'icon': Icons.breakfast_dining, 'color': const Color(0xFFC5CAE9)},
+        {'label': 'Cake', 'icon': Icons.cake, 'color': const Color(0xFFFFCDD2)},
       ];
     } else if (widget.initialTab == 2) { 
       return [
-        GridSectionData('Medicines', [
-          CategoryItem('Fever', 'assets/images/broccoli.png'), CategoryItem('Cold', 'assets/images/broccoli.png'), CategoryItem('Cough', 'assets/images/broccoli.png'), 
-          CategoryItem('Pain', 'assets/images/broccoli.png'), CategoryItem('Allergy', 'assets/images/broccoli.png'), CategoryItem('Gastric', 'assets/images/broccoli.png'),
-        ]),
-        GridSectionData('First Aid', [
-          CategoryItem('Bandage', 'assets/images/broccoli.png'), CategoryItem('Dettol', 'assets/images/broccoli.png'), CategoryItem('Cotton', 'assets/images/broccoli.png'), 
-          CategoryItem('Spray', 'assets/images/broccoli.png'), CategoryItem('Ointment', 'assets/images/broccoli.png'), CategoryItem('Tape', 'assets/images/broccoli.png'),
-        ]),
+        {'label': 'Paracetamol', 'icon': Icons.medication, 'color': const Color(0xFFBBDEFB)},
+        {'label': 'Vicks', 'icon': Icons.healing, 'color': const Color(0xFFC8E6C9)},
+        {'label': 'Cough Syrup', 'icon': Icons.local_drink, 'color': const Color(0xFFFFCCBC)},
+        {'label': 'Band-Aid', 'icon': Icons.medical_services, 'color': const Color(0xFFD1C4E9)},
+        {'label': 'Vitamin C', 'icon': Icons.health_and_safety, 'color': const Color(0xFFF8BBD0)},
+        {'label': 'Thermometer', 'icon': Icons.thermostat, 'color': const Color(0xFFFFF9C4)},
+        {'label': 'Digene', 'icon': Icons.science, 'color': const Color(0xFFFFE082)},
+        {'label': 'ORS', 'icon': Icons.water_drop, 'color': const Color(0xFFE1BEE7)},
+        {'label': 'Cotton', 'icon': Icons.cloud, 'color': const Color(0xFFB2EBF2)},
+        {'label': 'Dettol', 'icon': Icons.clean_hands, 'color': const Color(0xFFDCEDC8)},
       ];
     }
     return [
-      GridSectionData('Vegetables', [
-        CategoryItem('Potato', 'assets/images/broccoli.png'), CategoryItem('Carrot', 'assets/images/broccoli.png'), CategoryItem('Onion', 'assets/images/broccoli.png'), 
-        CategoryItem('Tomato', 'assets/images/broccoli.png'), CategoryItem('Cabbage', 'assets/images/broccoli.png'), CategoryItem('Capsicum', 'assets/images/broccoli.png'),
-      ]),
-      GridSectionData('Grocery', [
-        CategoryItem('Rice', 'assets/images/broccoli.png'), CategoryItem('Buckwheat', 'assets/images/broccoli.png'), CategoryItem('Cous Cous', 'assets/images/broccoli.png'), 
-        CategoryItem('Atta', 'assets/images/broccoli.png'), CategoryItem('Masala', 'assets/images/broccoli.png'), CategoryItem('Oil', 'assets/images/broccoli.png'),
-      ]),
-      GridSectionData('For home', [
-        CategoryItem('Rug', 'assets/images/broccoli.png'), CategoryItem('Screwdriver', 'assets/images/broccoli.png'), CategoryItem('Towels', 'assets/images/broccoli.png'), 
-        CategoryItem('Bulb', 'assets/images/broccoli.png'), CategoryItem('Mop', 'assets/images/broccoli.png'), CategoryItem('Bucket', 'assets/images/broccoli.png'),
-      ]),
-      GridSectionData('Fruits', [
-        CategoryItem('Banana', 'assets/images/broccoli.png'), CategoryItem('Apple', 'assets/images/broccoli.png'), CategoryItem('Dragon Fruit', 'assets/images/broccoli.png'), 
-        CategoryItem('Mango', 'assets/images/broccoli.png'), CategoryItem('Grapes', 'assets/images/broccoli.png'), CategoryItem('Orange', 'assets/images/broccoli.png'),
-      ]),
+      {'label': 'Milk', 'icon': Icons.water_drop, 'color': const Color(0xFFFFCDD2)},
+      {'label': 'Egg', 'icon': Icons.egg, 'color': const Color(0xFFC8E6C9)},
+      {'label': 'Cookie', 'icon': Icons.cookie, 'color': const Color(0xFFE1BEE7)},
+      {'label': 'Dry Fruits', 'icon': Icons.spa, 'color': const Color(0xFFB2EBF2)},
+      {'label': 'Bread', 'icon': Icons.breakfast_dining, 'color': const Color(0xFFFFF9C4)},
+      {'label': 'Soap', 'icon': Icons.clean_hands, 'color': const Color(0xFFDCEDC8)},
+      {'label': 'Rice', 'icon': Icons.rice_bowl, 'color': const Color(0xFFFFE082)},
+      {'label': 'Sugar', 'icon': Icons.scatter_plot, 'color': const Color(0xFFF8BBD0)},
+      {'label': 'Tea', 'icon': Icons.emoji_food_beverage, 'color': const Color(0xFFC5CAE9)},
+      {'label': 'Chips', 'icon': Icons.fastfood, 'color': const Color(0xFFFFCCBC)},
+    ];
+  }
+
+  // ── YE DEKHO AAPKA POORA PURANA DATA JO SCREENSHOT MEIN THA ──
+  List<SearchSection> get _searchCategories {
+    if (widget.initialTab == 1) { 
+      return [
+        SearchSection('Top Cuisines', [SearchCategoryItem('North Indian', 'assets/images/broccoli.png'), SearchCategoryItem('South Indian', 'assets/images/broccoli.png'), SearchCategoryItem('Chinese', 'assets/images/broccoli.png'), SearchCategoryItem('Italian', 'assets/images/broccoli.png')]),
+        SearchSection('Biryani & Pulao', [SearchCategoryItem('Chicken', 'assets/images/broccoli.png'), SearchCategoryItem('Mutton', 'assets/images/broccoli.png'), SearchCategoryItem('Veg Pulao', 'assets/images/broccoli.png'), SearchCategoryItem('Hyderabadi', 'assets/images/broccoli.png')]),
+        SearchSection('Pizzas & Burgers', [SearchCategoryItem('Cheese Pizza', 'assets/images/broccoli.png'), SearchCategoryItem('Veggie', 'assets/images/broccoli.png'), SearchCategoryItem('Chicken Burger', 'assets/images/broccoli.png'), SearchCategoryItem('Paneer Burger', 'assets/images/broccoli.png')]),
+        SearchSection('Noodles & Momos', [SearchCategoryItem('Hakka', 'assets/images/broccoli.png'), SearchCategoryItem('Chowmein', 'assets/images/broccoli.png'), SearchCategoryItem('Steam Momo', 'assets/images/broccoli.png'), SearchCategoryItem('Fried Momo', 'assets/images/broccoli.png')]),
+      ];
+    } else if (widget.initialTab == 2) { 
+      return [
+        SearchSection('Daily Medicines', [SearchCategoryItem('Fever & Pain', 'assets/images/broccoli.png'), SearchCategoryItem('Cold & Cough', 'assets/images/broccoli.png'), SearchCategoryItem('Digestion', 'assets/images/broccoli.png'), SearchCategoryItem('Allergy', 'assets/images/broccoli.png')]),
+        SearchSection('Vitamins & Supplements', [SearchCategoryItem('Vitamin C', 'assets/images/broccoli.png'), SearchCategoryItem('Omega 3', 'assets/images/broccoli.png'), SearchCategoryItem('Multivitamins', 'assets/images/broccoli.png'), SearchCategoryItem('Calcium', 'assets/images/broccoli.png')]),
+        SearchSection('First Aid Kits', [SearchCategoryItem('Bandages', 'assets/images/broccoli.png'), SearchCategoryItem('Antiseptics', 'assets/images/broccoli.png'), SearchCategoryItem('Cotton', 'assets/images/broccoli.png'), SearchCategoryItem('Sprays', 'assets/images/broccoli.png')]),
+        SearchSection('Personal Care', [SearchCategoryItem('Skin Care', 'assets/images/broccoli.png'), SearchCategoryItem('Hair Care', 'assets/images/broccoli.png'), SearchCategoryItem('Baby Care', 'assets/images/broccoli.png'), SearchCategoryItem('Women Care', 'assets/images/broccoli.png')]),
+      ];
+    }
+    return [
+      SearchSection('Vegetables', [SearchCategoryItem('Potato', 'assets/images/broccoli.png'), SearchCategoryItem('Carrot', 'assets/images/broccoli.png'), SearchCategoryItem('Onion', 'assets/images/broccoli.png'), SearchCategoryItem('Tomato', 'assets/images/broccoli.png')]),
+      SearchSection('Fruits', [SearchCategoryItem('Apple', 'assets/images/broccoli.png'), SearchCategoryItem('Banana', 'assets/images/broccoli.png'), SearchCategoryItem('Guava', 'assets/images/broccoli.png'), SearchCategoryItem('Papaya', 'assets/images/broccoli.png')]),
+      SearchSection('Grocery', [SearchCategoryItem('Basmati Rice', 'assets/images/broccoli.png'), SearchCategoryItem('Arhar Dal', 'assets/images/broccoli.png'), SearchCategoryItem('Mustard Oil', 'assets/images/broccoli.png'), SearchCategoryItem('Atta', 'assets/images/broccoli.png')]),
+      SearchSection('Snacks & Drinks', [SearchCategoryItem('Chips', 'assets/images/broccoli.png'), SearchCategoryItem('Namkeen', 'assets/images/broccoli.png'), SearchCategoryItem('Cold Drinks', 'assets/images/broccoli.png'), SearchCategoryItem('Juices', 'assets/images/broccoli.png')]),
+      SearchSection('For home', [SearchCategoryItem('Floor Cleaner', 'assets/images/broccoli.png'), SearchCategoryItem('Detergent', 'assets/images/broccoli.png'), SearchCategoryItem('Towels', 'assets/images/broccoli.png'), SearchCategoryItem('Bulbs', 'assets/images/broccoli.png')]),
     ];
   }
 
   @override
   Widget build(BuildContext context) {
-    final pastSearchesList = _pastSearches; // List ko fetch kiya
-
     return Scaffold(
       backgroundColor: _bgColor,
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildSearchBarTop(),
-            
-            Expanded(
-              child: SingleChildScrollView(
-                physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(bottom: 30),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const SizedBox(height: 24),
-                    
-                    // ── DYNAMIC PAST SEARCHES CONDITION ──
-                    if (pastSearchesList.isNotEmpty) ...[
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Text(
-                          'YOUR PAST SEARCHES', 
-                          style: TextStyle(color: _textSecondary, fontSize: 11, fontWeight: FontWeight.w600, letterSpacing: 1.2)
-                        ),
-                      ),
+        child: ScrollConfiguration(
+          behavior: NoJellyScrollBehavior(), // JELLY EFFECT OFF IN SEARCH
+          child: Column(
+            children: [
+              _buildSearchHeader(),
+              Expanded(
+                child: SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(), // JELLY OFF
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       const SizedBox(height: 16),
-                      _buildPastSearchesWrap(pastSearchesList), 
-                      const SizedBox(height: 32),
+                      _buildPastSearches(),
+                      const SizedBox(height: 30),
+                      ..._buildSearchCategoryRows(),
                     ],
-                    
-                    ..._buildSearchCategoryRows(),
-                  ],
+                  ),
                 ),
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSearchBarTop() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
-      child: Container(
-        height: 52,
-        decoration: BoxDecoration(
-          color: _searchBgColor,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: _borderColor, width: 1.2),
-          boxShadow: isDark ? [] : [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
-        ),
-        child: Row(
-          children: [
-            const SizedBox(width: 8),
-            IconButton(
-              icon: Icon(Icons.arrow_back_ios_new_rounded, color: _textSecondary, size: 20),
-              onPressed: () => Navigator.pop(context),
-            ),
-            Expanded(
-              child: TextField(
-                autofocus: true,
-                style: TextStyle(color: _textPrimary, fontSize: 14),
-                decoration: InputDecoration(
-                  hintText: 'What do you want to order..',
-                  hintStyle: TextStyle(color: _textSecondary, fontSize: 14),
-                  border: InputBorder.none,
-                  isDense: true,
-                ),
-              ),
-            ),
-            Container(width: 1, height: 24, color: isDark ? Colors.grey[800] : Colors.grey[300]),
-            const SizedBox(width: 8),
-            IconButton(
-              icon: Icon(Icons.mic_none_rounded, color: _textSecondary, size: 22),
-              onPressed: (){},
-            ),
-            const SizedBox(width: 8),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPastSearchesWrap(List<CategoryItem> searches) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: searches.take(5).toList().asMap().entries.map((entry) => _buildPastSearchPill(entry.value, entry.key)).toList(),
+            ],
           ),
-          // Agar 5 se zyada items hain, tabhi dusri line dikhegi
-          if (searches.length > 5) ...[
-            const SizedBox(height: 12),
-            Row(
-              children: searches.skip(5).toList().asMap().entries.map((entry) => _buildPastSearchPill(entry.value, entry.key + 5)).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSearchHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: _searchBgColor, shape: BoxShape.circle, border: Border.all(color: _borderColor)),
+              child: Icon(Icons.arrow_back_ios_new_rounded, color: _textPrimary, size: 20),
             ),
-          ]
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Container(
+              height: 50,
+              decoration: BoxDecoration(color: _searchBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: _borderColor)),
+              child: Row(
+                children: [
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      autofocus: true,
+                      style: TextStyle(color: _textPrimary, fontSize: 15),
+                      decoration: InputDecoration(
+                        hintText: 'What do you want to order..',
+                        hintStyle: TextStyle(color: _textSecondary, fontSize: 14),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  Icon(Icons.mic_none_rounded, color: _textSecondary, size: 22),
+                  const SizedBox(width: 16),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPastSearchPill(CategoryItem item, int index) {
-    final color = _pastelColors[index % _pastelColors.length]; 
+  Widget _buildPastSearches() {
+    final searches = _pastSearches;
+    final half = (searches.length / 2).ceil();
+    final row1 = searches.sublist(0, half);
+    final row2 = searches.sublist(half);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Text('YOUR PAST SEARCHES', style: TextStyle(color: _textSecondary, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2)),
+        ),
+        const SizedBox(height: 14),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const ClampingScrollPhysics(), // Horizontal Jelly Off
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: row1.map((search) => _buildSearchChip(search)).toList(),
+              ),
+              const SizedBox(height: 10), 
+              Row(
+                children: row2.map((search) => _buildSearchChip(search)).toList(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSearchChip(Map<String, dynamic> search) {
     return Container(
-      margin: const EdgeInsets.only(right: 12),
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: color, 
-        borderRadius: BorderRadius.circular(24),
-      ),
+      margin: const EdgeInsets.only(right: 10), 
+      height: 38,
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(color: search['color'], borderRadius: BorderRadius.circular(20)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Image.asset(item.imagePath, height: 22, width: 22, fit: BoxFit.contain, errorBuilder: (c,e,s) => const Icon(Icons.image, size: 22, color: Colors.black54)),
-          const SizedBox(width: 8),
-          Text(item.label, style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w600)), 
+          Icon(search['icon'], color: Colors.black87, size: 16),
+          const SizedBox(width: 6),
+          Text(search['label'], style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w700)),
         ],
       ),
     );
@@ -279,32 +253,16 @@ class _SearchScreenState extends State<SearchScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(section.title, style: TextStyle(color: _textPrimary, fontSize: 18, fontWeight: FontWeight.w800)),
-              
-              // ── REDIRECT KE LIYE ARROW KA NAYA CODE YAHAN HAI ──
               GestureDetector(
                 onTap: () {
-                  // Yahan se page redirect hota hai ItemsScreen par
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ItemsScreen(
-                        categoryTitle: section.title, // Jo section hai uska naam bhejega
-                        tabIndex: widget.initialTab,  // Grocery/Restaurant ka data filter karega
-                      ),
-                    ),
-                  );
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ItemsScreen(categoryTitle: section.title, tabIndex: widget.initialTab)));
                 },
                 child: Container(
                   padding: const EdgeInsets.all(4),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFFE0E0E0) : const Color(0xFFEEEEEE),
-                    shape: BoxShape.circle,
-                  ),
+                  decoration: BoxDecoration(color: isDark ? const Color(0xFFE0E0E0) : const Color(0xFFEEEEEE), shape: BoxShape.circle),
                   child: const Icon(Icons.keyboard_arrow_right_rounded, color: Colors.black, size: 20),
                 ),
               ),
-              // ──────────────────────────────────────────────────
-              
             ],
           ),
         )
@@ -315,43 +273,26 @@ class _SearchScreenState extends State<SearchScreen> {
         SizedBox(
           height: 110,
           child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
+            scrollDirection: Axis.horizontal, 
+            physics: const ClampingScrollPhysics(), // Horizontal Jelly Off
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            itemCount: section.items.length,
-            separatorBuilder: (_, __) => const SizedBox(width: 14),
+            itemCount: section.items.length, separatorBuilder: (_, __) => const SizedBox(width: 14),
             itemBuilder: (ctx, i) {
               final c = section.items[i];
               final boxColor = _pastelColors[(globalIndex + i * 2) % _pastelColors.length]; 
               
-              return Container(
-                width: 115, 
-                decoration: BoxDecoration(
-                  color: boxColor,
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Stack(
-                  children: [
-                    Positioned(
-                      top: 10,
-                      left: 12,
-                      child: Text(
-                        c.label, 
-                        style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w800) 
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.only(bottomRight: Radius.circular(16)),
-                        child: Image.asset(c.imagePath, height: 75, width: 85, fit: BoxFit.contain, alignment: Alignment.bottomRight, errorBuilder: (ctx,e,s) => const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Icon(Icons.shopping_bag, size: 40, color: Colors.black26),
-                        )),
-                      ),
-                    ),
-                  ],
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => ItemsScreen(categoryTitle: section.title, tabIndex: widget.initialTab)));
+                },
+                child: Container(
+                  width: 115, decoration: BoxDecoration(color: boxColor, borderRadius: BorderRadius.circular(16)),
+                  child: Stack(
+                    children: [
+                      Positioned(top: 10, left: 12, child: Text(c.label, style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w800))),
+                      Positioned(bottom: -5, right: -5, child: Image.asset(c.imagePath, height: 80, width: 80, fit: BoxFit.contain, errorBuilder: (ctx,e,s) => const Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.shopping_bag, size: 40, color: Colors.black26)))),
+                    ],
+                  ),
                 ),
               );
             },
@@ -363,4 +304,4 @@ class _SearchScreenState extends State<SearchScreen> {
     }
     return rows;
   }
-} 
+}

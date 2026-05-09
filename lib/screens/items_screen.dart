@@ -1,50 +1,51 @@
 import 'package:flutter/material.dart';
 
-// ── GLOBAL STATE & DATA (Home Screen bhi inko use karega) ──
-ValueNotifier<Map<String, int>> cartCountNotifier = ValueNotifier({});
+ValueNotifier<Map<String, int>> groceryCartNotifier = ValueNotifier({});
+ValueNotifier<Map<String, int>> restaurantCartNotifier = ValueNotifier({});
+ValueNotifier<Map<String, int>> medicalCartNotifier = ValueNotifier({});
+
 ValueNotifier<Set<String>> watchlistNotifier = ValueNotifier({});
 
-// ── NAYA: UNIQUE IDs KE SATH DATA ──
-// Dhyan rakhein: Har item ki 'id' ekdum alag hai taaki ek sath sab select na hon
 final Map<int, Map<String, List<Map<String, dynamic>>>> globalAllCategoryData = {
-  0: { // ── GROCERY TAB DATA (Index 0) ──
+  0: { 
     'Vegetables': [
-      {'id': 'g_v1', 'name': 'Potato', 'weight': '1kg', 'price': '30', 'image': 'assets/images/broccoli.png'},
-      {'id': 'g_v2', 'name': 'Carrot', 'weight': '500g', 'price': '40', 'image': 'assets/images/broccoli.png'},
-      {'id': 'g_v3', 'name': 'Onion', 'weight': '1kg', 'price': '35', 'image': 'assets/images/broccoli.png'},
-    ],
-    'Grocery': [
-      {'id': 'g_g1', 'name': 'Basmati Rice', 'weight': '1kg', 'price': '120', 'image': 'assets/images/broccoli.png'},
-      {'id': 'g_g2', 'name': 'Buckwheat', 'weight': '500g', 'price': '90', 'image': 'assets/images/broccoli.png'},
-    ],
-    'For home': [
-      {'id': 'g_h1', 'name': 'Rug', 'weight': '1 pc', 'price': '499', 'image': 'assets/images/broccoli.png'},
-      {'id': 'g_h2', 'name': 'Screwdriver', 'weight': '1 pc', 'price': '150', 'image': 'assets/images/broccoli.png'},
+      {
+        'id': 'g_v1', 'name': 'Potato', 'image': 'assets/images/broccoli.png', 'weight': '1kg', 'price': '30',
+        'isBestseller': true,
+        'variants': [{'weight': '500g', 'price': '18'}, {'weight': '1kg', 'price': '30'}, {'weight': '2kg', 'price': '58'}]
+      },
+      {
+        'id': 'g_v2', 'name': 'Carrot', 'image': 'assets/images/broccoli.png', 'weight': '500g', 'price': '40',
+        'variants': [{'weight': '250g', 'price': '22'}, {'weight': '500g', 'price': '40'}, {'weight': '1kg', 'price': '75'}]
+      },
+      {
+        'id': 'g_v3', 'name': 'Onion', 'image': 'assets/images/broccoli.png', 'weight': '1kg', 'price': '35',
+        'variants': [{'weight': '1kg', 'price': '35'}, {'weight': '5kg', 'price': '160'}]
+      },
+      {'id': 'g_v4', 'name': 'Cabbage', 'image': 'assets/images/broccoli.png', 'weight': '1 pc', 'price': '45'}, 
     ],
     'Fruits': [
-      {'id': 'g_f1', 'name': 'Banana', 'weight': '1 Dozen', 'price': '60', 'image': 'assets/images/broccoli.png'},
-      {'id': 'g_f2', 'name': 'Apple', 'weight': '1kg', 'price': '160', 'image': 'assets/images/broccoli.png'},
+      {'id': 'g_f1', 'name': 'Apple', 'image': 'assets/images/broccoli.png', 'weight': '1kg', 'price': '120', 'isBestseller': true}, 
     ],
   },
-  1: { // ── RESTAURANT TAB DATA (Index 1) ──
-    'Biryani': [
-      {'id': 'r_b1', 'name': 'Chicken Biryani', 'weight': 'Full', 'price': '280', 'image': 'assets/images/broccoli.png'},
+  1: { 
+    'Biryani & Pulao': [
+      {
+        'id': 'r_b1', 'name': 'Chicken Biryani', 'image': 'assets/images/broccoli.png', 'weight': 'Full', 'price': '280',
+        'isBestseller': true,
+        'variants': [{'weight': 'Half', 'price': '160'}, {'weight': 'Full', 'price': '280'}, {'weight': 'Family Pack', 'price': '650'}]
+      },
       {'id': 'r_b2', 'name': 'Mutton Biryani', 'weight': 'Full', 'price': '350', 'image': 'assets/images/broccoli.png'},
     ],
-    'Fast Food': [
-      {'id': 'r_f1', 'name': 'Burger', 'weight': '1 pc', 'price': '80', 'image': 'assets/images/broccoli.png'},
-      {'id': 'r_f2', 'name': 'Pizza', 'weight': 'Medium', 'price': '199', 'image': 'assets/images/broccoli.png'},
-    ],
   },
-  2: { // ── MEDICAL TAB DATA (Index 2) ──
-    'Medicines': [
-      {'id': 'm_m1', 'name': 'Paracetamol', 'weight': '10 strip', 'price': '20', 'image': 'assets/images/broccoli.png'},
+  2: { 
+    'Daily Medicines': [
+      {
+        'id': 'm_m1', 'name': 'Paracetamol', 'image': 'assets/images/broccoli.png', 'weight': '10 Tabs', 'price': '20',
+        'isBestseller': true,
+        'variants': [{'weight': '10 Tabs', 'price': '20'}, {'weight': '15 Tabs', 'price': '28'}]
+      },
       {'id': 'm_m2', 'name': 'Cough Syrup', 'weight': '100ml', 'price': '85', 'image': 'assets/images/broccoli.png'},
-      {'id': 'm_m3', 'name': 'Vicks Vaporub', 'weight': '50g', 'price': '95', 'image': 'assets/images/broccoli.png'},
-    ],
-    'First Aid': [
-      {'id': 'm_fa1', 'name': 'Band-Aid', 'weight': '5 Pcs', 'price': '10', 'image': 'assets/images/broccoli.png'},
-      {'id': 'm_fa2', 'name': 'Dettol', 'weight': '250ml', 'price': '120', 'image': 'assets/images/broccoli.png'},
     ],
   }
 };
@@ -64,18 +65,22 @@ class _ItemsScreenState extends State<ItemsScreen> {
   String _searchQuery = "";
 
   bool get _isDark => widget.tabIndex == 0;
-  Color get _bgColor => _isDark ? const Color(0xFF121212) : Colors.white;
-  Color get _cardColor => _isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF5F5F5); 
-  Color get _textColor => _isDark ? Colors.white : Colors.black;
+  Color get _bgColor => _isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA);
+  Color get _textColor => _isDark ? Colors.white : const Color(0xFF1A1A1A);
   Color get _iconColor => _isDark ? Colors.white : Colors.black;
 
   Color get _themeColor {
-    if (widget.tabIndex == 1) return const Color(0xFFE53935); // Restaurant: Red
-    if (widget.tabIndex == 2) return const Color(0xFF1565C0); // Medical: Blue
-    return const Color(0xFF4CAF50); // Grocery: Green
+    if (widget.tabIndex == 1) return const Color(0xFFE53935); 
+    if (widget.tabIndex == 2) return const Color(0xFF1565C0); 
+    return const Color(0xFF4CAF50); 
   }
 
-  // Filter Data Logic based on Search
+  ValueNotifier<Map<String, int>> get _activeCartNotifier {
+    if (widget.tabIndex == 1) return restaurantCartNotifier;
+    if (widget.tabIndex == 2) return medicalCartNotifier;
+    return groceryCartNotifier;
+  }
+
   List<Map<String, dynamic>> get _filteredItems {
     final tabData = globalAllCategoryData[widget.tabIndex] ?? {};
     List<Map<String, dynamic>> categoryItems = tabData[widget.categoryTitle] ?? [];
@@ -91,55 +96,51 @@ class _ItemsScreenState extends State<ItemsScreen> {
       appBar: AppBar(
         backgroundColor: _bgColor,
         elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new_rounded, color: _iconColor, size: 20),
-          onPressed: () => Navigator.pop(context),
-        ),
+        leading: IconButton(icon: Icon(Icons.arrow_back_ios_new_rounded, color: _iconColor, size: 20), onPressed: () => Navigator.pop(context)),
         title: Text(widget.categoryTitle, style: TextStyle(color: _textColor, fontSize: 18, fontWeight: FontWeight.w800)),
         centerTitle: true,
       ),
-      // Yahan koi Bottom Navigation (Footer) nahi hai
       body: Column(
         children: [
-          // ── SEARCH BAR ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Container(
-              height: 50, // Fixed height for perfect alignment
-              decoration: BoxDecoration(
-                color: _isDark ? Colors.white10 : Colors.grey[100],
-                borderRadius: BorderRadius.circular(12),
-              ),
+              height: 48, 
+              decoration: BoxDecoration(color: _isDark ? Colors.white10 : Colors.grey[200], borderRadius: BorderRadius.circular(12)),
+              alignment: Alignment.center,
               child: TextField(
                 controller: _searchController,
                 onChanged: (value) => setState(() => _searchQuery = value),
-                style: TextStyle(color: _textColor),
+                style: TextStyle(color: _textColor, fontSize: 14),
                 textAlignVertical: TextAlignVertical.center, 
                 decoration: InputDecoration(
-                  contentPadding: const EdgeInsets.only(top: 14), 
+                  isDense: true, contentPadding: EdgeInsets.zero, 
                   hintText: "Search in ${widget.categoryTitle}...",
                   hintStyle: TextStyle(color: _textColor.withOpacity(0.4)),
-                  prefixIcon: Icon(Icons.search_rounded, color: _themeColor),
+                  prefixIcon: Icon(Icons.search_rounded, color: _themeColor, size: 20),
                   border: InputBorder.none,
                 ),
               ),
             ),
           ),
           
-          // ── ITEMS GRID ──
           Expanded(
             child: _filteredItems.isEmpty 
-              ? Center(child: Text("No items found", style: TextStyle(color: _textColor)))
+              ? Center(child: Text("No items available", style: TextStyle(color: _textColor.withOpacity(0.5), fontSize: 16)))
               : GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  physics: const BouncingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(), 
                   itemCount: _filteredItems.length,
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2, mainAxisSpacing: 16, crossAxisSpacing: 16, childAspectRatio: 0.72,
+                    crossAxisCount: 3, 
+                    mainAxisSpacing: 16, 
+                    crossAxisSpacing: 12, 
+                    mainAxisExtent: 245, // ── FIX: OVERFLOW ERROR SOLVED ──
                   ),
                   itemBuilder: (context, index) {
-                    final item = _filteredItems[index];
-                    return _buildProductCard(item);
+                    return PremiumItemCard(
+                      item: _filteredItems[index], isDark: _isDark, themeColor: _themeColor, cartNotifier: _activeCartNotifier,
+                    );
                   },
                 ),
           ),
@@ -147,133 +148,181 @@ class _ItemsScreenState extends State<ItemsScreen> {
       ),
     );
   }
+}
 
-  Widget _buildProductCard(Map<String, dynamic> item) {
-    final String id = item['id'];
+class PremiumItemCard extends StatefulWidget {
+  final Map<String, dynamic> item;
+  final bool isDark;
+  final Color themeColor;
+  final ValueNotifier<Map<String, int>> cartNotifier;
+
+  const PremiumItemCard({super.key, required this.item, required this.isDark, required this.themeColor, required this.cartNotifier});
+
+  @override
+  State<PremiumItemCard> createState() => _PremiumItemCardState();
+}
+
+class _PremiumItemCardState extends State<PremiumItemCard> {
+  int _selectedVariantIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final item = widget.item;
+    final bool hasVariants = item.containsKey('variants');
+    final List variants = hasVariants ? item['variants'] : [{'weight': item['weight'], 'price': item['price']}];
+    final currentVariant = variants[_selectedVariantIndex];
     
-    return ValueListenableBuilder(
-      valueListenable: watchlistNotifier,
-      builder: (context, Set<String> favorites, _) {
-        final bool isFav = favorites.contains(id);
-        
-        return Container(
-          decoration: BoxDecoration(
-            color: _cardColor,
-            borderRadius: BorderRadius.circular(20),
-            border: !_isDark ? Border.all(color: Colors.grey.shade200) : null,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Stack(
-                  children: [
-                    Center(child: Image.asset(item['image'], height: 75)),
-                    // ── WATCHLIST HEART ICON (Bada size) ──
-                    Positioned(
-                      top: 10, right: 10,
-                      child: GestureDetector(
+    final String cartItemId = "${item['id']}|$_selectedVariantIndex";
+
+    Color cardBgColor = widget.isDark ? const Color(0xFF1E1E1E) : Colors.white;
+    Color imageBoxBg = widget.isDark ? Colors.white10 : const Color(0xFFF3F4F6); 
+    Color textColor = widget.isDark ? Colors.white : const Color(0xFF1A1A1A);
+
+    int price = int.parse(currentVariant['price'].toString());
+    int oldPrice = price + 20;
+
+    return Container(
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        color: cardBgColor, borderRadius: BorderRadius.circular(12),
+        border: !widget.isDark ? Border.all(color: Colors.grey.shade200) : null,
+        boxShadow: !widget.isDark ? [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))] : null,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── IMAGE SECTION ──
+          Container(
+            height: 90, // Fixed height for image
+            decoration: BoxDecoration(color: imageBoxBg),
+            child: Stack(
+              children: [
+                Center(child: Padding(padding: const EdgeInsets.all(12), child: Image.asset(item['image']))),
+                
+                Positioned(
+                  top: 6, left: 6,
+                  child: ValueListenableBuilder(
+                    valueListenable: watchlistNotifier,
+                    builder: (context, Set<String> favs, _) {
+                      final isFav = favs.contains(item['id']);
+                      return GestureDetector(
                         onTap: () {
-                          var newFavs = Set<String>.from(watchlistNotifier.value);
-                          if (isFav) newFavs.remove(id); else newFavs.add(id);
+                          var newFavs = Set<String>.from(favs);
+                          isFav ? newFavs.remove(item['id']) : newFavs.add(item['id']);
                           watchlistNotifier.value = newFavs;
                         },
-                        child: Icon(
-                          isFav ? Icons.favorite : Icons.favorite_border_rounded,
-                          color: isFav ? Colors.red : _textColor.withOpacity(0.3),
-                          size: 28, // Fix: Icon bada kiya
-                        ),
-                      ),
-                    ),
-                  ],
+                        child: Icon(isFav ? Icons.bookmark : Icons.bookmark_border_rounded, color: isFav ? widget.themeColor : textColor.withOpacity(0.3), size: 16),
+                      );
+                    }
+                  ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(item['name'], style: TextStyle(color: _textColor, fontWeight: FontWeight.w700, fontSize: 13), maxLines: 1, overflow: TextOverflow.ellipsis),
-                    const SizedBox(height: 2),
-                    Text(item['weight'], style: TextStyle(color: _textColor.withOpacity(0.5), fontSize: 11)),
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('₹${item['price']}', style: TextStyle(color: _textColor, fontWeight: FontWeight.w800, fontSize: 15)),
-                        _AddToCartButton(itemId: id, themeColor: _themeColor),
-                      ],
+
+                if (item['isBestseller'] == true)
+                  Positioned(
+                    bottom: 0, left: 0, right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 2),
+                      decoration: BoxDecoration(color: Colors.blueAccent.withOpacity(0.9)),
+                      child: const Text('Bestseller', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+              ],
+            ),
           ),
-        );
-      },
+          
+          // ── DETAILS SECTION ──
+          Expanded( // Automatically adjusts spacing to prevent overflow
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // Space distribute karega
+                children: [
+                  Text(item['name'], style: TextStyle(color: textColor, fontWeight: FontWeight.w700, fontSize: 10, height: 1.2), maxLines: 2, overflow: TextOverflow.ellipsis),
+                  
+                  Container(
+                    height: 24, padding: const EdgeInsets.symmetric(horizontal: 4),
+                    decoration: BoxDecoration(color: widget.isDark ? Colors.white10 : Colors.grey.shade100, borderRadius: BorderRadius.circular(4), border: Border.all(color: widget.isDark ? Colors.transparent : Colors.grey.shade300)),
+                    child: hasVariants 
+                      ? DropdownButtonHideUnderline(
+                          child: DropdownButton<int>(
+                            isExpanded: true, value: _selectedVariantIndex, icon: Icon(Icons.keyboard_arrow_down, size: 12, color: textColor.withOpacity(0.6)), dropdownColor: cardBgColor,
+                            style: TextStyle(color: textColor.withOpacity(0.8), fontSize: 9, fontWeight: FontWeight.w600),
+                            items: variants.asMap().entries.map((e) => DropdownMenuItem<int>(value: e.key, child: Text(e.value['weight']))).toList(),
+                            onChanged: (val) => setState(() => _selectedVariantIndex = val!),
+                          ),
+                        )
+                      : Align(alignment: Alignment.centerLeft, child: Text(item['weight'], style: TextStyle(color: textColor.withOpacity(0.8), fontSize: 9, fontWeight: FontWeight.w600))),
+                  ),
+                  
+                  Row(
+                    children: [
+                      Text('7 MINS', style: TextStyle(color: textColor.withOpacity(0.5), fontSize: 7, fontWeight: FontWeight.w700)),
+                      const Spacer(),
+                      const Icon(Icons.star, color: Colors.green, size: 8),
+                      Text(' 4.6 (1.1k)', style: TextStyle(color: textColor.withOpacity(0.8), fontSize: 8, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  
+                  const Text('15% OFF', style: TextStyle(color: Colors.green, fontSize: 8, fontWeight: FontWeight.bold)),
+                  
+                  // ── FIX: ADD BUTTON NEXT TO PRICE ──
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('₹$price', style: TextStyle(color: textColor, fontWeight: FontWeight.w900, fontSize: 13)),
+                          Text('₹$oldPrice', style: TextStyle(color: textColor.withOpacity(0.4), fontSize: 8, decoration: TextDecoration.lineThrough)),
+                        ],
+                      ),
+                      CartAddButton(itemId: cartItemId, themeColor: widget.themeColor, cartNotifier: widget.cartNotifier),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-// ── ADD TO CART BUTTON LOGIC (- 1 + FIX WALA) ──
-class _AddToCartButton extends StatelessWidget {
+// ── COMPACT CART ADD BUTTON ──
+class CartAddButton extends StatelessWidget {
   final String itemId;
   final Color themeColor;
-  
-  const _AddToCartButton({required this.itemId, required this.themeColor});
+  final ValueNotifier<Map<String, int>> cartNotifier;
+
+  const CartAddButton({super.key, required this.itemId, required this.themeColor, required this.cartNotifier});
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: cartCountNotifier,
+      valueListenable: cartNotifier,
       builder: (context, Map<String, int> counts, _) {
         final count = counts[itemId] ?? 0;
-        
         if (count == 0) {
-          // ADD Button State
           return GestureDetector(
-            onTap: () {
-              var current = {...cartCountNotifier.value};
-              current[itemId] = 1;
-              cartCountNotifier.value = current;
-            },
+            onTap: () { var current = {...cartNotifier.value}; current[itemId] = 1; cartNotifier.value = current; },
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(8)),
-              child: const Text('ADD', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(4), border: Border.all(color: themeColor), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2)]),
+              child: Text('ADD', style: TextStyle(color: themeColor, fontWeight: FontWeight.bold, fontSize: 9)),
             ),
           );
         } else {
-          // - 1 + State (FIX: MainAxisSize.min added)
           return Container(
-            decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(8)),
+            decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(4), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 2)]),
             child: Row(
-              mainAxisSize: MainAxisSize.min, // Fix: Button failega nahi
+              mainAxisSize: MainAxisSize.min, 
               children: [
-                GestureDetector(
-                  onTap: () {
-                    var current = {...cartCountNotifier.value};
-                    current[itemId] = (current[itemId] ?? 0) - 1;
-                    if (current[itemId]! <= 0) current.remove(itemId);
-                    cartCountNotifier.value = current;
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: Text('-', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                ),
-                Text('$count', style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
-                GestureDetector(
-                  onTap: () {
-                    var current = {...cartCountNotifier.value};
-                    current[itemId] = (current[itemId] ?? 0) + 1;
-                    cartCountNotifier.value = current;
-                  },
-                  child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    child: Text('+', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                  ),
-                ),
+                GestureDetector(onTap: () { var current = {...cartNotifier.value}; current[itemId] = (current[itemId] ?? 0) - 1; if (current[itemId]! <= 0) current.remove(itemId); cartNotifier.value = current; }, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4), child: Text('-', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
+                Text('$count', style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                GestureDetector(onTap: () { var current = {...cartNotifier.value}; current[itemId] = (current[itemId] ?? 0) + 1; cartNotifier.value = current; }, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4), child: Text('+', style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)))),
               ],
             ),
           );
