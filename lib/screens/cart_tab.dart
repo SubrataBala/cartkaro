@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'app_models.dart';
 import 'items_screen.dart';
-import 'address_screen.dart'; // IMPORTANT IMPORT
+import 'address_screen.dart'; // ── IMPORT FOR ADDRESS SYNC ──
+import 'login_screen.dart';   // ── IMPORT FOR LOGIN CHECK ──
 
+// ── JELLY/BOUNCE EFFECT REMOVER ──
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
   Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
@@ -38,11 +40,11 @@ class _CartTabState extends State<CartTab> {
     return groceryCartNotifier;
   }
 
-  // Cart State Variables
+  // ── CART STATE VARIABLES ──
   int _selectedTip = 0;
   bool _noBagOpted = false;
 
-  // Cross Sell Items
+  // ── CROSS SELL ITEMS ("Did you forget?") ──
   List<Map<String, dynamic>> get _crossSellItems {
     final currentTabData = globalAllCategoryData[widget.selectedTab] ?? {};
     List<Map<String, dynamic>> items = [];
@@ -58,6 +60,7 @@ class _CartTabState extends State<CartTab> {
     return ValueListenableBuilder(
       valueListenable: _activeCartNotifier,
       builder: (context, Map<String, int> cart, _) {
+        // ── EMPTY CART STATE ──
         if (cart.isEmpty) {
           return Center(
             child: Column(
@@ -77,6 +80,7 @@ class _CartTabState extends State<CartTab> {
         double itemTotal = 0;
         List<Widget> cartListWidgets = [];
 
+        // ── CALCULATE CART ITEMS & TOTAL ──
         cart.forEach((cartItemId, count) {
           final parts = cartItemId.split('|');
           final baseId = parts[0];
@@ -148,7 +152,7 @@ class _CartTabState extends State<CartTab> {
           }
         });
 
-        // Bill Calculations
+        // ── BILL CALCULATIONS ──
         double handlingFee = 11.0;
         double deliveryFee = itemTotal < 200 ? 30.0 : 0.0;
         double grandTotal = itemTotal + handlingFee + deliveryFee + _selectedTip;
@@ -389,7 +393,7 @@ class _CartTabState extends State<CartTab> {
                     ),
                     const SizedBox(height: 20),
 
-                    // ── 9. PROCEED TO CHECKOUT BUTTON ──
+                    // ── 9. PROCEED TO CHECKOUT BUTTON (WITH LOGIN & ADDRESS CHECK) ──
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -399,11 +403,21 @@ class _CartTabState extends State<CartTab> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
                         ),
                         onPressed: () {
-                           if(selectedAddressNotifier.value == -1) {
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an address first')));
-                              return;
-                           }
-                          // Proceed Payment Logic
+                          // Check 1: Address select kiya hai ya nahi?
+                          if (selectedAddressNotifier.value == -1 || globalSavedAddresses.isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please add/select a delivery address first!')));
+                            return;
+                          }
+
+                          // Check 2: User logged in hai ya Guest Mode me hai?
+                          if (!isUserLoggedIn) {
+                            // Guest hai, Login par bhejo
+                            Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+                            return;
+                          }
+
+                          // Agar Dono Theek Hain, Toh Payment/Checkout page par bhejo
+                          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Proceeding to payment gateway...')));
                         },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
