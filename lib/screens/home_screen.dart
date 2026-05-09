@@ -5,7 +5,8 @@ import 'app_models.dart';
 import 'grocery_tab.dart';     
 import 'restaurant_tab.dart';  
 import 'medical_tab.dart';     
-import 'cart_tab.dart'; // ── FIX: NAYA CART PAGE IMPORT KIYA ──
+import 'cart_tab.dart'; 
+import 'address_screen.dart'; // IMPORT FOR ADDRESS STATE
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -17,7 +18,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedTab = 0; 
   int _bottomNav   = 0; 
-  final String _currentLocation = '7/1, Baharagora';
 
   final List<TabData> _tabs = const [
     TabData('Grocery',    kGroceryGreen,  Icons.local_grocery_store_rounded),
@@ -64,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     : _bottomNav == 1 
                         ? _buildWatchlistTab() 
                         : _bottomNav == 2
-                            ? CartTab(selectedTab: _selectedTab) // ── FIX: ALAG FILE CALL KI ──
+                            ? CartTab(selectedTab: _selectedTab) 
                             : Center(child: Text("Profile Page", style: TextStyle(color: _textPrimary, fontSize: 18))),
               ),
             ],
@@ -76,25 +76,41 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── DYNAMIC HOME TOP BAR ──
   Widget _buildTopBar() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
       child: Row(
         children: [
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Welcome', style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
-                const SizedBox(height: 2),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Flexible(child: Text(_currentLocation, style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w800), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                    const SizedBox(width: 4), Icon(Icons.keyboard_arrow_down_rounded, color: _textSecondary, size: 24),
-                  ],
-                ),
-              ],
+            child: ValueListenableBuilder<int>(
+              valueListenable: selectedAddressNotifier,
+              builder: (context, selectedIndex, _) {
+                
+                // Fetch correct display text based on global state
+                bool hasAddress = selectedIndex >= 0 && selectedIndex < globalSavedAddresses.length;
+                String displayAddress = hasAddress ? globalSavedAddresses[selectedIndex].shortAddress : "Set your delivery address";
+                String title = hasAddress ? "Delivering to ${globalSavedAddresses[selectedIndex].type}" : "Welcome";
+
+                return GestureDetector(
+                  onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddressScreen(isDark: isDark, themeColor: _activeColor))),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: TextStyle(color: _textPrimary, fontSize: 14, fontWeight: FontWeight.w800)),
+                      const SizedBox(height: 2),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(child: Text(displayAddress, style: TextStyle(color: _activeColor, fontSize: 16, fontWeight: FontWeight.w900), maxLines: 1, overflow: TextOverflow.ellipsis)),
+                          const SizedBox(width: 4), 
+                          Icon(Icons.keyboard_arrow_down_rounded, color: _activeColor, size: 24),
+                        ],
+                      ),
+                    ],
+                  ),
+                );
+              }
             ),
           ),
           const SizedBox(width: 10),
@@ -263,8 +279,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 10, 20, 80), physics: const ClampingScrollPhysics(), itemCount: favoriteItemsForThisTab.length,
                 gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 3, 
-                  mainAxisSpacing: 16, 
-                  crossAxisSpacing: 12, 
+                  mainAxisSpacing: 16, crossAxisSpacing: 12, 
                   mainAxisExtent: 245, 
                 ),
                 itemBuilder: (context, index) {

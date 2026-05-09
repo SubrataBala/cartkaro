@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'app_models.dart';
 import 'items_screen.dart';
+import 'address_screen.dart'; // IMPORTANT IMPORT
 
-// ── YAHAN BHI JELLY EFFECT OFF KAR DIYA ──
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
   Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
@@ -38,17 +38,11 @@ class _CartTabState extends State<CartTab> {
     return groceryCartNotifier;
   }
 
-  // ── CART STATE VARIABLES ──
+  // Cart State Variables
   int _selectedTip = 0;
   bool _noBagOpted = false;
 
-  // ── USER DELIVERY DETAILS STATE ──
-  String _addressType = '';
-  String _userName = '';
-  String _userPhone = '';
-  String _userAddress = '';
-
-  // ── CROSS SELL ITEMS ("Did you forget?") ──
+  // Cross Sell Items
   List<Map<String, dynamic>> get _crossSellItems {
     final currentTabData = globalAllCategoryData[widget.selectedTab] ?? {};
     List<Map<String, dynamic>> items = [];
@@ -154,13 +148,13 @@ class _CartTabState extends State<CartTab> {
           }
         });
 
-        // ── BILL CALCULATIONS ──
+        // Bill Calculations
         double handlingFee = 11.0;
         double deliveryFee = itemTotal < 200 ? 30.0 : 0.0;
         double grandTotal = itemTotal + handlingFee + deliveryFee + _selectedTip;
 
         return ScrollConfiguration(
-          behavior: NoJellyScrollBehavior(), // ── JELLY HATA DIYA ──
+          behavior: NoJellyScrollBehavior(), 
           child: Column(
             children: [
               Padding(
@@ -180,10 +174,11 @@ class _CartTabState extends State<CartTab> {
 
               Expanded(
                 child: ListView(
-                  physics: const ClampingScrollPhysics(), // ── BOUNCE HATA DIYA ──
+                  physics: const ClampingScrollPhysics(), 
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   children: [
-                    // ── 1. DELIVERY ADDRESS CARD ──
+                    
+                    // ── 1. DYNAMIC DELIVERY ADDRESS CARD ──
                     _buildDeliveryDetailsCard(),
                     const SizedBox(height: 16),
 
@@ -231,7 +226,7 @@ class _CartTabState extends State<CartTab> {
                     _buildSimpleActionCard(Icons.receipt_long_outlined, 'Add GSTIN', Colors.indigo, subtitle: 'Claim GST credit up to 18% on the order'),
                     const SizedBox(height: 24),
 
-                    // ── 4. DID YOU FORGET? (Cross Sell) ──
+                    // ── 4. CROSS SELL ──
                     Text('Did you forget?', style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 12),
                     SizedBox(
@@ -394,7 +389,7 @@ class _CartTabState extends State<CartTab> {
                     ),
                     const SizedBox(height: 20),
 
-                    // ── 9. PROCEED TO CHECKOUT BUTTON ADDED ──
+                    // ── 9. PROCEED TO CHECKOUT BUTTON ──
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -404,13 +399,24 @@ class _CartTabState extends State<CartTab> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
                         ),
                         onPressed: () {
-                          // TODO: Proceed payment logic
+                           if(selectedAddressNotifier.value == -1) {
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please select an address first')));
+                              return;
+                           }
+                          // Proceed Payment Logic
                         },
-                        child: const Text('Proceed to Pay', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text('Proceed to Pay  ₹${grandTotal.toStringAsFixed(1)}', style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 8),
+                            const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                          ],
+                        ),
                       ),
                     ),
                     
-                    const SizedBox(height: 100), // Spacing for bottom nav
+                    const SizedBox(height: 100), 
                   ],
                 ),
               ),
@@ -499,154 +505,86 @@ class _CartTabState extends State<CartTab> {
     );
   }
 
-  // ── DELIVERY DETAILS CARD & BOTTOM SHEET LOGIC ──
+  // ── DYNAMIC DELIVERY ADDRESS CARD ──
   Widget _buildDeliveryDetailsCard() {
-    IconData typeIcon = _addressType == 'Home' ? Icons.home_rounded : _addressType == 'Office' ? Icons.work_outline : Icons.location_on_outlined;
-    
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(color: _cardBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: _borderColor)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Icon(typeIcon, color: _themeColor, size: 22),
-                  const SizedBox(width: 8),
-                  Text('Delivering to $_addressType', style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
-                ],
-              ),
-              GestureDetector(
-                onTap: _showEditAddressSheet, 
-                child: Text('CHANGE', style: TextStyle(color: _themeColor, fontSize: 12, fontWeight: FontWeight.w900)),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Text(_userAddress, style: TextStyle(color: _textSecondary, fontSize: 12, height: 1.4)),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.all(10),
-            decoration: BoxDecoration(color: _isDark ? Colors.white10 : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
-            child: Row(
+    return ValueListenableBuilder<int>(
+      valueListenable: selectedAddressNotifier,
+      builder: (context, selectedIndex, _) {
+        
+        // IF NO ADDRESS IS SELECTED
+        if (selectedIndex == -1 || globalSavedAddresses.isEmpty) {
+          return Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(color: _cardBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.redAccent.withOpacity(0.5))),
+            child: Column(
               children: [
-                Icon(Icons.person_outline, color: _textSecondary, size: 16),
-                const SizedBox(width: 8),
-                Text(_userName, style: TextStyle(color: _textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
-                const Spacer(),
-                Icon(Icons.phone_outlined, color: _textSecondary, size: 16),
-                const SizedBox(width: 8),
-                Text(_userPhone, style: TextStyle(color: _textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
+                Icon(Icons.location_off_rounded, color: Colors.redAccent, size: 32),
+                const SizedBox(height: 12),
+                Text('Delivery Address Missing', style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Text('Please select an address to proceed with your order.', textAlign: TextAlign.center, style: TextStyle(color: _textSecondary, fontSize: 12)),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(backgroundColor: _themeColor, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+                    onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddressScreen(isDark: _isDark, themeColor: _themeColor))),
+                    child: const Text('Add Delivery Address', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                )
               ],
             ),
-          )
-        ],
-      ),
-    );
-  }
+          );
+        }
 
-  void _showEditAddressSheet() {
-    TextEditingController nameCtrl = TextEditingController(text: _userName);
-    TextEditingController phoneCtrl = TextEditingController(text: _userPhone);
-    TextEditingController addressCtrl = TextEditingController(text: _userAddress);
-    String tempType = _addressType;
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: _cardBgColor,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom, left: 20, right: 20, top: 20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+        // IF ADDRESS IS SELECTED
+        final addr = globalSavedAddresses[selectedIndex];
+        IconData typeIcon = addr.type == 'Home' ? Icons.home_rounded : addr.type == 'Office' ? Icons.work_outline : Icons.location_on_outlined;
+        
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(color: _cardBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: _borderColor)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Edit Delivery Details', style: TextStyle(color: _textPrimary, fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 20),
-                  
-                  // ── FIX: COLOR VISIBILITY OF CHIPS SET FOR LIGHT/DARK MODE ──
                   Row(
-                    children: ['Home', 'Office', 'Other'].map((type) {
-                      bool isSelected = tempType == type;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 12),
-                        child: ChoiceChip(
-                          label: Text(type),
-                          selected: isSelected,
-                          onSelected: (val) => setSheetState(() => tempType = type),
-                          selectedColor: _themeColor.withOpacity(0.2),
-                          backgroundColor: _isDark ? Colors.grey.shade800 : Colors.grey.shade200, // Properly visible background
-                          labelStyle: TextStyle(
-                            color: isSelected ? _themeColor : (_isDark ? Colors.white : Colors.black87), // Fix for visibility
-                            fontWeight: FontWeight.bold
-                          ),
-                          showCheckmark: isSelected,
-                          checkmarkColor: _themeColor,
-                        ),
-                      );
-                    }).toList(),
+                    children: [
+                      Icon(typeIcon, color: _themeColor, size: 22),
+                      const SizedBox(width: 8),
+                      Text('Delivering to ${addr.type}', style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w800)),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  
-                  _buildTextField('Full Name', nameCtrl),
-                  const SizedBox(height: 12),
-                  _buildTextField('Phone Number', phoneCtrl, isNumber: true),
-                  const SizedBox(height: 12),
-                  _buildTextField('Complete Address', addressCtrl, maxLines: 2),
-                  const SizedBox(height: 24),
-                  
-                  // ── PREVIOUS CODE UPAR HAI ──
-                  
-                  // Save Button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: _themeColor, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-                      onPressed: () {
-                        // FIX: Paste error fixed here
-                        setState(() {
-                          _userName = nameCtrl.text;
-                          _userPhone = phoneCtrl.text;
-                          _userAddress = addressCtrl.text;
-                          _addressType = tempType;
-                        });
-                        Navigator.pop(context); 
-                      },
-                      child: const Text('Save & Continue', style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                    ),
+                  GestureDetector(
+                    onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddressScreen(isDark: _isDark, themeColor: _themeColor))),
+                    child: Text('CHANGE', style: TextStyle(color: _themeColor, fontSize: 12, fontWeight: FontWeight.w900)),
                   ),
-                  const SizedBox(height: 20),
                 ],
               ),
-            );
-          }
+              const SizedBox(height: 10),
+              Text(addr.completeAddress, style: TextStyle(color: _textSecondary, fontSize: 12, height: 1.4)),
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(color: _isDark ? Colors.white10 : Colors.grey.shade100, borderRadius: BorderRadius.circular(8)),
+                child: Row(
+                  children: [
+                    Icon(Icons.person_outline, color: _textSecondary, size: 16),
+                    const SizedBox(width: 8),
+                    Text(addr.fullName, style: TextStyle(color: _textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
+                    const Spacer(),
+                    Icon(Icons.phone_outlined, color: _textSecondary, size: 16),
+                    const SizedBox(width: 8),
+                    Text(addr.phone, style: TextStyle(color: _textPrimary, fontSize: 12, fontWeight: FontWeight.w700)),
+                  ],
+                ),
+              )
+            ],
+          ),
         );
       }
-    );
-  }
-
-  Widget _buildTextField(String label, TextEditingController controller, {bool isNumber = false, int maxLines = 1}) {
-    return TextField(
-      controller: controller,
-      keyboardType: isNumber ? TextInputType.phone : TextInputType.text,
-      maxLines: maxLines,
-      style: TextStyle(color: _textPrimary, fontSize: 14),
-      decoration: InputDecoration(
-        labelText: label,
-        labelStyle: TextStyle(color: _textSecondary),
-        // FIX: OutlineBorder ki jagah OutlineInputBorder
-        enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: _borderColor), borderRadius: BorderRadius.circular(12)),
-        focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: _themeColor), borderRadius: BorderRadius.circular(12)),
-        filled: true,
-        fillColor: _isDark ? Colors.white10 : Colors.grey.shade50,
-      ),
     );
   }
 }
