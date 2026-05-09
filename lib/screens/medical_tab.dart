@@ -2,6 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'app_models.dart';
 
+// ── YEH CLASS JELLY/STRETCH EFFECT KO 100% KHATAM KAR DEGI ──
+class NoJellyScrollBehavior extends ScrollBehavior {
+  @override
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    return child; // Koi stretch ya glow nahi hoga
+  }
+}
+
 class MedicalTab extends StatefulWidget {
   const MedicalTab({super.key});
   @override
@@ -13,51 +21,34 @@ class _MedicalTabState extends State<MedicalTab> {
   Timer? _bannerTimer;
   int _bannerIndex = 0;
 
-  // Medical is Light Theme
   final Color _textColor = const Color(0xFF1A1A1A);
   final Color _gridItemBgColor = const Color(0xFFF0F0F0);
   final Color _borderColor = Colors.grey.withOpacity(0.15);
 
-  // ── 1. BANNERS DATA ──
   final List<BannerData> _banners = const [ 
     BannerData('24/7 Medicines', 'Delivered in 10 mins', kMedicalBlue, 'assets/images/broccoli.png'),
     BannerData('Free Checkups', 'Book a lab test now', Colors.teal, 'assets/images/broccoli.png'),
     BannerData('First Aid Kits', 'Flat 20% off today', Color(0xFF00897B), 'assets/images/broccoli.png'),
-    BannerData('Vitamins', 'Boost your immunity', Color(0xFF0288D1), 'assets/images/broccoli.png'),
   ];
 
-  // ── 2. SPOTLIGHT (FEATURED) DATA ──
   final List<SpotlightItem> _spotlights = [
     SpotlightItem('Daily\nMedicines', 'assets/images/broccoli.png', const Color(0xFFBBDEFB), Colors.blue.shade900),
     SpotlightItem('Vitamins &\nSupplements', 'assets/images/broccoli.png', const Color(0xFFC8E6C9), Colors.green.shade900),
     SpotlightItem('First Aid\nKits', 'assets/images/broccoli.png', const Color(0xFFFFCCBC), Colors.deepOrange.shade900),
     SpotlightItem('Health\nDevices', 'assets/images/broccoli.png', const Color(0xFFD1C4E9), Colors.deepPurple.shade900),
-    SpotlightItem('Baby\nCare', 'assets/images/broccoli.png', const Color(0xFFF8BBD0), Colors.pink.shade900),
   ];
 
-  // ── 3. GRIDS CATEGORY DATA ──
   final List<GridSectionData> _grids = const [
     GridSectionData('Top Categories', [
-      CategoryItem('Medicines', 'assets/images/broccoli.png'), 
-      CategoryItem('Vitamins', 'assets/images/broccoli.png'),
-      CategoryItem('Ayurveda', 'assets/images/broccoli.png'), 
-      CategoryItem('Homeopathy', 'assets/images/broccoli.png'),
+      CategoryItem('Medicines', 'assets/images/broccoli.png'), CategoryItem('Vitamins', 'assets/images/broccoli.png'),
+      CategoryItem('Ayurveda', 'assets/images/broccoli.png'), CategoryItem('Homeopathy', 'assets/images/broccoli.png'),
     ]),
     GridSectionData('Personal Care', [
-      CategoryItem('Skin Care', 'assets/images/broccoli.png'), 
-      CategoryItem('Hair Care', 'assets/images/broccoli.png'),
-      CategoryItem('Baby Care', 'assets/images/broccoli.png'), 
-      CategoryItem('Women Care', 'assets/images/broccoli.png'),
-    ]),
-    GridSectionData('Health Devices', [
-      CategoryItem('Thermometer', 'assets/images/broccoli.png'), 
-      CategoryItem('BP Monitor', 'assets/images/broccoli.png'),
-      CategoryItem('Oximeter', 'assets/images/broccoli.png'), 
-      CategoryItem('Weight Scale', 'assets/images/broccoli.png'),
+      CategoryItem('Skin Care', 'assets/images/broccoli.png'), CategoryItem('Hair Care', 'assets/images/broccoli.png'),
+      CategoryItem('Baby Care', 'assets/images/broccoli.png'), CategoryItem('Women Care', 'assets/images/broccoli.png'),
     ]),
   ];
 
-  // ── 4. SHOP STORES DATA ──
   final List<StoreItem> _stores = const [
     StoreItem('Pharmacy\nStore', 'assets/images/broccoli.png', Color(0xFFBBDEFB)), 
     StoreItem('Organic\nStore', 'assets/images/broccoli.png', Color(0xFFC8E6C9)),
@@ -87,30 +78,32 @@ class _MedicalTabState extends State<MedicalTab> {
     });
   }
 
-  // ── RELOAD FUNCTION ──
+  // ── PULL TO REFRESH LOGIC ──
   Future<void> _handleRefresh() async {
     await Future.delayed(const Duration(milliseconds: 1500));
-    setState(() {}); // Page refresh
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: _handleRefresh,
-      color: kMedicalBlue, // Loader color
-      backgroundColor: Colors.white,
-      child: SingleChildScrollView(
-        // FIX: ClampingScrollPhysics se "Jelly Gap" nahi aayega, aur AlwaysScrollable se Reload chalega
-        physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), 
-        padding: const EdgeInsets.only(bottom: 30),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 16), _buildBanners(), const SizedBox(height: 28),
-            _buildHeader('Now Spotlight', true), const SizedBox(height: 16), _buildSpotlights(), const SizedBox(height: 32),
-            ..._buildGrids(), const SizedBox(height: 10),
-            _buildHeader('Shop Store', false), const SizedBox(height: 16), _buildStores(),
-          ],
+    return ScrollConfiguration(
+      behavior: NoJellyScrollBehavior(), // Jelly effect band
+      child: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        color: kMedicalBlue, // Loader Circle Color
+        backgroundColor: Colors.white,
+        child: SingleChildScrollView(
+          physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()), 
+          padding: const EdgeInsets.only(bottom: 30),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 16), _buildBanners(), const SizedBox(height: 28),
+              _buildHeader('Now Spotlight', true), const SizedBox(height: 16), _buildSpotlights(), const SizedBox(height: 32),
+              ..._buildGrids(), const SizedBox(height: 10),
+              _buildHeader('Shop Store', false), const SizedBox(height: 16), _buildStores(),
+            ],
+          ),
         ),
       ),
     );
@@ -150,7 +143,7 @@ class _MedicalTabState extends State<MedicalTab> {
       height: 165,
       child: ListView.separated(
         scrollDirection: Axis.horizontal, 
-        physics: const ClampingScrollPhysics(), // FIX: No jelly effect horizontally
+        physics: const ClampingScrollPhysics(), // Horizontal Jelly Band
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _spotlights.length, separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (ctx, i) {
@@ -185,7 +178,7 @@ class _MedicalTabState extends State<MedicalTab> {
               final c = section.items[i];
               return Column(
                 children: [
-                  Container(height: 80, width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: _gridItemBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: _borderColor), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 5, offset: const Offset(0, 2))]), child: Center(child: Image.asset(c.imagePath, fit: BoxFit.contain))),
+                  Container(height: 80, width: double.infinity, padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: _gridItemBgColor, borderRadius: BorderRadius.circular(16), border: Border.all(color: _borderColor)), child: Center(child: Image.asset(c.imagePath, fit: BoxFit.contain))),
                   const SizedBox(height: 6), Text(c.label, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: _textColor, fontSize: 10, fontWeight: FontWeight.w700, height: 1.3)),
                 ],
               );
@@ -201,7 +194,7 @@ class _MedicalTabState extends State<MedicalTab> {
       height: 165,
       child: ListView.separated(
         scrollDirection: Axis.horizontal, 
-        physics: const ClampingScrollPhysics(), // FIX: No jelly effect horizontally
+        physics: const ClampingScrollPhysics(), // Horizontal Jelly Band
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _stores.length, separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (ctx, i) {
