@@ -14,7 +14,7 @@ class _GroceryTabState extends State<GroceryTab> {
   int _bannerIndex = 0;
 
   final Color _textColor = const Color(0xFF1A1A1A);
-  final Color _gridItemBgColor = const Color(0xFFF0F0F0);
+  final Color _gridItemBgColor = const Color(0xFFEDF6FF);
   final Color _borderColor = Colors.grey.withOpacity(0.15);
 
   final List<BannerData> _banners = const [
@@ -76,7 +76,7 @@ class _GroceryTabState extends State<GroceryTab> {
 
   final List<GridSectionData> _grids = const [
     GridSectionData('Grocery & Kitchen', [
-      CategoryItem('Vegitables\n& Fruits', 'assets/images/broccoli.png'),
+      CategoryItem('Vegitables\n& Fruits', 'assets/images/fruits.png'),
       CategoryItem('Atta, Rice\n& Dal', 'assets/images/aata.png'),
       CategoryItem('Oil, Ghee\n& Masala', 'assets/images/oil.png'),
       CategoryItem('Dairy, Milk\n& Bread', 'assets/images/braed.png'),
@@ -86,33 +86,33 @@ class _GroceryTabState extends State<GroceryTab> {
       CategoryItem('Spices &\nHerbs', 'assets/images/spices.png'),
     ]),
     GridSectionData('Household & Pet', [
-      CategoryItem('Cleaning\nEssentials', 'assets/images/broccoli.png'),
-      CategoryItem('Pooja\nNeeds', 'assets/images/broccoli.png'),
-      CategoryItem('Pet Food\n& Toys', 'assets/images/broccoli.png'),
-      CategoryItem('Home &\nKitchen', 'assets/images/broccoli.png'),
+      CategoryItem('Cleaning\nEssentials', 'assets/images/surf.png'),
+      CategoryItem('Pooja\nNeeds', 'assets/images/agarbatti.png'),
+      CategoryItem('Toys\n& Pet Food', 'assets/images/Toys.png'),
+      CategoryItem('Home &\nKitchen', 'assets/images/kitchen.png'),
     ]),
     GridSectionData('Snacks & Drinks', [
-      CategoryItem('Chips &\nNamkeen', 'assets/images/broccoli.png'),
-      CategoryItem('Sweets &\nChocolate', 'assets/images/broccoli.png'),
-      CategoryItem('Drinks &\nJuices', 'assets/images/broccoli.png'),
-      CategoryItem('Tea,\nCoffee', 'assets/images/broccoli.png'),
-      CategoryItem('Biscuits &\nCookies', 'assets/images/broccoli.png'),
-      CategoryItem('Frozen\nSnacks', 'assets/images/broccoli.png'),
-      CategoryItem('Breakfast\nCereals', 'assets/images/broccoli.png'),
-      CategoryItem('Instant\nFood', 'assets/images/broccoli.png'),
+      CategoryItem('Chips &\nNamkeen', 'assets/images/lays.png'),
+      CategoryItem('Sweets &\nChocolate', 'assets/images/chocolate.png'),
+      CategoryItem('Drinks &\nJuices', 'assets/images/colddrinks.png'),
+      CategoryItem('Tea,\nCoffee', 'assets/images/tea.png'),
+      CategoryItem('Biscuits &\nCookies', 'assets/images/biscuits.png'),
+      CategoryItem('Frozen\nSnacks', 'assets/images/frozen_snaks.png'),
+      CategoryItem('Breakfast\nCereals', 'assets/images/chocos.png'),
+      CategoryItem('Instant\nFood', 'assets/images/noodles.png'),
     ]),
   ];
 
   final List<StoreItem> _stores = const [
-    StoreItem('Winter\nStore', 'assets/images/broccoli.png', Color(0xFFBBDEFB)),
+    StoreItem('Summer\nStore', 'assets/images/summer.png', Color(0xFFBBDEFB)),
     StoreItem(
       'Gourmet\nStore',
-      'assets/images/broccoli.png',
+      'assets/images/gourmet.png',
       Color(0xFFFFCCBC),
     ),
-    StoreItem('Health\nStore', 'assets/images/broccoli.png', Color(0xFFE1BEE7)),
-    StoreItem('Travel\nStore', 'assets/images/broccoli.png', Color(0xFFF0F4C3)),
-    StoreItem('Puja\nStore', 'assets/images/broccoli.png', Color(0xFFFFCDD2)),
+    StoreItem('Health\nStore', 'assets/images/health.png', Color(0xFFE1BEE7)),
+    StoreItem('Travel\nStore', 'assets/images/travel.png', Color(0xFFF0F4C3)),
+    StoreItem('Puja\nStore', 'assets/images/puja.png', Color(0xFFFFCDD2)),
   ];
 
   @override
@@ -326,7 +326,7 @@ class _GroceryTabState extends State<GroceryTab> {
                             border: Border.all(color: _borderColor),
                           ),
                           child: Center(
-                            child: Image.asset(c.imagePath, height: 45),
+                            child: Image.asset(c.imagePath, height: 65),
                           ),
                         ),
                         const SizedBox(height: 6),
@@ -377,7 +377,7 @@ class _GroceryTabState extends State<GroceryTab> {
                   ),
                   child: Align(
                     alignment: Alignment.bottomCenter,
-                    child: Image.asset(item.imagePath, height: 60),
+                    child: Image.asset(item.imagePath, height: 80),
                   ),
                 ),
                 const SizedBox(height: 8),
