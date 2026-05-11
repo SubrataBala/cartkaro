@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'items_screen.dart'; // ── Yahan se PremiumItemCard aayega ──
-import 'app_models.dart';   // ── Yahan se Notifiers aur Data aayega ──
+import 'items_screen.dart'; // Iski zaroorat pad sakti hai navigation ke liye
+import 'app_models.dart';   
+import '../widgets/item_cards.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
 
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
@@ -42,7 +43,7 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
   Color get _borderColor => Colors.grey.withOpacity(0.15);
   final Color _themeColor = const Color(0xFF1565C0); // Medical Blue
 
-  // ── ⚠️ MAIN CHANGE: Single Sky Blue color instead of pastel colors ──
+  // ── Single Sky Blue color ──
   final Color _singleSkyBlue = const Color(0xFFE3F2FD); 
 
   // ==========================================
@@ -145,7 +146,7 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
   }
 
   // =========================================================================
-  // 🔥 FULLY REDESIGNED DEFAULT VIEW (Clinical & Sleek)
+  // 🔥 DEFAULT VIEW (Clinical & Sleek List Layout)
   // =========================================================================
   Widget _buildDefaultView() {
     return SingleChildScrollView(
@@ -178,7 +179,6 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
           )
         ),
         const SizedBox(height: 12),
-        // ── Sleek Horizontal Pill List for Medical ──
         SizedBox(
           height: 36,
           child: ListView.separated(
@@ -201,13 +201,13 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(20), // Fully rounded pills
+          borderRadius: BorderRadius.circular(20), 
           border: Border.all(color: Colors.grey.shade300),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min, 
           children: [
-            Icon(search['icon'], color: _themeColor, size: 14), // Colored icon
+            Icon(search['icon'], color: _themeColor, size: 14), 
             const SizedBox(width: 6), 
             Text(search['label'], style: TextStyle(color: _textPrimary, fontSize: 12, fontWeight: FontWeight.w600))
           ],
@@ -234,7 +234,6 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
       );
       rows.add(const SizedBox(height: 12));
       rows.add(
-        // ── Clean List View style instead of grids for Medical ──
         ListView.separated(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -244,7 +243,6 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
           itemBuilder: (ctx, i) {
             final c = section.items[i];
             return GestureDetector(
-              // ── Calling your old ItemsScreen with tabIndex: 2 ──
               onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => ItemsScreen(categoryTitle: section.title, tabIndex: 2))); },
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -258,7 +256,7 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
                     Container(
                       width: 44, height: 44,
                       decoration: BoxDecoration(
-                        color: _singleSkyBlue, // Single Sky Blue Color
+                        color: _singleSkyBlue, 
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Center(
@@ -283,7 +281,7 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
   }
 
   // =========================================================================
-  // SEARCH RESULTS VIEW (Untouched, uses PremiumItemCard)
+  // SEARCH RESULTS VIEW 
   // =========================================================================
 
   Widget _buildSuggestionsView() {
@@ -331,15 +329,13 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
                     crossAxisCount: 3, 
                     mainAxisSpacing: 16, 
                     crossAxisSpacing: 12, 
-                    mainAxisExtent: 245 // Match with PremiumItemCard height
+                    mainAxisExtent: 245 
                   ),
                   itemCount: results.length,
-                  // ── MAIN FIX: Reusing the same PremiumItemCard here ──
-                  itemBuilder: (context, index) => PremiumItemCard(
+                  // ── MAIN FIX: Calling AdaptiveItemCard for Medical Tab (Tab 2) ──
+                  itemBuilder: (context, index) => AdaptiveItemCard(
                     item: results[index], 
-                    isDark: false, 
-                    themeColor: _themeColor, 
-                    cartNotifier: medicalCartNotifier // Passing medical cart
+                    tabIndex: 2, 
                   ), 
                 ),
                 
@@ -352,11 +348,9 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
                       crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 245, 
                     ),
                     itemCount: related.length,
-                    itemBuilder: (context, index) => PremiumItemCard(
+                    itemBuilder: (context, index) => AdaptiveItemCard(
                       item: related[index], 
-                      isDark: false, 
-                      themeColor: _themeColor, 
-                      cartNotifier: medicalCartNotifier // Passing medical cart
+                      tabIndex: 2, 
                     ),
                   ),
                   const SizedBox(height: 30),

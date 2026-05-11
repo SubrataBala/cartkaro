@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'app_models.dart';
-import 'items_screen.dart';
-import 'address_screen.dart'; // ── IMPORT FOR ADDRESS SYNC ──
-import 'login_screen.dart';   // ── IMPORT FOR LOGIN CHECK ──
+import '../widgets/item_cards.dart'; // ── MAIN FIX: Naye Cards aur SharedCartButton yahan se aayenge ──
+import 'address_screen.dart'; 
+import 'login_screen.dart';   
 
 // ── JELLY/BOUNCE EFFECT REMOVER ──
 class NoJellyScrollBehavior extends ScrollBehavior {
@@ -21,7 +21,7 @@ class CartTab extends StatefulWidget {
 }
 
 class _CartTabState extends State<CartTab> {
-  // ── MAIN FIX: Ab ye hamesha 'false' rahega taaki Grocery bhi White dikhe ──
+  // ── Ab ye hamesha 'false' rahega taaki Grocery bhi White dikhe ──
   bool get _isDark => false; 
   
   Color get _bgColor => _isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA);
@@ -136,7 +136,8 @@ class _CartTabState extends State<CartTab> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        CartAddButton(itemId: cartItemId, themeColor: _themeColor, cartNotifier: _activeCartNotifier),
+                        // ── MAIN FIX: Using SharedCartButton ──
+                        SharedCartButton(itemId: cartItemId, themeColor: _themeColor, cartNotifier: _activeCartNotifier),
                         const SizedBox(height: 8),
                         Row(
                           children: [
@@ -245,7 +246,11 @@ class _CartTabState extends State<CartTab> {
                         itemBuilder: (context, index) {
                           return SizedBox(
                             width: 140, 
-                            child: PremiumItemCard(item: _crossSellItems[index], isDark: _isDark, themeColor: _themeColor, cartNotifier: _activeCartNotifier),
+                            // ── MAIN FIX: Using AdaptiveItemCard based on the tab ──
+                            child: AdaptiveItemCard(
+                              item: _crossSellItems[index], 
+                              tabIndex: widget.selectedTab
+                            ),
                           );
                         },
                       ),

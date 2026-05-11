@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'items_screen.dart'; // ── Yahan se aapka purana 'PremiumItemCard' aur 'ItemsScreen' aayega ──
-import 'app_models.dart';   // ── Yahan se Notifiers aur Data aayega ──
+import 'items_screen.dart'; // Navigation ke liye
+import 'app_models.dart';   // Notifiers aur Data ke liye
+import '../widgets/item_cards.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
 
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
@@ -42,7 +43,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   Color get _borderColor => Colors.grey.withOpacity(0.15);
   final Color _themeColor = const Color(0xFFE53935); // Restaurant Red
 
-  // ── ⚠️ MAIN CHANGE: Sabhi Tiles ke liye sirf ek Single Light Red color ──
+  // ── Sabhi Tiles ke liye sirf ek Single Light Red color ──
   final Color _singleLightRed = const Color.fromARGB(255, 255, 128, 147); // Light Red background
 
   // ==========================================
@@ -147,7 +148,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   }
 
   // =========================================================================
-  // 🔥 FULLY REDESIGNED DEFAULT VIEW
+  // 🔥 DEFAULT VIEW (Grid Tiles with Light Red color)
   // =========================================================================
   Widget _buildDefaultView() {
     return SingleChildScrollView(
@@ -180,7 +181,6 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
           )
         ),
         const SizedBox(height: 16),
-        // ── Modern Wrap Layout for Chips ──
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Wrap(
@@ -228,7 +228,6 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
       );
       rows.add(const SizedBox(height: 16));
       rows.add(
-        // ── Modern 2-Column Grid Tiles ──
         GridView.builder(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           shrinkWrap: true,
@@ -244,7 +243,6 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
             final c = section.items[i];
             
             return GestureDetector(
-              // ── Calling your old ItemsScreen with tabIndex: 1 ──
               onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => ItemsScreen(categoryTitle: section.title, tabIndex: 1))); },
               child: Container(
                 decoration: BoxDecoration(
@@ -258,7 +256,6 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
                     Container(
                       width: 55,
                       decoration: BoxDecoration(
-                        // ── ⚠️ MAIN CHANGE: Yahan sirf light red color use ho rha hai ──
                         color: _singleLightRed, 
                         borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
                       ),
@@ -332,9 +329,10 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
                     crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 245
                   ),
                   itemCount: results.length,
-                  // ── MAIN FIX: Calling your old PremiumItemCard ──
-                  itemBuilder: (context, index) => PremiumItemCard(
-                    item: results[index], isDark: false, themeColor: _themeColor, cartNotifier: restaurantCartNotifier 
+                  // ── MAIN FIX: Calling AdaptiveItemCard for Restaurant (tabIndex: 1) ──
+                  itemBuilder: (context, index) => AdaptiveItemCard(
+                    item: results[index], 
+                    tabIndex: 1, 
                   ), 
                 ),
                 
@@ -347,8 +345,9 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
                       crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 245, 
                     ),
                     itemCount: related.length,
-                    itemBuilder: (context, index) => PremiumItemCard(
-                      item: related[index], isDark: false, themeColor: _themeColor, cartNotifier: restaurantCartNotifier 
+                    itemBuilder: (context, index) => AdaptiveItemCard(
+                      item: related[index], 
+                      tabIndex: 1,
                     ),
                   ),
                   const SizedBox(height: 30),

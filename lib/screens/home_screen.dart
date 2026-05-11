@@ -7,6 +7,7 @@ import 'restaurant_tab.dart';
 import 'medical_tab.dart';     
 import 'cart_tab.dart'; 
 import 'address_screen.dart';
+import '../widgets/item_cards.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -77,9 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
-  // ... (Rest of your helper methods like _buildTopBar, _buildSearchBar remain the same)
-  // They will now automatically use the Light Mode colors because isDark is false.
 
   Widget _buildTopBar() {
     return Padding(
@@ -252,6 +250,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Icon([Icons.home_rounded, Icons.favorite_border_rounded, Icons.shopping_bag_outlined, Icons.person_outline_rounded][index], color: iconColor, size: size);
   }
 
+  // ── MAIN FIX: Replaced old PremiumItemCard with AdaptiveItemCard ──
   Widget _buildWatchlistTab() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,8 +284,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisExtent: 245, 
                 ),
                 itemBuilder: (context, index) {
-                  return PremiumItemCard(
-                    item: favoriteItemsForThisTab[index], isDark: isDark, themeColor: _activeColor, cartNotifier: _activeCartNotifier,
+                  return AdaptiveItemCard(
+                    item: favoriteItemsForThisTab[index], 
+                    tabIndex: _selectedTab // Ye check karega ki kaunsi category ka Watchlist hai
                   );
                 },
               );
