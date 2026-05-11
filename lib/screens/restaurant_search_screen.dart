@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'items_screen.dart'; // ── Yahan se PremiumItemCard aayega ──
+import 'items_screen.dart'; // ── Yahan se aapka purana 'PremiumItemCard' aur 'ItemsScreen' aayega ──
 import 'app_models.dart';   // ── Yahan se Notifiers aur Data aayega ──
 
 class NoJellyScrollBehavior extends ScrollBehavior {
@@ -42,27 +42,25 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   Color get _borderColor => Colors.grey.withOpacity(0.15);
   final Color _themeColor = const Color(0xFFE53935); // Restaurant Red
 
-  final List<Color> _pastelColors = [
-    const Color(0xFFFFCDD2), const Color(0xFFFFF9C4), const Color(0xFFDCEDC8),
-    const Color(0xFFE1BEE7), const Color(0xFFFFE082), const Color(0xFFC8E6C9),
-  ];
+  // ── ⚠️ MAIN CHANGE: Sabhi Tiles ke liye sirf ek Single Light Red color ──
+  final Color _singleLightRed = const Color.fromARGB(255, 255, 128, 147); // Light Red background
 
   // ==========================================
   // 1. PAST SEARCHES
   // ==========================================
   final List<Map<String, dynamic>> _pastSearches = [
-    {'label': 'Biryani', 'icon': Icons.rice_bowl, 'color': const Color(0xFFFFCDD2)},
-    {'label': 'Pizza', 'icon': Icons.local_pizza, 'color': const Color(0xFFFFF9C4)},
-    {'label': 'Burger', 'icon': Icons.fastfood, 'color': const Color(0xFFDCEDC8)},
-    {'label': 'Cold Drink', 'icon': Icons.local_drink, 'color': const Color(0xFFB2EBF2)},
-    {'label': 'Momos', 'icon': Icons.set_meal, 'color': const Color(0xFFFFE082)},
-    {'label': 'Noodles', 'icon': Icons.ramen_dining, 'color': const Color(0xFFC8E6C9)},
-    {'label': 'Dosa', 'icon': Icons.restaurant, 'color': const Color(0xFFE1BEE7)},
-    {'label': 'Paneer', 'icon': Icons.room_service, 'color': const Color(0xFFFFCCBC)},
+    {'label': 'Biryani', 'icon': Icons.rice_bowl},
+    {'label': 'Pizza', 'icon': Icons.local_pizza},
+    {'label': 'Burger', 'icon': Icons.fastfood},
+    {'label': 'Cold Drink', 'icon': Icons.local_drink},
+    {'label': 'Momos', 'icon': Icons.set_meal},
+    {'label': 'Noodles', 'icon': Icons.ramen_dining},
+    {'label': 'Dosa', 'icon': Icons.restaurant},
+    {'label': 'Paneer', 'icon': Icons.room_service},
   ];
 
   // ==========================================
-  // 2. CATEGORY BOXES UI (Aapki Nayi Categories Yahan Add Ho Gayi Hain)
+  // 2. CATEGORY CONTENT 
   // ==========================================
   final List<SearchSection> _searchCategories = [
     SearchSection('Top Picks', [SearchCategoryItem('Biryani', 'assets/images/broccoli.png'), SearchCategoryItem('Pizza', 'assets/images/broccoli.png'), SearchCategoryItem('Momos', 'assets/images/broccoli.png')]),
@@ -74,7 +72,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   ];
 
   // ==========================================
-  // 3. MASTER DATA FETCHER (Reads directly from restaurant_data.dart via app_models)
+  // 3. MASTER DATA FETCHER
   // ==========================================
   List<Map<String, dynamic>> get _allRestaurantItems {
     List<Map<String, dynamic>> allItems = [];
@@ -82,7 +80,6 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
     
     restaurantMap.forEach((categoryName, items) {
       for (var item in items) {
-        // Create a copy and inject the category name for 'Related Products' logic
         var itemCopy = Map<String, dynamic>.from(item);
         itemCopy['category'] = categoryName; 
         allItems.add(itemCopy);
@@ -149,44 +146,152 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
     );
   }
 
+  // =========================================================================
+  // 🔥 FULLY REDESIGNED DEFAULT VIEW
+  // =========================================================================
   Widget _buildDefaultView() {
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
-          Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Text('YOUR PAST SEARCHES', style: TextStyle(color: _textSecondary, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2))),
-          const SizedBox(height: 14),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal, physics: const ClampingScrollPhysics(), padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: _pastSearches.sublist(0, 4).map((search) => _buildSearchChip(search)).toList()), const SizedBox(height: 10), Row(children: _pastSearches.sublist(4).map((search) => _buildSearchChip(search)).toList())]),
-          ),
+          const SizedBox(height: 20),
+          _buildPastSearches(),
           const SizedBox(height: 30),
-          ..._searchCategories.map((section) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(section.title, style: TextStyle(color: _textPrimary, fontSize: 18, fontWeight: FontWeight.w800)), GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ItemsScreen(categoryTitle: section.title, tabIndex: 1))), child: Container(padding: const EdgeInsets.all(4), decoration: const BoxDecoration(color: Color(0xFFEEEEEE), shape: BoxShape.circle), child: const Icon(Icons.keyboard_arrow_right_rounded, color: Colors.black, size: 20)))])),
-              const SizedBox(height: 16),
-              SizedBox(height: 110, child: ListView.separated(scrollDirection: Axis.horizontal, physics: const ClampingScrollPhysics(), padding: const EdgeInsets.symmetric(horizontal: 20), itemCount: section.items.length, separatorBuilder: (_, __) => const SizedBox(width: 14), itemBuilder: (ctx, i) => GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ItemsScreen(categoryTitle: section.title, tabIndex: 1))), child: Container(width: 115, decoration: BoxDecoration(color: _pastelColors[i % _pastelColors.length], borderRadius: BorderRadius.circular(16)), child: Stack(children: [Positioned(top: 10, left: 12, child: Text(section.items[i].label, style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w800))), Positioned(bottom: -5, right: -5, child: Image.asset(section.items[i].imagePath, height: 80, width: 80, fit: BoxFit.contain, errorBuilder: (_,__,___) => const Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.fastfood, size: 40, color: Colors.black26))))]))))),
-              const SizedBox(height: 32),
-            ]
-          )),
+          ..._buildSearchCategoryRows(),
         ],
       ),
     );
   }
 
-  Widget _buildSearchChip(Map<String, dynamic> search) {
-    return GestureDetector(onTap: () => _onSearchSubmit(search['label']), child: Container(margin: const EdgeInsets.only(right: 10), height: 38, padding: const EdgeInsets.symmetric(horizontal: 16), decoration: BoxDecoration(color: search['color'], borderRadius: BorderRadius.circular(20)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(search['icon'], color: Colors.black87, size: 16), const SizedBox(width: 6), Text(search['label'], style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w700))])));
+  Widget _buildPastSearches() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16), 
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Recent Searches', style: TextStyle(color: _textPrimary, fontSize: 16, fontWeight: FontWeight.w900, letterSpacing: -0.3)),
+              Text('Clear', style: TextStyle(color: _themeColor, fontSize: 12, fontWeight: FontWeight.w700)),
+            ],
+          )
+        ),
+        const SizedBox(height: 16),
+        // ── Modern Wrap Layout for Chips ──
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Wrap(
+            spacing: 10,
+            runSpacing: 12,
+            children: _pastSearches.map((search) => _buildSearchChip(search)).toList(),
+          ),
+        ),
+      ],
+    );
   }
 
+  Widget _buildSearchChip(Map<String, dynamic> search) {
+    return GestureDetector(
+      onTap: () => _onSearchSubmit(search['label']),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.grey.shade200),
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))],
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min, 
+          children: [
+            Icon(Icons.history, color: Colors.grey.shade400, size: 16),
+            const SizedBox(width: 6), 
+            Text(search['label'], style: TextStyle(color: _textPrimary, fontSize: 13, fontWeight: FontWeight.w700))
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildSearchCategoryRows() {
+    List<Widget> rows = [];
+
+    for (var section in _searchCategories) {
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text(section.title, style: TextStyle(color: _textPrimary, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.3)),
+        )
+      );
+      rows.add(const SizedBox(height: 16));
+      rows.add(
+        // ── Modern 2-Column Grid Tiles ──
+        GridView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: section.items.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, 
+            childAspectRatio: 2.6, 
+            crossAxisSpacing: 12, 
+            mainAxisSpacing: 12,
+          ),
+          itemBuilder: (ctx, i) {
+            final c = section.items[i];
+            
+            return GestureDetector(
+              // ── Calling your old ItemsScreen with tabIndex: 1 ──
+              onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => ItemsScreen(categoryTitle: section.title, tabIndex: 1))); },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade200),
+                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 6, offset: const Offset(0, 3))],
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 55,
+                      decoration: BoxDecoration(
+                        // ── ⚠️ MAIN CHANGE: Yahan sirf light red color use ho rha hai ──
+                        color: _singleLightRed, 
+                        borderRadius: const BorderRadius.horizontal(left: Radius.circular(12)),
+                      ),
+                      child: Center(
+                        child: Image.asset(c.imagePath, width: 32, height: 32, fit: BoxFit.contain, errorBuilder: (_,__,___) => const Icon(Icons.fastfood, size: 20, color: Colors.black26)),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(c.label, style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w800), maxLines: 2, overflow: TextOverflow.ellipsis),
+                    ),
+                    const SizedBox(width: 8),
+                  ],
+                ),
+              ),
+            );
+          },
+        )
+      );
+      rows.add(const SizedBox(height: 32));
+    }
+    return rows;
+  }
+
+  // =========================================================================
+  // SEARCH RESULTS VIEW 
+  // =========================================================================
+
   Widget _buildSuggestionsView() {
-    // Dynamic suggestions based on actual global data
     final filtered = _allRestaurantItems
         .where((item) => item['name'].toString().toLowerCase().contains(_query.toLowerCase()))
         .map((item) => item['name'].toString())
-        .toSet() // Removes duplicates
+        .toSet() 
         .toList();
 
     if(filtered.isEmpty) return Center(child: Text("No dishes found", style: TextStyle(color: _textSecondary)));
@@ -202,13 +307,11 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   }
 
   Widget _buildResultsView() {
-    // Fetch actual matching products from global data
     final results = _allRestaurantItems.where((p) => p['name'].toString().toLowerCase().contains(_query.toLowerCase())).toList();
     
-    // --- SMART RELATED PRODUCTS LOGIC ---
     List<Map<String, dynamic>> related = [];
     if (results.isNotEmpty) {
-      String matchedCategory = results.first['category']; // E.g., 'Top Picks'
+      String matchedCategory = results.first['category']; 
       related = _allRestaurantItems.where((p) => p['category'] == matchedCategory && p['id'] != results.first['id']).take(6).toList();
     } else {
       related = _allRestaurantItems.take(6).toList();
@@ -226,18 +329,12 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, 
-                    mainAxisSpacing: 16, 
-                    crossAxisSpacing: 12, 
-                    mainAxisExtent: 245 // Match with PremiumItemCard height
+                    crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 245
                   ),
                   itemCount: results.length,
-                  // ── MAIN FIX: Reusing the same PremiumItemCard here ──
+                  // ── MAIN FIX: Calling your old PremiumItemCard ──
                   itemBuilder: (context, index) => PremiumItemCard(
-                    item: results[index], 
-                    isDark: false, 
-                    themeColor: _themeColor, 
-                    cartNotifier: restaurantCartNotifier // Passing restaurant cart
+                    item: results[index], isDark: false, themeColor: _themeColor, cartNotifier: restaurantCartNotifier 
                   ), 
                 ),
                 
@@ -251,10 +348,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
                     ),
                     itemCount: related.length,
                     itemBuilder: (context, index) => PremiumItemCard(
-                      item: related[index], 
-                      isDark: false, 
-                      themeColor: _themeColor, 
-                      cartNotifier: restaurantCartNotifier // Passing restaurant cart
+                      item: related[index], isDark: false, themeColor: _themeColor, cartNotifier: restaurantCartNotifier 
                     ),
                   ),
                   const SizedBox(height: 30),

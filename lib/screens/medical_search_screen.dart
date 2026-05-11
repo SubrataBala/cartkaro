@@ -9,7 +9,7 @@ class NoJellyScrollBehavior extends ScrollBehavior {
   }
 }
 
-// ── Search UI ke liye simple class (sirf pastel boxes ke liye) ──
+// ── Search UI ke liye simple class ──
 class SearchCategoryItem {
   final String label;
   final String imagePath;
@@ -42,23 +42,21 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
   Color get _borderColor => Colors.grey.withOpacity(0.15);
   final Color _themeColor = const Color(0xFF1565C0); // Medical Blue
 
-  final List<Color> _pastelColors = [
-    const Color(0xFFBBDEFB), const Color(0xFFC8E6C9), const Color(0xFFFFCCBC),
-    const Color(0xFFD1C4E9), const Color(0xFFF8BBD0), const Color(0xFFFFF9C4),
-  ];
+  // ── ⚠️ MAIN CHANGE: Single Sky Blue color instead of pastel colors ──
+  final Color _singleSkyBlue = const Color(0xFFE3F2FD); 
 
   // ==========================================
   // 1. PAST SEARCHES
   // ==========================================
   final List<Map<String, dynamic>> _pastSearches = [
-    {'label': 'Paracetamol', 'icon': Icons.medication, 'color': const Color(0xFFBBDEFB)},
-    {'label': 'Vicks', 'icon': Icons.healing, 'color': const Color(0xFFC8E6C9)},
-    {'label': 'Cough Syrup', 'icon': Icons.local_drink, 'color': const Color(0xFFFFCCBC)},
-    {'label': 'Band-Aid', 'icon': Icons.medical_services, 'color': const Color(0xFFD1C4E9)},
-    {'label': 'Vitamin C', 'icon': Icons.health_and_safety, 'color': const Color(0xFFF8BBD0)},
-    {'label': 'Thermometer', 'icon': Icons.thermostat, 'color': const Color(0xFFFFF9C4)},
-    {'label': 'Digene', 'icon': Icons.science, 'color': const Color(0xFFFFE082)},
-    {'label': 'ORS', 'icon': Icons.water_drop, 'color': const Color(0xFFE1BEE7)},
+    {'label': 'Paracetamol', 'icon': Icons.medication},
+    {'label': 'Vicks', 'icon': Icons.healing},
+    {'label': 'Cough Syrup', 'icon': Icons.local_drink},
+    {'label': 'Band-Aid', 'icon': Icons.medical_services},
+    {'label': 'Vitamin C', 'icon': Icons.health_and_safety},
+    {'label': 'Thermometer', 'icon': Icons.thermostat},
+    {'label': 'Digene', 'icon': Icons.science},
+    {'label': 'ORS', 'icon': Icons.water_drop},
   ];
 
   // ==========================================
@@ -72,7 +70,7 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
   ];
 
   // ==========================================
-  // 3. MASTER DATA FETCHER (Reads directly from medical_data.dart via app_models)
+  // 3. MASTER DATA FETCHER 
   // ==========================================
   List<Map<String, dynamic>> get _allMedicalItems {
     List<Map<String, dynamic>> allItems = [];
@@ -80,7 +78,6 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
     
     medicalMap.forEach((categoryName, items) {
       for (var item in items) {
-        // Create a copy and inject the category name for 'Related Products' logic
         var itemCopy = Map<String, dynamic>.from(item);
         itemCopy['category'] = categoryName; 
         allItems.add(itemCopy);
@@ -147,44 +144,153 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
     );
   }
 
+  // =========================================================================
+  // 🔥 FULLY REDESIGNED DEFAULT VIEW (Clinical & Sleek)
+  // =========================================================================
   Widget _buildDefaultView() {
     return SingleChildScrollView(
       physics: const ClampingScrollPhysics(),
+      padding: const EdgeInsets.only(bottom: 40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const SizedBox(height: 16),
-          Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Text('YOUR PAST SEARCHES', style: TextStyle(color: _textSecondary, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 1.2))),
-          const SizedBox(height: 14),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal, physics: const ClampingScrollPhysics(), padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Row(children: _pastSearches.sublist(0, 4).map((search) => _buildSearchChip(search)).toList()), const SizedBox(height: 10), Row(children: _pastSearches.sublist(4).map((search) => _buildSearchChip(search)).toList())]),
-          ),
+          const SizedBox(height: 20),
+          _buildPastSearches(),
           const SizedBox(height: 30),
-          ..._searchCategories.map((section) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(padding: const EdgeInsets.symmetric(horizontal: 20), child: Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(section.title, style: TextStyle(color: _textPrimary, fontSize: 18, fontWeight: FontWeight.w800)), GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ItemsScreen(categoryTitle: section.title, tabIndex: 2))), child: Container(padding: const EdgeInsets.all(4), decoration: const BoxDecoration(color: Color(0xFFEEEEEE), shape: BoxShape.circle), child: const Icon(Icons.keyboard_arrow_right_rounded, color: Colors.black, size: 20)))])),
-              const SizedBox(height: 16),
-              SizedBox(height: 110, child: ListView.separated(scrollDirection: Axis.horizontal, physics: const ClampingScrollPhysics(), padding: const EdgeInsets.symmetric(horizontal: 20), itemCount: section.items.length, separatorBuilder: (_, __) => const SizedBox(width: 14), itemBuilder: (ctx, i) => GestureDetector(onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ItemsScreen(categoryTitle: section.title, tabIndex: 2))), child: Container(width: 115, decoration: BoxDecoration(color: _pastelColors[i % _pastelColors.length], borderRadius: BorderRadius.circular(16)), child: Stack(children: [Positioned(top: 10, left: 12, child: Text(section.items[i].label, style: const TextStyle(color: Colors.black87, fontSize: 12, fontWeight: FontWeight.w800))), Positioned(bottom: -5, right: -5, child: Image.asset(section.items[i].imagePath, height: 80, width: 80, fit: BoxFit.contain, errorBuilder: (_,__,___) => const Padding(padding: EdgeInsets.all(8.0), child: Icon(Icons.medical_services, size: 40, color: Colors.black26))))]))))),
-              const SizedBox(height: 32),
-            ]
-          )),
+          ..._buildSearchCategoryRows(),
         ],
       ),
     );
   }
 
-  Widget _buildSearchChip(Map<String, dynamic> search) {
-    return GestureDetector(onTap: () => _onSearchSubmit(search['label']), child: Container(margin: const EdgeInsets.only(right: 10), height: 38, padding: const EdgeInsets.symmetric(horizontal: 16), decoration: BoxDecoration(color: search['color'], borderRadius: BorderRadius.circular(20)), child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(search['icon'], color: Colors.black87, size: 16), const SizedBox(width: 6), Text(search['label'], style: const TextStyle(color: Colors.black87, fontSize: 13, fontWeight: FontWeight.w700))])));
+  Widget _buildPastSearches() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16), 
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Previously Searched', style: TextStyle(color: _textPrimary, fontSize: 15, fontWeight: FontWeight.bold, letterSpacing: -0.2)),
+              Text('CLEAR', style: TextStyle(color: _themeColor, fontSize: 11, fontWeight: FontWeight.w800, letterSpacing: 0.5)),
+            ],
+          )
+        ),
+        const SizedBox(height: 12),
+        // ── Sleek Horizontal Pill List for Medical ──
+        SizedBox(
+          height: 36,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _pastSearches.length,
+            separatorBuilder: (_, __) => const SizedBox(width: 10),
+            itemBuilder: (ctx, i) => _buildSearchChip(_pastSearches[i]),
+          ),
+        ),
+      ],
+    );
   }
 
+  Widget _buildSearchChip(Map<String, dynamic> search) {
+    return GestureDetector(
+      onTap: () => _onSearchSubmit(search['label']),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20), // Fully rounded pills
+          border: Border.all(color: Colors.grey.shade300),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min, 
+          children: [
+            Icon(search['icon'], color: _themeColor, size: 14), // Colored icon
+            const SizedBox(width: 6), 
+            Text(search['label'], style: TextStyle(color: _textPrimary, fontSize: 12, fontWeight: FontWeight.w600))
+          ],
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _buildSearchCategoryRows() {
+    List<Widget> rows = [];
+
+    for (var section in _searchCategories) {
+      rows.add(
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(section.title, style: TextStyle(color: _textPrimary, fontSize: 17, fontWeight: FontWeight.w800, letterSpacing: -0.3)),
+              Icon(Icons.arrow_forward_ios_rounded, size: 14, color: Colors.grey.shade400),
+            ],
+          ),
+        )
+      );
+      rows.add(const SizedBox(height: 12));
+      rows.add(
+        // ── Clean List View style instead of grids for Medical ──
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          itemCount: section.items.length,
+          separatorBuilder: (_, __) => const SizedBox(height: 8),
+          itemBuilder: (ctx, i) {
+            final c = section.items[i];
+            return GestureDetector(
+              // ── Calling your old ItemsScreen with tabIndex: 2 ──
+              onTap: () { Navigator.push(context, MaterialPageRoute(builder: (_) => ItemsScreen(categoryTitle: section.title, tabIndex: 2))); },
+              child: Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.grey.shade100),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44, height: 44,
+                      decoration: BoxDecoration(
+                        color: _singleSkyBlue, // Single Sky Blue Color
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Center(
+                        child: Image.asset(c.imagePath, width: 24, height: 24, fit: BoxFit.contain, errorBuilder: (_,__,___) => Icon(Icons.medical_services, size: 20, color: _themeColor)),
+                      ),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Text(c.label, style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.w600)),
+                    ),
+                    Icon(Icons.chevron_right_rounded, color: Colors.grey.shade300, size: 20),
+                  ],
+                ),
+              ),
+            );
+          },
+        )
+      );
+      rows.add(const SizedBox(height: 28));
+    }
+    return rows;
+  }
+
+  // =========================================================================
+  // SEARCH RESULTS VIEW (Untouched, uses PremiumItemCard)
+  // =========================================================================
+
   Widget _buildSuggestionsView() {
-    // Dynamic suggestions based on actual global data
     final filtered = _allMedicalItems
         .where((item) => item['name'].toString().toLowerCase().contains(_query.toLowerCase()))
         .map((item) => item['name'].toString())
-        .toSet() // Removes duplicates
+        .toSet() 
         .toList();
 
     if(filtered.isEmpty) return Center(child: Text("No items found", style: TextStyle(color: _textSecondary)));
@@ -200,13 +306,11 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
   }
 
   Widget _buildResultsView() {
-    // Fetch actual matching products from global data
     final results = _allMedicalItems.where((p) => p['name'].toString().toLowerCase().contains(_query.toLowerCase())).toList();
     
-    // --- SMART RELATED PRODUCTS LOGIC ---
     List<Map<String, dynamic>> related = [];
     if (results.isNotEmpty) {
-      String matchedCategory = results.first['category']; // E.g., 'Daily Medicines'
+      String matchedCategory = results.first['category']; 
       related = _allMedicalItems.where((p) => p['category'] == matchedCategory && p['id'] != results.first['id']).take(6).toList();
     } else {
       related = _allMedicalItems.take(6).toList();
