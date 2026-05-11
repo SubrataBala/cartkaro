@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_models.dart';
-import 'items_screen.dart'; // ── INCLUDES 'CartAddButton' ──
+import '../widgets/item_cards.dart'; // ── MAIN FIX: Naya SharedCartButton aur WatchlistIcon yahan se aayega ──
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const Color kRestaurantOrange = Color(0xFFFF6B35);
@@ -59,7 +59,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
     _CategoryIconModel('Biryani', 'assets/images/biryani.png'),
   ];
 
-  // ── MAIN FIX: IDs exactly matched with restaurant_data.dart ──
+  // ── IDs exactly matched with restaurant_data.dart ──
   final List<_FoodCardModel> _topPicks = const [
     _FoodCardModel(id: 'r1', name: 'Chicken Dum Biryani', restaurant: 'Biryani Blues', rating: '4.7', reviews: '2.1k+', deliveryTime: '28 min', deliveryFee: 'Free Delivery', price: '160', imagePath: 'assets/images/broccoli.png', isVeg: false, isBestseller: true),
     _FoodCardModel(id: 'r2', name: 'Farmhouse Veg Pizza', restaurant: 'Pizza Hub', rating: '4.5', reviews: '890+', deliveryTime: '22 min', deliveryFee: 'Free Delivery', price: '199', imagePath: 'assets/images/broccoli.png', isVeg: true, isBestseller: false),
@@ -391,27 +391,10 @@ class _RestaurantTabState extends State<RestaurantTab> {
                   child: Image.asset(f.imagePath, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
                 ),
               ),
+              // ── MAIN FIX: Using the new WatchlistIcon ──
               Positioned(
                 top: 10, right: 10,
-                child: ValueListenableBuilder<Set<String>>(
-                  valueListenable: watchlistNotifier,
-                  builder: (context, favorites, _) {
-                    bool isWatchlisted = favorites.contains(f.id);
-                    return GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        final newFavs = Set<String>.from(favorites);
-                        if (isWatchlisted) newFavs.remove(f.id); else newFavs.add(f.id);
-                        watchlistNotifier.value = newFavs; 
-                      }, 
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 300), padding: const EdgeInsets.all(7),
-                        decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 6)]),
-                        child: Icon(isWatchlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded, size: 18, color: isWatchlisted ? kRestaurantRed : kTextDark),
-                      ),
-                    );
-                  }
-                ),
+                child: WatchlistIcon(itemId: f.id, themeColor: kRestaurantRed, isBgWhite: true),
               ),
               Positioned(
                 bottom: 10, left: 10,
@@ -464,8 +447,8 @@ class _RestaurantTabState extends State<RestaurantTab> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('₹${f.price}', style: const TextStyle(color: kTextDark, fontSize: 16, fontWeight: FontWeight.w900)),
-                    // ── MAIN FIX: cartItemId with "|0" to sync exactly like ItemsScreen ──
-                    CartAddButton(itemId: "${f.id}|0", themeColor: kRestaurantRed, cartNotifier: restaurantCartNotifier),
+                    // ── MAIN FIX: Using the new SharedCartButton ──
+                    SharedCartButton(itemId: "${f.id}|0", themeColor: kRestaurantRed, cartNotifier: restaurantCartNotifier),
                   ],
                 ),
               ],

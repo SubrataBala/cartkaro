@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'items_screen.dart'; // ── Yahan se PremiumItemCard aayega ──
-import 'app_models.dart';   // ── Yahan se Notifiers aur Data aayega ──
+import 'items_screen.dart'; 
+import 'app_models.dart';   
+import '../widgets/item_cards.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
 
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
@@ -73,7 +74,7 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
   ];
 
   // ==========================================
-  // 3. MASTER DATA FETCHER (Reads directly from grocery_data.dart via app_models)
+  // 3. MASTER DATA FETCHER
   // ==========================================
   List<Map<String, dynamic>> get _allGroceryItems {
     List<Map<String, dynamic>> allItems = [];
@@ -81,7 +82,6 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
     
     groceryMap.forEach((categoryName, items) {
       for (var item in items) {
-        // Create a copy and inject the category name for 'Related Products' logic
         var itemCopy = Map<String, dynamic>.from(item);
         itemCopy['category'] = categoryName; 
         allItems.add(itemCopy);
@@ -244,11 +244,10 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
   }
 
   Widget _buildSuggestionsView() {
-    // Dynamic suggestions based on actual global data
     final filtered = _allGroceryItems
         .where((item) => item['name'].toString().toLowerCase().contains(_query.toLowerCase()))
         .map((item) => item['name'].toString())
-        .toSet() // Removes duplicates
+        .toSet() 
         .toList();
 
     if(filtered.isEmpty) return Center(child: Text("No items found", style: TextStyle(color: _textSecondary)));
@@ -264,13 +263,11 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
   }
 
   Widget _buildResultsView() {
-    // Fetch actual matching products from global data
     final results = _allGroceryItems.where((p) => p['name'].toString().toLowerCase().contains(_query.toLowerCase())).toList();
     
-    // --- SMART RELATED PRODUCTS LOGIC ---
     List<Map<String, dynamic>> related = [];
     if (results.isNotEmpty) {
-      String matchedCategory = results.first['category']; // E.g., 'Vegetables'
+      String matchedCategory = results.first['category']; 
       related = _allGroceryItems.where((p) => p['category'] == matchedCategory && p['id'] != results.first['id']).take(6).toList();
     } else {
       related = _allGroceryItems.take(6).toList();
@@ -291,15 +288,13 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
                     crossAxisCount: 3, 
                     mainAxisSpacing: 16, 
                     crossAxisSpacing: 12, 
-                    mainAxisExtent: 245 // Match with PremiumItemCard height
+                    mainAxisExtent: 245 
                   ),
                   itemCount: results.length,
-                  // ── MAIN FIX: Reusing the same PremiumItemCard here ──
-                  itemBuilder: (context, index) => PremiumItemCard(
+                  // ── MAIN FIX: Replaced old PremiumItemCard with AdaptiveItemCard ──
+                  itemBuilder: (context, index) => AdaptiveItemCard(
                     item: results[index], 
-                    isDark: false, 
-                    themeColor: _themeColor, 
-                    cartNotifier: groceryCartNotifier
+                    tabIndex: 0, // 0 For Grocery
                   ), 
                 ),
                 
@@ -312,11 +307,9 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
                       crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 245, 
                     ),
                     itemCount: related.length,
-                    itemBuilder: (context, index) => PremiumItemCard(
+                    itemBuilder: (context, index) => AdaptiveItemCard(
                       item: related[index], 
-                      isDark: false, 
-                      themeColor: _themeColor, 
-                      cartNotifier: groceryCartNotifier
+                      tabIndex: 0, // 0 For Grocery
                     ),
                   ),
                   const SizedBox(height: 30),
