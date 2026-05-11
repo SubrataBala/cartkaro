@@ -15,7 +15,7 @@ final Map<int, Map<String, List<Map<String, dynamic>>>> globalAllCategoryData = 
         'variants': [{'weight': '500g', 'price': '18'}, {'weight': '1kg', 'price': '30'}, {'weight': '2kg', 'price': '58'}]
       },
       {
-        'id': 'g_v2', 'name': 'Carrot', 'image': 'assets/images/broccoli.png', 'weight': '500g', 'price': '40',
+        'id': 'g_v2', 'name': 'Sweet Potato', 'image': 'assets/images/broccoli.png', 'weight': '500g', 'price': '40',
         'variants': [{'weight': '250g', 'price': '22'}, {'weight': '500g', 'price': '40'}, {'weight': '1kg', 'price': '75'}]
       },
       {
