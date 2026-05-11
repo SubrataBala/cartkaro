@@ -1,54 +1,5 @@
 import 'package:flutter/material.dart';
-
-ValueNotifier<Map<String, int>> groceryCartNotifier = ValueNotifier({});
-ValueNotifier<Map<String, int>> restaurantCartNotifier = ValueNotifier({});
-ValueNotifier<Map<String, int>> medicalCartNotifier = ValueNotifier({});
-
-ValueNotifier<Set<String>> watchlistNotifier = ValueNotifier({});
-
-final Map<int, Map<String, List<Map<String, dynamic>>>> globalAllCategoryData = {
-  0: { 
-    'Vegetables': [
-      {
-        'id': 'g_v1', 'name': 'Potato', 'image': 'assets/images/broccoli.png', 'weight': '1kg', 'price': '30',
-        'isBestseller': true,
-        'variants': [{'weight': '500g', 'price': '18'}, {'weight': '1kg', 'price': '30'}, {'weight': '2kg', 'price': '58'}]
-      },
-      {
-        'id': 'g_v2', 'name': 'Sweet Potato', 'image': 'assets/images/broccoli.png', 'weight': '500g', 'price': '40',
-        'variants': [{'weight': '250g', 'price': '22'}, {'weight': '500g', 'price': '40'}, {'weight': '1kg', 'price': '75'}]
-      },
-      {
-        'id': 'g_v3', 'name': 'Onion', 'image': 'assets/images/broccoli.png', 'weight': '1kg', 'price': '35',
-        'variants': [{'weight': '1kg', 'price': '35'}, {'weight': '5kg', 'price': '160'}]
-      },
-      {'id': 'g_v4', 'name': 'Cabbage', 'image': 'assets/images/broccoli.png', 'weight': '1 pc', 'price': '45'}, 
-    ],
-    'Fruits': [
-      {'id': 'g_f1', 'name': 'Apple', 'image': 'assets/images/broccoli.png', 'weight': '1kg', 'price': '120', 'isBestseller': true}, 
-    ],
-  },
-  1: { 
-    'Biryani & Pulao': [
-      {
-        'id': 'r_b1', 'name': 'Chicken Biryani', 'image': 'assets/images/broccoli.png', 'weight': 'Full', 'price': '280',
-        'isBestseller': true,
-        'variants': [{'weight': 'Half', 'price': '160'}, {'weight': 'Full', 'price': '280'}, {'weight': 'Family Pack', 'price': '650'}]
-      },
-      {'id': 'r_b2', 'name': 'Mutton Biryani', 'weight': 'Full', 'price': '350', 'image': 'assets/images/broccoli.png'},
-    ],
-  },
-  2: { 
-    'Daily Medicines': [
-      {
-        'id': 'm_m1', 'name': 'Paracetamol', 'image': 'assets/images/broccoli.png', 'weight': '10 Tabs', 'price': '20',
-        'isBestseller': true,
-        'variants': [{'weight': '10 Tabs', 'price': '20'}, {'weight': '15 Tabs', 'price': '28'}]
-      },
-      {'id': 'm_m2', 'name': 'Cough Syrup', 'weight': '100ml', 'price': '85', 'image': 'assets/images/broccoli.png'},
-    ],
-  }
-};
+import 'app_models.dart'; // ── ASLI DATA AUR NOTIFIERS YAHAN SE AAYENGE ──
 
 class ItemsScreen extends StatefulWidget {
   final String categoryTitle;
@@ -64,7 +15,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  // --- UPDATED: Force Light Theme (isDark = false) ---
   bool get _isDark => false; 
   Color get _bgColor => const Color(0xFFF8F9FA); 
   Color get _textColor => const Color(0xFF1A1A1A);
@@ -87,7 +37,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
     List<Map<String, dynamic>> categoryItems = tabData[widget.categoryTitle] ?? [];
     
     if (_searchQuery.isEmpty) return categoryItems;
-    return categoryItems.where((item) => item['name'].toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+    return categoryItems.where((item) => item['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
   }
 
   @override
@@ -96,7 +46,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
       backgroundColor: _bgColor,
       appBar: AppBar(
         backgroundColor: Colors.white,
-        elevation: 0.5, // Subtle shadow for better separation on white
+        elevation: 0.5, 
         leading: IconButton(icon: Icon(Icons.arrow_back_ios_new_rounded, color: _iconColor, size: 20), onPressed: () => Navigator.pop(context)),
         title: Text(widget.categoryTitle, style: TextStyle(color: _textColor, fontSize: 18, fontWeight: FontWeight.w800)),
         centerTitle: true,
@@ -183,7 +133,9 @@ class _PremiumItemCardState extends State<PremiumItemCard> {
     Color imageBoxBg = const Color(0xFFF3F4F6); 
     Color textColor = const Color(0xFF1A1A1A);
 
-    int price = int.parse(currentVariant['price'].toString());
+    // ── MAIN BUG FIX: Bulletproof parsing for both "18.0" and "18" ──
+    double rawPrice = double.tryParse(currentVariant['price'].toString()) ?? 0.0;
+    int price = rawPrice.toInt();
     int oldPrice = price + 20;
 
     return Container(
@@ -249,11 +201,11 @@ class _PremiumItemCardState extends State<PremiumItemCard> {
                           child: DropdownButton<int>(
                             isExpanded: true, value: _selectedVariantIndex, icon: const Icon(Icons.keyboard_arrow_down, size: 12, color: Colors.black54), dropdownColor: cardBgColor,
                             style: const TextStyle(color: Colors.black87, fontSize: 9, fontWeight: FontWeight.w600),
-                            items: variants.asMap().entries.map((e) => DropdownMenuItem<int>(value: e.key, child: Text(e.value['weight']))).toList(),
+                            items: variants.asMap().entries.map((e) => DropdownMenuItem<int>(value: e.key, child: Text(e.value['weight'].toString()))).toList(),
                             onChanged: (val) => setState(() => _selectedVariantIndex = val!),
                           ),
                         )
-                      : Align(alignment: Alignment.centerLeft, child: Text(item['weight'], style: const TextStyle(color: Colors.black87, fontSize: 9, fontWeight: FontWeight.w600))),
+                      : Align(alignment: Alignment.centerLeft, child: Text(item['weight'].toString(), style: const TextStyle(color: Colors.black87, fontSize: 9, fontWeight: FontWeight.w600))),
                   ),
                   
                   Row(

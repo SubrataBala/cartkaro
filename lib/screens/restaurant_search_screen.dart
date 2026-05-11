@@ -1,29 +1,25 @@
 import 'package:flutter/material.dart';
-import 'search_screen.dart'; // Models ke liye
-import 'items_screen.dart'; // cartNotifier aur watchlistNotifier ke liye
+import 'items_screen.dart'; // ── Yahan se PremiumItemCard aayega ──
+import 'app_models.dart';   // ── Yahan se Notifiers aur Data aayega ──
 
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
-  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
+    return child;
+  }
 }
 
-// --- RESTAURANT PRODUCT MODEL ---
-class RestaurantProduct {
-  final String id;
-  final String name;
-  final String category;
-  final String deliveryTime;
-  final double rating;
-  final String ratingCount;
-  final String image;
-  final bool isBestseller;
-  final List<Map<String, dynamic>> variants;
+// ── Search UI ke liye simple class (sirf pastel boxes ke liye) ──
+class SearchCategoryItem {
+  final String label;
+  final String imagePath;
+  SearchCategoryItem(this.label, this.imagePath);
+}
 
-  RestaurantProduct({
-    required this.id, required this.name, required this.category, required this.deliveryTime,
-    required this.rating, required this.ratingCount, required this.image, required this.variants,
-    this.isBestseller = false,
-  });
+class SearchSection {
+  final String title;
+  final List<SearchCategoryItem> items;
+  SearchSection(this.title, this.items);
 }
 
 class RestaurantSearchScreen extends StatefulWidget {
@@ -52,7 +48,7 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   ];
 
   // ==========================================
-  // FULL RESTAURANT DATA
+  // 1. PAST SEARCHES
   // ==========================================
   final List<Map<String, dynamic>> _pastSearches = [
     {'label': 'Biryani', 'icon': Icons.rice_bowl, 'color': const Color(0xFFFFCDD2)},
@@ -65,46 +61,43 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
     {'label': 'Paneer', 'icon': Icons.room_service, 'color': const Color(0xFFFFCCBC)},
   ];
 
+  // ==========================================
+  // 2. CATEGORY BOXES UI (Aapki Nayi Categories Yahan Add Ho Gayi Hain)
+  // ==========================================
   final List<SearchSection> _searchCategories = [
+    SearchSection('Top Picks', [SearchCategoryItem('Biryani', 'assets/images/broccoli.png'), SearchCategoryItem('Pizza', 'assets/images/broccoli.png'), SearchCategoryItem('Momos', 'assets/images/broccoli.png')]),
+    SearchSection('Trending', [SearchCategoryItem('Burger', 'assets/images/broccoli.png'), SearchCategoryItem('Noodles', 'assets/images/broccoli.png'), SearchCategoryItem('Cold Coffee', 'assets/images/broccoli.png')]),
     SearchSection('Top Cuisines', [SearchCategoryItem('North Indian', 'assets/images/broccoli.png'), SearchCategoryItem('South Indian', 'assets/images/broccoli.png'), SearchCategoryItem('Chinese', 'assets/images/broccoli.png')]),
     SearchSection('Biryani & Pulao', [SearchCategoryItem('Chicken', 'assets/images/broccoli.png'), SearchCategoryItem('Mutton', 'assets/images/broccoli.png'), SearchCategoryItem('Veg Pulao', 'assets/images/broccoli.png')]),
     SearchSection('Pizzas & Burgers', [SearchCategoryItem('Cheese Pizza', 'assets/images/broccoli.png'), SearchCategoryItem('Chicken Burger', 'assets/images/broccoli.png'), SearchCategoryItem('Paneer Burger', 'assets/images/broccoli.png')]),
     SearchSection('Noodles & Momos', [SearchCategoryItem('Hakka', 'assets/images/broccoli.png'), SearchCategoryItem('Steam Momo', 'assets/images/broccoli.png'), SearchCategoryItem('Fried Momo', 'assets/images/broccoli.png')]),
   ];
 
-  final List<String> _allSuggestions = ["Biryani", "Chicken Biryani", "Mutton Biryani", "Pizza", "Margherita Pizza", "Burger", "Zinger Burger", "Momos", "Noodles", "Butter Chicken", "Dosa", "Paneer Tikka", "Cold Coffee"];
-  
-  final List<RestaurantProduct> _allProducts = [
-    RestaurantProduct(id: 'r_b1', name: 'Chicken Dum Biryani', category: 'Biryani & Pulao', image: 'assets/images/broccoli.png', deliveryTime: '30 MINS', rating: 4.5, ratingCount: '8k', isBestseller: true, variants: [{'weight': 'Half', 'price': 160, 'mrp': 190, 'discount': 15}, {'weight': 'Full', 'price': 280, 'mrp': 350, 'discount': 20}]),
-    RestaurantProduct(id: 'r_b2', name: 'Mutton Biryani', category: 'Biryani & Pulao', image: 'assets/images/broccoli.png', deliveryTime: '35 MINS', rating: 4.6, ratingCount: '4k', variants: [{'weight': 'Full', 'price': 350, 'mrp': 420, 'discount': 16}]),
-    RestaurantProduct(id: 'r_b3', name: 'Veg Biryani', category: 'Biryani & Pulao', image: 'assets/images/broccoli.png', deliveryTime: '25 MINS', rating: 4.3, ratingCount: '5k', isBestseller: true, variants: [{'weight': 'Half', 'price': 130, 'mrp': 150, 'discount': 13}, {'weight': 'Full', 'price': 190, 'mrp': 220, 'discount': 14}]),
-    RestaurantProduct(id: 'r_b4', name: 'Paneer Biryani', category: 'Biryani & Pulao', image: 'assets/images/broccoli.png', deliveryTime: '30 MINS', rating: 4.4, ratingCount: '3k', variants: [{'weight': 'Full', 'price': 220, 'mrp': 260, 'discount': 15}]),
+  // ==========================================
+  // 3. MASTER DATA FETCHER (Reads directly from restaurant_data.dart via app_models)
+  // ==========================================
+  List<Map<String, dynamic>> get _allRestaurantItems {
+    List<Map<String, dynamic>> allItems = [];
+    final restaurantMap = globalAllCategoryData[1] ?? {}; // 1 is Restaurant Tab
     
-    RestaurantProduct(id: 'r_p1', name: 'Margherita Pizza', category: 'Pizzas & Burgers', image: 'assets/images/broccoli.png', deliveryTime: '25 MINS', rating: 4.5, ratingCount: '12k', isBestseller: true, variants: [{'weight': 'Regular', 'price': 150, 'mrp': 150, 'discount': 0}, {'weight': 'Medium', 'price': 250, 'mrp': 250, 'discount': 0}]),
-    RestaurantProduct(id: 'r_p2', name: 'Chicken Pepperoni Pizza', category: 'Pizzas & Burgers', image: 'assets/images/broccoli.png', deliveryTime: '30 MINS', rating: 4.7, ratingCount: '9k', variants: [{'weight': 'Medium', 'price': 350, 'mrp': 400, 'discount': 12}, {'weight': 'Large', 'price': 550, 'mrp': 650, 'discount': 15}]),
-    RestaurantProduct(id: 'r_p3', name: 'Farmhouse Veg Pizza', category: 'Pizzas & Burgers', image: 'assets/images/broccoli.png', deliveryTime: '25 MINS', rating: 4.4, ratingCount: '6k', variants: [{'weight': 'Medium', 'price': 280, 'mrp': 320, 'discount': 12}]),
-    
-    RestaurantProduct(id: 'r_b5', name: 'Veggie Burger', category: 'Pizzas & Burgers', image: 'assets/images/broccoli.png', deliveryTime: '20 MINS', rating: 4.2, ratingCount: '15k', variants: [{'weight': '1 pc', 'price': 99, 'mrp': 120, 'discount': 17}]),
-    RestaurantProduct(id: 'r_b6', name: 'Chicken Zinger Burger', category: 'Pizzas & Burgers', image: 'assets/images/broccoli.png', deliveryTime: '20 MINS', rating: 4.6, ratingCount: '18k', isBestseller: true, variants: [{'weight': '1 pc', 'price': 149, 'mrp': 170, 'discount': 12}]),
-    
-    RestaurantProduct(id: 'r_n1', name: 'Hakka Noodles', category: 'Noodles & Momos', image: 'assets/images/broccoli.png', deliveryTime: '25 MINS', rating: 4.3, ratingCount: '7k', variants: [{'weight': 'Half', 'price': 80, 'mrp': 100, 'discount': 20}, {'weight': 'Full', 'price': 130, 'mrp': 160, 'discount': 18}]),
-    RestaurantProduct(id: 'r_n2', name: 'Chicken Noodles', category: 'Noodles & Momos', image: 'assets/images/broccoli.png', deliveryTime: '25 MINS', rating: 4.4, ratingCount: '5k', isBestseller: true, variants: [{'weight': 'Full', 'price': 160, 'mrp': 190, 'discount': 15}]),
-    RestaurantProduct(id: 'r_m1', name: 'Veg Steam Momos', category: 'Noodles & Momos', image: 'assets/images/broccoli.png', deliveryTime: '20 MINS', rating: 4.5, ratingCount: '10k', isBestseller: true, variants: [{'weight': '6 pcs', 'price': 80, 'mrp': 100, 'discount': 20}, {'weight': '10 pcs', 'price': 120, 'mrp': 150, 'discount': 20}]),
-    RestaurantProduct(id: 'r_m2', name: 'Chicken Fried Momos', category: 'Noodles & Momos', image: 'assets/images/broccoli.png', deliveryTime: '20 MINS', rating: 4.6, ratingCount: '8k', variants: [{'weight': '6 pcs', 'price': 110, 'mrp': 130, 'discount': 15}]),
-    
-    RestaurantProduct(id: 'r_i1', name: 'Butter Chicken', category: 'Top Cuisines', image: 'assets/images/broccoli.png', deliveryTime: '35 MINS', rating: 4.8, ratingCount: '11k', isBestseller: true, variants: [{'weight': 'Half', 'price': 260, 'mrp': 300, 'discount': 13}, {'weight': 'Full', 'price': 450, 'mrp': 520, 'discount': 13}]),
-    RestaurantProduct(id: 'r_i2', name: 'Paneer Butter Masala', category: 'Top Cuisines', image: 'assets/images/broccoli.png', deliveryTime: '30 MINS', rating: 4.5, ratingCount: '6k', variants: [{'weight': 'Full', 'price': 220, 'mrp': 260, 'discount': 15}]),
-    RestaurantProduct(id: 'r_i3', name: 'Garlic Naan', category: 'Top Cuisines', image: 'assets/images/broccoli.png', deliveryTime: '30 MINS', rating: 4.6, ratingCount: '14k', variants: [{'weight': '1 pc', 'price': 45, 'mrp': 55, 'discount': 18}]),
-    RestaurantProduct(id: 'r_i4', name: 'Masala Dosa', category: 'Top Cuisines', image: 'assets/images/broccoli.png', deliveryTime: '25 MINS', rating: 4.7, ratingCount: '9k', isBestseller: true, variants: [{'weight': '1 pc', 'price': 110, 'mrp': 130, 'discount': 15}]),
-    RestaurantProduct(id: 'r_i5', name: 'Idli Sambar', category: 'Top Cuisines', image: 'assets/images/broccoli.png', deliveryTime: '20 MINS', rating: 4.5, ratingCount: '6k', variants: [{'weight': '2 pcs', 'price': 60, 'mrp': 70, 'discount': 14}]),
-    
-    RestaurantProduct(id: 'r_d1', name: 'Cold Coffee', category: 'Top Cuisines', image: 'assets/images/broccoli.png', deliveryTime: '15 MINS', rating: 4.6, ratingCount: '8k', variants: [{'weight': '1 Glass', 'price': 120, 'mrp': 150, 'discount': 20}]),
-    RestaurantProduct(id: 'r_d2', name: 'Gulab Jamun', category: 'Top Cuisines', image: 'assets/images/broccoli.png', deliveryTime: '20 MINS', rating: 4.8, ratingCount: '5k', isBestseller: true, variants: [{'weight': '2 pcs', 'price': 60, 'mrp': 75, 'discount': 20}]),
-  ];
+    restaurantMap.forEach((categoryName, items) {
+      for (var item in items) {
+        // Create a copy and inject the category name for 'Related Products' logic
+        var itemCopy = Map<String, dynamic>.from(item);
+        itemCopy['category'] = categoryName; 
+        allItems.add(itemCopy);
+      }
+    });
+    return allItems;
+  }
 
   void _onSearchSubmit(String val) {
     if (val.isEmpty) return;
-    setState(() { _query = val; _searchController.text = val; _showResults = true; });
+    setState(() {
+      _query = val;
+      _searchController.text = val;
+      _showResults = true;
+    });
   }
 
   @override
@@ -117,7 +110,13 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
           child: Column(
             children: [
               _buildSearchHeader(),
-              Expanded(child: _searchController.text.isEmpty ? _buildDefaultView() : _showResults ? _buildResultsView() : _buildSuggestionsView()),
+              Expanded(
+                child: _searchController.text.isEmpty
+                    ? _buildDefaultView()      
+                    : _showResults 
+                        ? _buildResultsView()  
+                        : _buildSuggestionsView(), 
+              ),
             ],
           ),
         ),
@@ -183,19 +182,36 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   }
 
   Widget _buildSuggestionsView() {
-    final filtered = _allSuggestions.where((item) => item.toLowerCase().contains(_query.toLowerCase())).toList();
-    if(filtered.isEmpty) return Center(child: Text("No items found", style: TextStyle(color: _textSecondary)));
-    return ListView.builder(itemCount: filtered.length, itemBuilder: (context, index) => ListTile(leading: const Icon(Icons.search, color: Colors.grey, size: 20), title: Text(filtered[index], style: const TextStyle(fontWeight: FontWeight.w600)), onTap: () => _onSearchSubmit(filtered[index])));
+    // Dynamic suggestions based on actual global data
+    final filtered = _allRestaurantItems
+        .where((item) => item['name'].toString().toLowerCase().contains(_query.toLowerCase()))
+        .map((item) => item['name'].toString())
+        .toSet() // Removes duplicates
+        .toList();
+
+    if(filtered.isEmpty) return Center(child: Text("No dishes found", style: TextStyle(color: _textSecondary)));
+    
+    return ListView.builder(
+      itemCount: filtered.length, 
+      itemBuilder: (context, index) => ListTile(
+        leading: const Icon(Icons.search, color: Colors.grey, size: 20), 
+        title: Text(filtered[index], style: const TextStyle(fontWeight: FontWeight.w600)), 
+        onTap: () => _onSearchSubmit(filtered[index])
+      )
+    );
   }
 
   Widget _buildResultsView() {
-    final results = _allProducts.where((p) => p.name.toLowerCase().contains(_query.toLowerCase())).toList();
-    List<RestaurantProduct> related = [];
+    // Fetch actual matching products from global data
+    final results = _allRestaurantItems.where((p) => p['name'].toString().toLowerCase().contains(_query.toLowerCase())).toList();
+    
+    // --- SMART RELATED PRODUCTS LOGIC ---
+    List<Map<String, dynamic>> related = [];
     if (results.isNotEmpty) {
-      String matchedCat = results.first.category;
-      related = _allProducts.where((p) => p.category == matchedCat && !results.contains(p)).take(6).toList();
+      String matchedCategory = results.first['category']; // E.g., 'Top Picks'
+      related = _allRestaurantItems.where((p) => p['category'] == matchedCategory && p['id'] != results.first['id']).take(6).toList();
     } else {
-      related = _allProducts.take(6).toList();
+      related = _allRestaurantItems.take(6).toList();
     }
 
     return Column(
@@ -207,16 +223,39 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16), shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 260),
-                  itemCount: results.length, itemBuilder: (context, index) => SearchRestaurantCard(product: results[index], themeColor: _themeColor), 
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, 
+                    mainAxisSpacing: 16, 
+                    crossAxisSpacing: 12, 
+                    mainAxisExtent: 245 // Match with PremiumItemCard height
+                  ),
+                  itemCount: results.length,
+                  // ── MAIN FIX: Reusing the same PremiumItemCard here ──
+                  itemBuilder: (context, index) => PremiumItemCard(
+                    item: results[index], 
+                    isDark: false, 
+                    themeColor: _themeColor, 
+                    cartNotifier: restaurantCartNotifier // Passing restaurant cart
+                  ), 
                 ),
+                
                 if (related.isNotEmpty) ...[
                   const Padding(padding: EdgeInsets.fromLTRB(20, 30, 20, 16), child: Text("Related Dishes", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
                   GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 260),
-                    itemCount: related.length, itemBuilder: (context, index) => SearchRestaurantCard(product: related[index], themeColor: _themeColor),
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 245, 
+                    ),
+                    itemCount: related.length,
+                    itemBuilder: (context, index) => PremiumItemCard(
+                      item: related[index], 
+                      isDark: false, 
+                      themeColor: _themeColor, 
+                      cartNotifier: restaurantCartNotifier // Passing restaurant cart
+                    ),
                   ),
                   const SizedBox(height: 30),
                 ]
@@ -225,75 +264,6 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
           ),
         ),
       ],
-    );
-  }
-}
-
-// RESTAURANT CARD WIDGET
-class SearchRestaurantCard extends StatefulWidget {
-  final RestaurantProduct product;
-  final Color themeColor;
-  const SearchRestaurantCard({super.key, required this.product, required this.themeColor});
-
-  @override
-  State<SearchRestaurantCard> createState() => _SearchRestaurantCardState();
-}
-
-class _SearchRestaurantCardState extends State<SearchRestaurantCard> {
-  int _selectedVariantIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final product = widget.product;
-    final currentVariant = product.variants[_selectedVariantIndex];
-    final String cartItemId = "${product.id}|$_selectedVariantIndex";
-
-    int price = int.parse(currentVariant['price'].toString());
-    int mrp = int.parse(currentVariant['mrp'].toString());
-    int discount = int.parse(currentVariant['discount'].toString());
-
-    return Container(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: Colors.grey.shade200), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))]),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              Container(height: 90, decoration: const BoxDecoration(color: Color(0xFFFFF3E0), borderRadius: BorderRadius.vertical(top: Radius.circular(12))), child: Center(child: Image.asset(product.image, height: 60, errorBuilder: (_,__,___) => Text('🍕', style: TextStyle(fontSize: 40))))),
-              Positioned(top: 6, left: 6, child: ValueListenableBuilder(valueListenable: watchlistNotifier, builder: (context, Set<String> favs, _) { final isFav = favs.contains(product.id); return GestureDetector(onTap: () { var newFavs = Set<String>.from(favs); isFav ? newFavs.remove(product.id) : newFavs.add(product.id); watchlistNotifier.value = newFavs; }, child: Icon(isFav ? Icons.bookmark : Icons.bookmark_border_rounded, color: isFav ? widget.themeColor : Colors.grey, size: 20)); })),
-              if (product.isBestseller) Positioned(bottom: 0, left: 0, right: 0, child: Container(color: widget.themeColor, padding: const EdgeInsets.symmetric(vertical: 2), child: const Center(child: Text('Bestseller', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold))))),
-            ],
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start, mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(product.name, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 11), maxLines: 2, overflow: TextOverflow.ellipsis),
-                  Container(height: 24, padding: const EdgeInsets.symmetric(horizontal: 4), decoration: BoxDecoration(color: const Color(0xFFF8F9FA), border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(4)), child: DropdownButtonHideUnderline(child: DropdownButton<int>(isExpanded: true, value: _selectedVariantIndex, icon: Icon(Icons.keyboard_arrow_down, size: 14, color: Colors.grey.shade600), dropdownColor: Colors.white, style: const TextStyle(color: Colors.black87, fontSize: 10, fontWeight: FontWeight.w600), items: product.variants.asMap().entries.map((e) => DropdownMenuItem<int>(value: e.key, child: Text(e.value['weight']))).toList(), onChanged: (val) => setState(() => _selectedVariantIndex = val!)))),
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [Text(product.deliveryTime, style: TextStyle(fontSize: 8, color: Colors.grey.shade500, fontWeight: FontWeight.w800)), Row(children: [Icon(Icons.star, size: 10, color: Colors.green.shade600), const SizedBox(width: 2), Text('${product.rating} (${product.ratingCount})', style: const TextStyle(fontSize: 8, color: Colors.black87, fontWeight: FontWeight.bold))])]),
-                  if (discount > 0) Text('$discount% OFF', style: TextStyle(color: widget.themeColor, fontSize: 9, fontWeight: FontWeight.bold)) else const Text('', style: TextStyle(fontSize: 9)),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween, crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('₹$price', style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 14)), if (discount > 0) Text('₹$mrp', style: const TextStyle(decoration: TextDecoration.lineThrough, color: Colors.grey, fontSize: 9))]),
-                      ValueListenableBuilder(
-                        valueListenable: restaurantCartNotifier,
-                        builder: (context, Map<String, int> counts, _) {
-                          final count = counts[cartItemId] ?? 0;
-                          if (count == 0) return GestureDetector(onTap: () { var current = {...restaurantCartNotifier.value}; current[cartItemId] = 1; restaurantCartNotifier.value = current; }, child: Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), decoration: BoxDecoration(color: Colors.white, border: Border.all(color: widget.themeColor, width: 1.2), borderRadius: BorderRadius.circular(6)), child: Text('ADD', style: TextStyle(color: widget.themeColor, fontWeight: FontWeight.w900, fontSize: 10))));
-                          return Container(decoration: BoxDecoration(color: widget.themeColor, borderRadius: BorderRadius.circular(6)), child: Row(mainAxisSize: MainAxisSize.min, children: [GestureDetector(onTap: () { var current = {...restaurantCartNotifier.value}; current[cartItemId] = (current[cartItemId] ?? 0) - 1; if (current[cartItemId]! <= 0) current.remove(cartItemId); restaurantCartNotifier.value = current; }, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4), child: Text('-', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold)))), Text('$count', style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold)), GestureDetector(onTap: () { var current = {...restaurantCartNotifier.value}; current[cartItemId] = (current[cartItemId] ?? 0) + 1; restaurantCartNotifier.value = current; }, child: const Padding(padding: EdgeInsets.symmetric(horizontal: 6, vertical: 4), child: Text('+', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold))))]));
-                        },
-                      ),
-                    ],
-                  )
-                ],
-              ),
-            ),
-          )
-        ],
-      ),
     );
   }
 }
