@@ -21,7 +21,9 @@ class CartTab extends StatefulWidget {
 }
 
 class _CartTabState extends State<CartTab> {
-  bool get _isDark => widget.selectedTab == 0; 
+  // ── MAIN FIX: Ab ye hamesha 'false' rahega taaki Grocery bhi White dikhe ──
+  bool get _isDark => false; 
+  
   Color get _bgColor => _isDark ? const Color(0xFF121212) : const Color(0xFFF8F9FA);
   Color get _cardBgColor => _isDark ? const Color(0xFF1E1E1E) : Colors.white;
   Color get _textPrimary => _isDark ? Colors.white : const Color(0xFF1A1A1A); 
