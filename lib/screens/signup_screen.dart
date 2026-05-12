@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // ── MEMORY IMPORT ──
@@ -26,6 +27,8 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
   bool _canResend = false;
   int _resendSeconds = 30;
   Timer? _resendTimer;
+  String? _verificationId;
+  int? _resendToken;
 
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -57,37 +60,94 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
     super.dispose();
   }
 
-  void _requestOtp() async {
+  Future<void> _requestOtp() async {
     if (!_formKey.currentState!.validate()) return;
     if (!_agreedToTerms) { _showSnack('Please agree to the Terms & Conditions to continue.', isError: true); return; }
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() { _isLoading = false; _otpSent = true; });
-    _startResendTimer();
-    Future.delayed(const Duration(milliseconds: 200), () => _otpFocusNodes[0].requestFocus());
-    _showSnack('OTP sent to +91 ${_mobileController.text.trim()}');
+    await _sendFirebaseOtp();
   }
 
-  void _verifyAndCreate() async {
+  Future<void> _sendFirebaseOtp({int? forceResendingToken}) async {
+    final phoneNumber = '+91${_mobileController.text.trim()}';
+
+    await FirebaseAuth.instance.verifyPhoneNumber(
+      phoneNumber: phoneNumber,
+      timeout: const Duration(seconds: 60),
+      forceResendingToken: forceResendingToken,
+      verificationCompleted: (credential) async {
+        await _signInWithCredential(credential);
+      },
+      verificationFailed: (e) {
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        _showSnack(_firebaseAuthErrorMessage(e), isError: true);
+      },
+      codeSent: (verificationId, resendToken) {
+        if (!mounted) return;
+        setState(() {
+          _isLoading = false;
+          _otpSent = true;
+          _verificationId = verificationId;
+          _resendToken = resendToken;
+        });
+        _startResendTimer();
+        Future.delayed(const Duration(milliseconds: 200), () {
+          if (mounted) _otpFocusNodes[0].requestFocus();
+        });
+        _showSnack('OTP sent to +91 ${_mobileController.text.trim()}');
+      },
+      codeAutoRetrievalTimeout: (verificationId) {
+        _verificationId = verificationId;
+      },
+    );
+  }
+
+  Future<void> _verifyAndCreate() async {
     final otp = _otpControllers.map((c) => c.text).join();
     if (otp.length < 6) { _showSnack('Please enter the complete 6-digit OTP', isError: true); return; }
+    if (_verificationId == null) { _showSnack('Please request OTP again.', isError: true); return; }
     setState(() => _isLoading = true);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => _isLoading = false);
 
-    if (mounted) {
-      // ── SET GLOBAL LOGIN TRUE & SAVE TO PHONE MEMORY ──
-      isUserLoggedIn = true; 
+    final credential = PhoneAuthProvider.credential(
+      verificationId: _verificationId!,
+      smsCode: otp,
+    );
+
+    await _signInWithCredential(credential);
+  }
+
+  Future<void> _signInWithCredential(PhoneAuthCredential credential) async {
+    try {
+      final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
+      if (!mounted) return;
+
+      isUserLoggedIn = true;
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setBool('isLoggedIn', true);
+      await prefs.setString('userName', _nameController.text.trim());
+      await prefs.setString('userPhone', _mobileController.text.trim());
+      if (userCredential.user?.uid != null) {
+        await prefs.setString('firebaseUid', userCredential.user!.uid);
+      }
 
-      _showSnack('Account created! Welcome to Cartkaro 🎉');
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+
+      _showSnack('Account created! Welcome to Cartkaro');
       
       if (Navigator.canPop(context)) {
         Navigator.pop(context);
       } else {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
       }
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showSnack(_firebaseAuthErrorMessage(e), isError: true);
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showSnack('Could not verify OTP. Please try again.', isError: true);
     }
   }
 
@@ -100,13 +160,12 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
     });
   }
 
-  void _resendOtp() async {
+  Future<void> _resendOtp() async {
     if (!_canResend) return;
     for (final c in _otpControllers) { c.clear(); }
     _otpFocusNodes[0].requestFocus();
-    _startResendTimer();
-    await Future.delayed(const Duration(milliseconds: 500));
-    _showSnack('OTP resent to +91 ${_mobileController.text.trim()}');
+    setState(() => _isLoading = true);
+    await _sendFirebaseOtp(forceResendingToken: _resendToken);
   }
 
   void _showSnack(String msg, {bool isError = false}) {
@@ -117,7 +176,27 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
   void _changeNumber() {
     _resendTimer?.cancel();
     for (final c in _otpControllers) { c.clear(); }
-    setState(() { _otpSent = false; _canResend = false; _resendSeconds = 30; });
+    setState(() { _otpSent = false; _canResend = false; _resendSeconds = 30; _verificationId = null; _resendToken = null; });
+  }
+
+  String _firebaseAuthErrorMessage(FirebaseAuthException e) {
+    switch (e.code) {
+      case 'invalid-phone-number':
+        return 'Please enter a valid phone number.';
+      case 'invalid-verification-code':
+        return 'The OTP is incorrect. Please check and try again.';
+      case 'session-expired':
+        return 'OTP expired. Please request a new one.';
+      case 'too-many-requests':
+        return 'Too many attempts. Please wait and try again later.';
+      case 'network-request-failed':
+        return 'Network error. Please check your internet connection.';
+      case 'app-not-authorized':
+      case 'missing-client-identifier':
+        return 'Firebase phone auth is not configured for this app yet.';
+      default:
+        return e.message ?? 'Firebase authentication failed.';
+    }
   }
 
   void _skipToHome() {
