@@ -1,7 +1,5 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-
-// Import the data/models and the new screen
 import 'grocery_data.dart';
 import 'items_screen.dart';
 
@@ -79,8 +77,8 @@ class _GroceryTabState extends State<GroceryTab> {
 
   final List<GridSectionData> _grids = const [
     GridSectionData('Grocery & Kitchen', [
-      CategoryItem('Vegetables', 'assets/images/fruits.png'),
-      CategoryItem('Fruits', 'assets/images/aata.png'),
+      CategoryItem('Vegetables', 'assets/images/vegetables.png'),
+      CategoryItem('Fruits', 'assets/images/fruit.png'),
       CategoryItem('Grocery', 'assets/images/oil.png'),
       CategoryItem('Dairy, Milk\n& Bread', 'assets/images/braed.png'),
       CategoryItem('Dry Fruits\n& Seeds', 'assets/images/cashew.png'),
@@ -137,18 +135,13 @@ class _GroceryTabState extends State<GroceryTab> {
     super.dispose();
   }
 
-  // =======================================================================
-  // 🔥 THIS IS THE FUNCTION THAT REDIRECTS TO THE ITEM SCREEN
-  // =======================================================================
   void _navigateToCategory(BuildContext context, String rawCategoryName) {
     String cleanName = rawCategoryName.replaceAll('\n', ' ');
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ItemsScreen(
-          categoryTitle: cleanName,
-          tabIndex: 0, // 0 = GROCERY THEME
-        ),
+        builder: (context) =>
+            ItemsScreen(categoryTitle: cleanName, tabIndex: 0),
       ),
     );
   }

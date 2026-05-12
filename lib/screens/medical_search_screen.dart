@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'items_screen.dart'; // Iski zaroorat pad sakti hai navigation ke liye
 import 'app_models.dart';   
-import '../widgets/item_cards.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
+import '../widgets/adaptive_item_card.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
 
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override

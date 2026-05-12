@@ -2,7 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_models.dart';
-import '../widgets/item_cards.dart'; 
+import '../widgets/shared_card_widgets.dart';
+
+// 🔥 IMPORT ADDED HERE 🔥
+import 'restaurant_menu_screen.dart'; 
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const Color kRestaurantOrange = Color(0xFFFF6B35);
@@ -484,47 +487,60 @@ class _RestaurantTabState extends State<RestaurantTab> {
       ),
       itemBuilder: (ctx, i) {
         final r = globalRestaurants[i];
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                width: 100, height: 100, color: Colors.grey.shade100,
-                child: Image.asset(r.imagePath, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
+        
+        // 🔥 GESTURE DETECTOR ADDED HERE 🔥
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => RestaurantMenuScreen(restaurant: r),
               ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(r.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: kTextDark), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 4),
-                  Text(r.categories, style: const TextStyle(fontSize: 12, color: kTextGrey, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    crossAxisAlignment: WrapCrossAlignment.center,
-                    children: [
-                      const Icon(Icons.star, color: kTextMedium, size: 14),
-                      const SizedBox(width: 4),
-                      Text(r.rating, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kTextMedium)),
-                      const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('•', style: TextStyle(color: kTextGrey, fontSize: 10))),
-                      Text(r.time, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kTextMedium)),
-                      const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('•', style: TextStyle(color: kTextGrey, fontSize: 10))),
-                      Text(r.distance, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kTextMedium)),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
-                    child: Text('📈 ${r.totalSells}', style: TextStyle(color: Colors.blue.shade700, fontSize: 10, fontWeight: FontWeight.bold)),
-                  )
-                ],
+            );
+          },
+          behavior: HitTestBehavior.opaque, // Ensures tapping anywhere on the row registers the click
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: 100, height: 100, color: Colors.grey.shade100,
+                  child: Image.asset(r.imagePath, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
+                ),
               ),
-            )
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(r.name, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: kTextDark), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 4),
+                    Text(r.categories, style: const TextStyle(fontSize: 12, color: kTextGrey, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                    const SizedBox(height: 8),
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      children: [
+                        const Icon(Icons.star, color: kTextMedium, size: 14),
+                        const SizedBox(width: 4),
+                        Text(r.rating, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kTextMedium)),
+                        const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('•', style: TextStyle(color: kTextGrey, fontSize: 10))),
+                        Text(r.time, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kTextMedium)),
+                        const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('•', style: TextStyle(color: kTextGrey, fontSize: 10))),
+                        Text(r.distance, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kTextMedium)),
+                      ],
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                      child: Text('📈 ${r.totalSells}', style: TextStyle(color: Colors.blue.shade700, fontSize: 10, fontWeight: FontWeight.bold)),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
         );
       },
     );

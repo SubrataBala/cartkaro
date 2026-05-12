@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 
 // ==========================================
-// 1. UI MODELS (Blueprints for your app)
+// 1. UI MODELS
 // ==========================================
-
 class BannerData {
   final String title;
   final String subtitle;
@@ -48,7 +47,6 @@ class StoreItem {
 // ==========================================
 // 2. GROCERY DATA MAP
 // ==========================================
-
 final Map<String, List<Map<String, dynamic>>> groceryData = {
   'Vegetables': [
     {'id': 'g1', 'name': 'Potato', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '500g', 'price': 18.0}, {'weight': '1kg', 'price': 34.0}, {'weight': '2kg', 'price': 65.0}]},

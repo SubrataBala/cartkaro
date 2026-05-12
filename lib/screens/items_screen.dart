@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_models.dart'; 
-import '../widgets/item_cards.dart'; 
+import '../widgets/adaptive_item_card.dart'; 
 
 class ItemsScreen extends StatefulWidget {
   final String categoryTitle;
@@ -21,18 +21,15 @@ class _ItemsScreenState extends State<ItemsScreen> {
   Color get _iconColor => Colors.black;
 
   Color get _themeColor {
-    if (widget.tabIndex == 1) return const Color(0xFFE53935); // Restaurant Red
-    if (widget.tabIndex == 2) return const Color(0xFF1565C0); // Medical Blue
-    return const Color(0xFF4CAF50); // Grocery Green
+    if (widget.tabIndex == 1) return const Color(0xFFE53935); 
+    if (widget.tabIndex == 2) return const Color(0xFF1565C0); 
+    return const Color(0xFF4CAF50); 
   }
 
   List<Map<String, dynamic>> get _filteredItems {
-    // 1. Fetch data based on tabIndex (0 = Grocery)
     final tabData = globalAllCategoryData[widget.tabIndex] ?? {};
-    // 2. Fetch specific category items (e.g. "Vegetables")
     List<Map<String, dynamic>> categoryItems = tabData[widget.categoryTitle] ?? [];
     
-    // 3. Filter by search
     if (_searchQuery.isEmpty) return categoryItems;
     return categoryItems.where((item) => item['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
   }

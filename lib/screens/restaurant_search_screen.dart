@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'app_models.dart';   
-import '../widgets/item_cards.dart'; 
 import 'restaurant_menu_screen.dart'; 
 import 'restaurant_data.dart';
 
