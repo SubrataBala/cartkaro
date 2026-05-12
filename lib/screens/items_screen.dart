@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'app_models.dart'; 
-// ── NAYI FILE YAHAN SE IMPORT HOGI ──
 import '../widgets/item_cards.dart'; 
 
 class ItemsScreen extends StatefulWidget {
@@ -17,7 +16,6 @@ class _ItemsScreenState extends State<ItemsScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = "";
 
-  bool get _isDark => false; 
   Color get _bgColor => const Color(0xFFF8F9FA); 
   Color get _textColor => const Color(0xFF1A1A1A);
   Color get _iconColor => Colors.black;
@@ -28,13 +26,13 @@ class _ItemsScreenState extends State<ItemsScreen> {
     return const Color(0xFF4CAF50); // Grocery Green
   }
 
-  // Notifiers ab direct item_cards.dart me handle ho rahe hain, 
-  // isliye yahan se cartNotifier nikal diya hai.
-
   List<Map<String, dynamic>> get _filteredItems {
+    // 1. Fetch data based on tabIndex (0 = Grocery)
     final tabData = globalAllCategoryData[widget.tabIndex] ?? {};
+    // 2. Fetch specific category items (e.g. "Vegetables")
     List<Map<String, dynamic>> categoryItems = tabData[widget.categoryTitle] ?? [];
     
+    // 3. Filter by search
     if (_searchQuery.isEmpty) return categoryItems;
     return categoryItems.where((item) => item['name'].toString().toLowerCase().contains(_searchQuery.toLowerCase())).toList();
   }
@@ -80,7 +78,7 @@ class _ItemsScreenState extends State<ItemsScreen> {
           
           Expanded(
             child: _filteredItems.isEmpty 
-              ? Center(child: Text("No items available", style: TextStyle(color: _textColor.withOpacity(0.5), fontSize: 16)))
+              ? Center(child: Text("No items available yet", style: TextStyle(color: _textColor.withOpacity(0.5), fontSize: 16)))
               : GridView.builder(
                   padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
                   physics: const ClampingScrollPhysics(), 
@@ -92,13 +90,10 @@ class _ItemsScreenState extends State<ItemsScreen> {
                     mainAxisExtent: 245, 
                   ),
                   itemBuilder: (context, index) {
-                    
-                    // ── YAHAN SMART SWITCHER KAAM KAREGA ──
                     return AdaptiveItemCard(
                       item: _filteredItems[index], 
                       tabIndex: widget.tabIndex,
                     );
-                    
                   },
                 ),
           ),
