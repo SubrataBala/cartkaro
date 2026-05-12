@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'app_models.dart';
+import 'items_screen.dart'; // Ensure this is imported for navigation
 
 class MedicalTab extends StatefulWidget {
   const MedicalTab({super.key});
@@ -15,28 +15,13 @@ class _MedicalTabState extends State<MedicalTab> {
   int _bannerIndex = 0;
 
   final Color _textColor = const Color(0xFF1A1A1A);
-  final Color _gridItemBgColor = const Color(0xFFF5F7FA); // Light clinical grey
+  final Color _gridItemBgColor = const Color(0xFFF5F7FA);
   final Color _borderColor = Colors.grey.withOpacity(0.15);
 
   final List<BannerData> _banners = const [
-    BannerData(
-      '24/7 Medicines',
-      'Delivered in 10 mins',
-      kMedicalBlue,
-      'assets/images/broccoli.png',
-    ),
-    BannerData(
-      'Free Checkups',
-      'Book a lab test now',
-      Colors.teal,
-      'assets/images/broccoli.png',
-    ),
-    BannerData(
-      'First Aid Kits',
-      'Flat 20% off today',
-      Color(0xFF00897B),
-      'assets/images/broccoli.png',
-    ),
+    BannerData('24/7 Medicines', 'Delivered in 10 mins', kMedicalBlue, 'assets/images/broccoli.png'),
+    BannerData('Free Checkups', 'Book a lab test now', Colors.teal, 'assets/images/broccoli.png'),
+    BannerData('First Aid Kits', 'Flat 20% off today', Color(0xFF00897B), 'assets/images/broccoli.png'),
   ];
 
   final List<SpotlightItem> _spotlights = [
@@ -109,12 +94,26 @@ class _MedicalTabState extends State<MedicalTab> {
     super.dispose();
   }
 
+  // ─── NAVIGATION HELPER ───
+  void _navigateToCategory(BuildContext context, String rawCategoryName) {
+    String cleanName = rawCategoryName.replaceAll('\n', ' ');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ItemsScreen(
+          categoryTitle: cleanName,
+          tabIndex: 2, // 🔥 TAB INDEX 2 FOR MEDICAL
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: ScrollConfiguration(
-        behavior: NoJellyScrollBehavior(),
+        behavior: NoJellyScrollBehavior(), // 👈 No more errors here!
         child: RefreshIndicator(
           onRefresh: () async => await Future.delayed(const Duration(seconds: 1)),
           color: kMedicalBlue,
@@ -124,7 +123,7 @@ class _MedicalTabState extends State<MedicalTab> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const SizedBox(height: 16), // ── MAIN FIX: Removed Search Bar, added top spacing ──
+                const SizedBox(height: 16),
                 _buildBanners(),
                 const SizedBox(height: 32),
                 _buildHeader('Shop by Concern', true, kMedicalBlue),
@@ -143,7 +142,6 @@ class _MedicalTabState extends State<MedicalTab> {
     );
   }
 
-  // ─── REDESIGNED PREMIUM BANNERS ───
   Widget _buildBanners() {
     return Column(
       children: [
@@ -214,7 +212,6 @@ class _MedicalTabState extends State<MedicalTab> {
     );
   }
 
-  // ─── REDESIGNED SPOTLIGHTS (Vertical Cards) ───
   Widget _buildSpotlights() {
     return SizedBox(
       height: 135,
@@ -225,14 +222,17 @@ class _MedicalTabState extends State<MedicalTab> {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (ctx, i) {
           final item = _spotlights[i];
-          return Container(
-            width: 100,
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))]),
-            child: Column(
-              children: [
-                Container(height: 75, decoration: BoxDecoration(color: item.bgColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(16))), child: Center(child: Image.asset(item.imagePath, height: 50))),
-                Expanded(child: Center(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Text(item.title, textAlign: TextAlign.center, style: TextStyle(color: _textColor, fontSize: 10, fontWeight: FontWeight.w800, height: 1.1))))),
-              ],
+          return GestureDetector(
+            onTap: () => _navigateToCategory(context, item.title), // 🔥 Click handler
+            child: Container(
+              width: 100,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))]),
+              child: Column(
+                children: [
+                  Container(height: 75, decoration: BoxDecoration(color: item.bgColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(16))), child: Center(child: Image.asset(item.imagePath, height: 50))),
+                  Expanded(child: Center(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Text(item.title, textAlign: TextAlign.center, style: TextStyle(color: _textColor, fontSize: 10, fontWeight: FontWeight.w800, height: 1.1))))),
+                ],
+              ),
             ),
           );
         },
@@ -240,7 +240,6 @@ class _MedicalTabState extends State<MedicalTab> {
     );
   }
 
-  // ─── REDESIGNED GRIDS (3-Column Clean Layout) ───
   List<Widget> _buildGridSections(Color themeColor) {
     return _grids.map((section) => Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -261,16 +260,19 @@ class _MedicalTabState extends State<MedicalTab> {
             ),
             itemBuilder: (ctx, i) {
               final c = section.items[i];
-              return Column(
-                children: [
-                  Container(
-                    height: 80, width: double.infinity,
-                    decoration: BoxDecoration(color: _gridItemBgColor, borderRadius: BorderRadius.circular(20)),
-                    child: Center(child: Image.asset(c.imagePath, height: 50)),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(c.label, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: _textColor, fontSize: 11, fontWeight: FontWeight.w700, height: 1.1)),
-                ],
+              return GestureDetector(
+                onTap: () => _navigateToCategory(context, c.label), // 🔥 Click handler
+                child: Column(
+                  children: [
+                    Container(
+                      height: 80, width: double.infinity,
+                      decoration: BoxDecoration(color: _gridItemBgColor, borderRadius: BorderRadius.circular(20)),
+                      child: Center(child: Image.asset(c.imagePath, height: 50)),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(c.label, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: _textColor, fontSize: 11, fontWeight: FontWeight.w700, height: 1.1)),
+                  ],
+                ),
               );
             },
           ),
@@ -280,7 +282,6 @@ class _MedicalTabState extends State<MedicalTab> {
     )).toList();
   }
 
-  // ─── REDESIGNED STORES (Wide Premium Cards) ───
   Widget _buildStores() {
     return SizedBox(
       height: 110,
@@ -291,32 +292,35 @@ class _MedicalTabState extends State<MedicalTab> {
         separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (ctx, i) {
           final item = _stores[i];
-          return Container(
-            width: 240, // Wide card format
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: item.bgColor.withOpacity(0.3), borderRadius: BorderRadius.circular(16), border: Border.all(color: item.bgColor)),
-            child: Row(
-              children: [
-                Container(width: 80, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)), child: Center(child: Image.asset(item.imagePath, height: 50))),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(item.label.replaceAll('\n', ' '), style: TextStyle(color: _textColor, fontSize: 14, fontWeight: FontWeight.w900)),
-                      const SizedBox(height: 8),
-                      Row(
-                        children: [
-                          Text('Explore Store', style: TextStyle(color: kMedicalBlue, fontSize: 10, fontWeight: FontWeight.bold)),
-                          const SizedBox(width: 4),
-                          Icon(Icons.arrow_forward_rounded, color: kMedicalBlue, size: 12)
-                        ],
-                      )
-                    ],
-                  ),
-                )
-              ],
+          return GestureDetector(
+            onTap: () => _navigateToCategory(context, item.label), // 🔥 Click handler
+            child: Container(
+              width: 240,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: item.bgColor.withOpacity(0.3), borderRadius: BorderRadius.circular(16), border: Border.all(color: item.bgColor)),
+              child: Row(
+                children: [
+                  Container(width: 80, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)), child: Center(child: Image.asset(item.imagePath, height: 50))),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(item.label.replaceAll('\n', ' '), style: TextStyle(color: _textColor, fontSize: 14, fontWeight: FontWeight.w900)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text('Explore Store', style: TextStyle(color: kMedicalBlue, fontSize: 10, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 4),
+                            Icon(Icons.arrow_forward_rounded, color: kMedicalBlue, size: 12)
+                          ],
+                        )
+                      ],
+                    ),
+                  )
+                ],
+              ),
             ),
           );
         },
@@ -324,7 +328,6 @@ class _MedicalTabState extends State<MedicalTab> {
     );
   }
 
-  // ─── REDESIGNED HEADER ───
   Widget _buildHeader(String title, bool showSeeAll, Color themeColor) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -339,10 +342,13 @@ class _MedicalTabState extends State<MedicalTab> {
             ],
           ),
           if (showSeeAll)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(color: themeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
-              child: Text('See all', style: TextStyle(color: themeColor, fontSize: 11, fontWeight: FontWeight.w800)),
+            GestureDetector(
+              onTap: () => _navigateToCategory(context, title),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: themeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                child: Text('See all', style: TextStyle(color: themeColor, fontSize: 11, fontWeight: FontWeight.w800)),
+              ),
             ),
         ],
       ),
@@ -350,6 +356,7 @@ class _MedicalTabState extends State<MedicalTab> {
   }
 }
 
+// 🔥 ADDED THE MISSING CLASS HERE!
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
   Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;

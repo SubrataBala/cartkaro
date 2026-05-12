@@ -7,7 +7,7 @@ import 'restaurant_tab.dart';
 import 'medical_tab.dart';     
 import 'cart_tab.dart'; 
 import 'address_screen.dart';
-import '../widgets/item_cards.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
+import '../widgets/adaptive_item_card.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
