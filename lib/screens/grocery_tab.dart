@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'app_models.dart';
+import 'grocery_data.dart';
+import 'items_screen.dart';
 
 class GroceryTab extends StatefulWidget {
   const GroceryTab({super.key});
@@ -14,7 +15,7 @@ class _GroceryTabState extends State<GroceryTab> {
   int _bannerIndex = 0;
 
   final Color _textColor = const Color(0xFF1A1A1A);
-  final Color _gridItemBgColor = const Color(0xFFF0F0F0);
+  final Color _gridItemBgColor = const Color(0xFFEDF6FF);
   final Color _borderColor = Colors.grey.withOpacity(0.15);
 
   final List<BannerData> _banners = const [
@@ -41,7 +42,7 @@ class _GroceryTabState extends State<GroceryTab> {
     ),
   ];
 
-  final List<SpotlightItem> _spotlights = [
+  final List<SpotlightItem> _spotlights = const [
     SpotlightItem(
       'Fruits &\nVegetables',
       'assets/images/carrot.png',
@@ -76,9 +77,9 @@ class _GroceryTabState extends State<GroceryTab> {
 
   final List<GridSectionData> _grids = const [
     GridSectionData('Grocery & Kitchen', [
-      CategoryItem('Vegitables\n& Fruits', 'assets/images/broccoli.png'),
-      CategoryItem('Atta, Rice\n& Dal', 'assets/images/aata.png'),
-      CategoryItem('Oil, Ghee\n& Masala', 'assets/images/oil.png'),
+      CategoryItem('Vegetables', 'assets/images/vegetables.png'),
+      CategoryItem('Fruits', 'assets/images/fruit.png'),
+      CategoryItem('Grocery', 'assets/images/oil.png'),
       CategoryItem('Dairy, Milk\n& Bread', 'assets/images/braed.png'),
       CategoryItem('Dry Fruits\n& Seeds', 'assets/images/cashew.png'),
       CategoryItem('Bakery\nItems', 'assets/images/cake.png'),
@@ -86,33 +87,29 @@ class _GroceryTabState extends State<GroceryTab> {
       CategoryItem('Spices &\nHerbs', 'assets/images/spices.png'),
     ]),
     GridSectionData('Household & Pet', [
-      CategoryItem('Cleaning\nEssentials', 'assets/images/broccoli.png'),
-      CategoryItem('Pooja\nNeeds', 'assets/images/broccoli.png'),
-      CategoryItem('Pet Food\n& Toys', 'assets/images/broccoli.png'),
-      CategoryItem('Home &\nKitchen', 'assets/images/broccoli.png'),
+      CategoryItem('Cleaning\nEssentials', 'assets/images/surf.png'),
+      CategoryItem('Pooja\nNeeds', 'assets/images/agarbatti.png'),
+      CategoryItem('Toys\n& Pet Food', 'assets/images/Toys.png'),
+      CategoryItem('Home &\nKitchen', 'assets/images/kitchen.png'),
     ]),
     GridSectionData('Snacks & Drinks', [
-      CategoryItem('Chips &\nNamkeen', 'assets/images/broccoli.png'),
-      CategoryItem('Sweets &\nChocolate', 'assets/images/broccoli.png'),
-      CategoryItem('Drinks &\nJuices', 'assets/images/broccoli.png'),
-      CategoryItem('Tea,\nCoffee', 'assets/images/broccoli.png'),
-      CategoryItem('Biscuits &\nCookies', 'assets/images/broccoli.png'),
-      CategoryItem('Frozen\nSnacks', 'assets/images/broccoli.png'),
-      CategoryItem('Breakfast\nCereals', 'assets/images/broccoli.png'),
-      CategoryItem('Instant\nFood', 'assets/images/broccoli.png'),
+      CategoryItem('Snacks & Drinks', 'assets/images/lays.png'),
+      CategoryItem('Sweets &\nChocolate', 'assets/images/chocolate.png'),
+      CategoryItem('Drinks &\nJuices', 'assets/images/colddrinks.png'),
+      CategoryItem('Tea,\nCoffee', 'assets/images/tea.png'),
+      CategoryItem('Biscuits &\nCookies', 'assets/images/biscuits.png'),
+      CategoryItem('Frozen\nSnacks', 'assets/images/frozen_snaks.png'),
+      CategoryItem('Breakfast\nCereals', 'assets/images/chocos.png'),
+      CategoryItem('Instant\nFood', 'assets/images/noodles.png'),
     ]),
   ];
 
   final List<StoreItem> _stores = const [
-    StoreItem('Winter\nStore', 'assets/images/broccoli.png', Color(0xFFBBDEFB)),
-    StoreItem(
-      'Gourmet\nStore',
-      'assets/images/broccoli.png',
-      Color(0xFFFFCCBC),
-    ),
-    StoreItem('Health\nStore', 'assets/images/broccoli.png', Color(0xFFE1BEE7)),
-    StoreItem('Travel\nStore', 'assets/images/broccoli.png', Color(0xFFF0F4C3)),
-    StoreItem('Puja\nStore', 'assets/images/broccoli.png', Color(0xFFFFCDD2)),
+    StoreItem('Summer\nStore', 'assets/images/summer.png', Color(0xFFBBDEFB)),
+    StoreItem('Gourmet\nStore', 'assets/images/gourmet.png', Color(0xFFFFCCBC)),
+    StoreItem('Health\nStore', 'assets/images/health.png', Color(0xFFE1BEE7)),
+    StoreItem('Travel\nStore', 'assets/images/travel.png', Color(0xFFF0F4C3)),
+    StoreItem('Puja\nStore', 'assets/images/puja.png', Color(0xFFFFCDD2)),
   ];
 
   @override
@@ -138,13 +135,24 @@ class _GroceryTabState extends State<GroceryTab> {
     super.dispose();
   }
 
+  void _navigateToCategory(BuildContext context, String rawCategoryName) {
+    String cleanName = rawCategoryName.replaceAll('\n', ' ');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            ItemsScreen(categoryTitle: cleanName, tabIndex: 0),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScrollConfiguration(
       behavior: NoJellyScrollBehavior(),
       child: RefreshIndicator(
         onRefresh: () async => await Future.delayed(const Duration(seconds: 1)),
-        color: kGroceryGreen,
+        color: Colors.green,
         backgroundColor: const Color(0xFF2C2C2C),
         child: SingleChildScrollView(
           physics: const ClampingScrollPhysics(
@@ -157,12 +165,12 @@ class _GroceryTabState extends State<GroceryTab> {
               const SizedBox(height: 16),
               _buildBanners(),
               const SizedBox(height: 25),
-              _buildHeader('Now Spotlight', true, kGroceryGreen),
+              _buildHeader('Now Spotlight', true, Colors.green),
               const SizedBox(height: 14),
               _buildSpotlights(),
               const SizedBox(height: 30),
-              ..._buildGridSections(kGroceryGreen),
-              _buildHeader('Shop Store', true, kGroceryGreen),
+              ..._buildGridSections(Colors.green),
+              _buildHeader('Shop Store', true, Colors.green),
               const SizedBox(height: 16),
               _buildStores(),
             ],
@@ -172,7 +180,6 @@ class _GroceryTabState extends State<GroceryTab> {
     );
   }
 
-  // --- REUSABLE BUILDERS ---
   Widget _buildBanners() {
     return SizedBox(
       height: 150,
@@ -221,7 +228,7 @@ class _GroceryTabState extends State<GroceryTab> {
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: kGroceryGreen,
+                            color: Colors.green,
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: const Text(
@@ -256,32 +263,35 @@ class _GroceryTabState extends State<GroceryTab> {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (ctx, i) {
           final item = _spotlights[i];
-          return Container(
-            width: 110,
-            decoration: BoxDecoration(
-              color: item.bgColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: Text(
-                    item.title,
-                    style: TextStyle(
-                      color: item.textColor,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
+          return GestureDetector(
+            onTap: () => _navigateToCategory(context, item.title),
+            child: Container(
+              width: 110,
+              decoration: BoxDecoration(
+                color: item.bgColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Stack(
+                children: [
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: Text(
+                      item.title,
+                      style: TextStyle(
+                        color: item.textColor,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
-                ),
-                Positioned(
-                  bottom: -5,
-                  right: -5,
-                  child: Image.asset(item.imagePath, height: 95),
-                ),
-              ],
+                  Positioned(
+                    bottom: -5,
+                    right: -5,
+                    child: Image.asset(item.imagePath, height: 95),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -315,32 +325,35 @@ class _GroceryTabState extends State<GroceryTab> {
                   ),
                   itemBuilder: (ctx, i) {
                     final c = section.items[i];
-                    return Column(
-                      children: [
-                        Container(
-                          height: 75,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: _gridItemBgColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: _borderColor),
+                    return GestureDetector(
+                      onTap: () => _navigateToCategory(context, c.label),
+                      child: Column(
+                        children: [
+                          Container(
+                            height: 75,
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: _gridItemBgColor,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: _borderColor),
+                            ),
+                            child: Center(
+                              child: Image.asset(c.imagePath, height: 65),
+                            ),
                           ),
-                          child: Center(
-                            child: Image.asset(c.imagePath, height: 45),
+                          const SizedBox(height: 6),
+                          Text(
+                            c.label,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            style: TextStyle(
+                              color: _textColor,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          c.label,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          style: TextStyle(
-                            color: _textColor,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     );
                   },
                 ),
@@ -362,36 +375,39 @@ class _GroceryTabState extends State<GroceryTab> {
         separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (ctx, i) {
           final item = _stores[i];
-          return SizedBox(
-            width: 90,
-            child: Column(
-              children: [
-                Container(
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: item.bgColor,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(45),
-                      bottom: Radius.circular(12),
+          return GestureDetector(
+            onTap: () => _navigateToCategory(context, item.label),
+            child: SizedBox(
+              width: 90,
+              child: Column(
+                children: [
+                  Container(
+                    height: 100,
+                    decoration: BoxDecoration(
+                      color: item.bgColor,
+                      borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(45),
+                        bottom: Radius.circular(12),
+                      ),
+                    ),
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Image.asset(item.imagePath, height: 80),
                     ),
                   ),
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Image.asset(item.imagePath, height: 60),
+                  const SizedBox(height: 8),
+                  Text(
+                    item.label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: TextStyle(
+                      color: _textColor,
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  item.label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  style: TextStyle(
-                    color: _textColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
           );
         },

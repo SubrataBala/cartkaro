@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'app_models.dart';
+import 'items_screen.dart'; // Ensure this is imported for navigation
 
 class MedicalTab extends StatefulWidget {
   const MedicalTab({super.key});
@@ -14,67 +15,22 @@ class _MedicalTabState extends State<MedicalTab> {
   int _bannerIndex = 0;
 
   final Color _textColor = const Color(0xFF1A1A1A);
-  final Color _gridItemBgColor = const Color(0xFFF0F0F0);
+  final Color _gridItemBgColor = const Color(0xFFF5F7FA);
   final Color _borderColor = Colors.grey.withOpacity(0.15);
 
   final List<BannerData> _banners = const [
-    BannerData(
-      '24/7 Medicines',
-      'Delivered in 10 mins',
-      kMedicalBlue,
-      'assets/images/broccoli.png',
-    ),
-    BannerData(
-      'Free Checkups',
-      'Book a lab test now',
-      Colors.teal,
-      'assets/images/broccoli.png',
-    ),
-    BannerData(
-      'First Aid Kits',
-      'Flat 20% off today',
-      Color(0xFF00897B),
-      'assets/images/broccoli.png',
-    ),
+    BannerData('24/7 Medicines', 'Delivered in 10 mins', kMedicalBlue, 'assets/images/broccoli.png'),
+    BannerData('Free Checkups', 'Book a lab test now', Colors.teal, 'assets/images/broccoli.png'),
+    BannerData('First Aid Kits', 'Flat 20% off today', Color(0xFF00897B), 'assets/images/broccoli.png'),
   ];
 
   final List<SpotlightItem> _spotlights = [
-    SpotlightItem(
-      'Daily\nMedicines',
-      'assets/images/broccoli.png',
-      const Color(0xFFBBDEFB),
-      Color(0xFF0D47A1),
-    ),
-    SpotlightItem(
-      'Vitamins &\nSupplements',
-      'assets/images/broccoli.png',
-      const Color(0xFFC8E6C9),
-      Color(0xFF1B5E20),
-    ),
-    SpotlightItem(
-      'Diabetes\nCare',
-      'assets/images/broccoli.png',
-      const Color(0xFFFFF9C4),
-      Color(0xFFE65100),
-    ),
-    SpotlightItem(
-      'First Aid\nKits',
-      'assets/images/broccoli.png',
-      const Color(0xFFFFCCBC),
-      Color(0xFFBF360C),
-    ),
-    SpotlightItem(
-      'Health\nDevices',
-      'assets/images/broccoli.png',
-      const Color(0xFFD1C4E9),
-      Color(0xFF4A148C),
-    ),
-    SpotlightItem(
-      'Lab\nTests',
-      'assets/images/broccoli.png',
-      const Color(0xFFE1F5FE),
-      Color(0xFF01579B),
-    ),
+    SpotlightItem('Daily\nMedicines', 'assets/images/broccoli.png', const Color(0xFFE3F2FD), Color(0xFF0D47A1)),
+    SpotlightItem('Vitamins &\nSupplements', 'assets/images/broccoli.png', const Color(0xFFE8F5E9), Color(0xFF1B5E20)),
+    SpotlightItem('Diabetes\nCare', 'assets/images/broccoli.png', const Color(0xFFFFFDE7), Color(0xFFE65100)),
+    SpotlightItem('First Aid\nKits', 'assets/images/broccoli.png', const Color(0xFFFBE9E7), Color(0xFFBF360C)),
+    SpotlightItem('Health\nDevices', 'assets/images/broccoli.png', const Color(0xFFEDE7F6), Color(0xFF4A148C)),
+    SpotlightItem('Lab\nTests', 'assets/images/broccoli.png', const Color(0xFFE1F5FE), Color(0xFF01579B)),
   ];
 
   final List<GridSectionData> _grids = const [
@@ -107,26 +63,10 @@ class _MedicalTabState extends State<MedicalTab> {
   ];
 
   final List<StoreItem> _stores = const [
-    StoreItem(
-      'Pharmacy\nStore',
-      'assets/images/broccoli.png',
-      Color(0xFFBBDEFB),
-    ),
-    StoreItem(
-      'Organic\nStore',
-      'assets/images/broccoli.png',
-      Color(0xFFC8E6C9),
-    ),
-    StoreItem(
-      'Surgical\nStore',
-      'assets/images/broccoli.png',
-      Color(0xFFE1BEE7),
-    ),
-    StoreItem(
-      'Wellness\nStore',
-      'assets/images/broccoli.png',
-      Color(0xFFFFCCBC),
-    ),
+    StoreItem('Pharmacy\nStore', 'assets/images/broccoli.png', Color(0xFFBBDEFB)),
+    StoreItem('Organic\nStore', 'assets/images/broccoli.png', Color(0xFFC8E6C9)),
+    StoreItem('Surgical\nStore', 'assets/images/broccoli.png', Color(0xFFE1BEE7)),
+    StoreItem('Wellness\nStore', 'assets/images/broccoli.png', Color(0xFFFFCCBC)),
     StoreItem('Baby\nStore', 'assets/images/broccoli.png', Color(0xFFF8BBD0)),
     StoreItem('Homeo\nStore', 'assets/images/broccoli.png', Color(0xFFB2DFDB)),
   ];
@@ -135,13 +75,13 @@ class _MedicalTabState extends State<MedicalTab> {
   void initState() {
     super.initState();
     _bannerController = PageController();
-    _bannerTimer = Timer.periodic(const Duration(seconds: 3), (t) {
+    _bannerTimer = Timer.periodic(const Duration(seconds: 4), (t) {
       if (_bannerController.hasClients) {
         _bannerIndex = (_bannerIndex + 1) % _banners.length;
         _bannerController.animateToPage(
           _bannerIndex,
-          duration: const Duration(milliseconds: 600),
-          curve: Curves.easeInOut,
+          duration: const Duration(milliseconds: 800),
+          curve: Curves.fastOutSlowIn,
         );
       }
     });
@@ -154,33 +94,48 @@ class _MedicalTabState extends State<MedicalTab> {
     super.dispose();
   }
 
+  // ─── NAVIGATION HELPER ───
+  void _navigateToCategory(BuildContext context, String rawCategoryName) {
+    String cleanName = rawCategoryName.replaceAll('\n', ' ');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ItemsScreen(
+          categoryTitle: cleanName,
+          tabIndex: 2, // 🔥 TAB INDEX 2 FOR MEDICAL
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ScrollConfiguration(
-      behavior: NoJellyScrollBehavior(),
-      child: RefreshIndicator(
-        onRefresh: () async => await Future.delayed(const Duration(seconds: 1)),
-        color: kMedicalBlue,
-        child: SingleChildScrollView(
-          physics: const ClampingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          padding: const EdgeInsets.only(bottom: 30),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-              _buildBanners(),
-              const SizedBox(height: 25),
-              _buildHeader('Now Spotlight', true, kMedicalBlue),
-              const SizedBox(height: 14),
-              _buildSpotlights(),
-              const SizedBox(height: 30),
-              ..._buildGridSections(kMedicalBlue),
-              _buildHeader('Shop Store', true, kMedicalBlue),
-              const SizedBox(height: 16),
-              _buildStores(),
-            ],
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: ScrollConfiguration(
+        behavior: NoJellyScrollBehavior(), // 👈 No more errors here!
+        child: RefreshIndicator(
+          onRefresh: () async => await Future.delayed(const Duration(seconds: 1)),
+          color: kMedicalBlue,
+          child: SingleChildScrollView(
+            physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+            padding: const EdgeInsets.only(bottom: 40),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                _buildBanners(),
+                const SizedBox(height: 32),
+                _buildHeader('Shop by Concern', true, kMedicalBlue),
+                const SizedBox(height: 16),
+                _buildSpotlights(),
+                const SizedBox(height: 35),
+                ..._buildGridSections(kMedicalBlue),
+                _buildHeader('Partner Pharmacies', true, kMedicalBlue),
+                const SizedBox(height: 16),
+                _buildStores(),
+              ],
+            ),
           ),
         ),
       ),
@@ -188,73 +143,94 @@ class _MedicalTabState extends State<MedicalTab> {
   }
 
   Widget _buildBanners() {
-    return SizedBox(
-      height: 150,
-      child: PageView.builder(
-        controller: _bannerController,
-        itemCount: _banners.length,
-        itemBuilder: (ctx, i) {
-          final b = _banners[i];
-          final color = b.isLightBanner ? Colors.black : Colors.white;
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              decoration: BoxDecoration(
-                color: b.bgColor,
-                borderRadius: BorderRadius.circular(16),
-              ),
-              padding: const EdgeInsets.all(15),
-              child: Row(
-                children: [
-                  Expanded(
-                    flex: 3,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          b.title,
-                          style: TextStyle(
-                            color: color,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            height: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          b.subtitle,
-                          style: TextStyle(
-                            color: color.withOpacity(0.7),
-                            fontSize: 11,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: kMedicalBlue,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: const Text(
-                            'Shop Now',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+    return Column(
+      children: [
+        SizedBox(
+          height: 160,
+          child: PageView.builder(
+            controller: _bannerController,
+            itemCount: _banners.length,
+            onPageChanged: (index) => setState(() => _bannerIndex = index),
+            itemBuilder: (ctx, i) {
+              final b = _banners[i];
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: [b.bgColor.withOpacity(0.9), b.bgColor], begin: Alignment.topLeft, end: Alignment.bottomRight),
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [BoxShadow(color: b.bgColor.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+                  ),
+                  clipBehavior: Clip.hardEdge,
+                  child: Stack(
+                    children: [
+                      Positioned(right: -30, top: -30, child: CircleAvatar(radius: 80, backgroundColor: Colors.white.withOpacity(0.1))),
+                      Padding(
+                        padding: const EdgeInsets.all(20),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              flex: 6,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), borderRadius: BorderRadius.circular(4)), child: const Text('PROMO', style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold, letterSpacing: 1))),
+                                  const SizedBox(height: 8),
+                                  Text(b.title, style: const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.w900, height: 1.1)),
+                                  const SizedBox(height: 6),
+                                  Text(b.subtitle, style: TextStyle(color: Colors.white.withOpacity(0.9), fontSize: 12, fontWeight: FontWeight.w500)),
+                                  const SizedBox(height: 14),
+                                  Container(padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8), decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)), child: Text('Order Now', style: TextStyle(color: b.bgColor, fontSize: 11, fontWeight: FontWeight.w800))),
+                                ],
+                              ),
                             ),
-                          ),
+                            Expanded(flex: 4, child: Image.asset(b.imagePath, fit: BoxFit.contain)),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: Image.asset(b.imagePath, fit: BoxFit.contain),
-                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(_banners.length, (i) {
+            return AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: i == _bannerIndex ? 24 : 8, height: 6,
+              decoration: BoxDecoration(color: i == _bannerIndex ? kMedicalBlue : Colors.grey.shade300, borderRadius: BorderRadius.circular(4)),
+            );
+          }),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSpotlights() {
+    return SizedBox(
+      height: 135,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _spotlights.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 12),
+        itemBuilder: (ctx, i) {
+          final item = _spotlights[i];
+          return GestureDetector(
+            onTap: () => _navigateToCategory(context, item.title), // 🔥 Click handler
+            child: Container(
+              width: 100,
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))]),
+              child: Column(
+                children: [
+                  Container(height: 75, decoration: BoxDecoration(color: item.bgColor, borderRadius: const BorderRadius.vertical(top: Radius.circular(16))), child: Center(child: Image.asset(item.imagePath, height: 50))),
+                  Expanded(child: Center(child: Padding(padding: const EdgeInsets.symmetric(horizontal: 4), child: Text(item.title, textAlign: TextAlign.center, style: TextStyle(color: _textColor, fontSize: 10, fontWeight: FontWeight.w800, height: 1.1))))),
                 ],
               ),
             ),
@@ -264,153 +240,87 @@ class _MedicalTabState extends State<MedicalTab> {
     );
   }
 
-  Widget _buildSpotlights() {
-    return SizedBox(
-      height: 140,
-      child: ListView.separated(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: _spotlights.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 12),
-        itemBuilder: (ctx, i) {
-          final item = _spotlights[i];
-          return Container(
-            width: 110,
-            decoration: BoxDecoration(
-              color: item.bgColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Stack(
-              children: [
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: Text(
-                    item.title,
-                    style: TextStyle(
-                      color: item.textColor,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      height: 1.2,
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: -5,
-                  right: -5,
-                  child: Image.asset(item.imagePath, height: 75),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
-  }
-
   List<Widget> _buildGridSections(Color themeColor) {
-    return _grids
-        .map(
-          (section) => Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(
-                section.title,
-                section.items.length >= 4,
-                themeColor,
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: section.items.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 12,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 0.62,
-                  ),
-                  itemBuilder: (ctx, i) {
-                    final c = section.items[i];
-                    return Column(
-                      children: [
-                        Container(
-                          height: 75,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: _gridItemBgColor,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: _borderColor),
-                          ),
-                          child: Center(
-                            child: Image.asset(c.imagePath, height: 45),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          c.label,
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          style: TextStyle(
-                            color: _textColor,
-                            fontSize: 9,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
+    return _grids.map((section) => Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildHeader(section.title, section.items.length >= 6, themeColor),
+        const SizedBox(height: 16),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: section.items.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3, 
+              mainAxisSpacing: 20,
+              crossAxisSpacing: 16,
+              childAspectRatio: 0.8,
+            ),
+            itemBuilder: (ctx, i) {
+              final c = section.items[i];
+              return GestureDetector(
+                onTap: () => _navigateToCategory(context, c.label), // 🔥 Click handler
+                child: Column(
+                  children: [
+                    Container(
+                      height: 80, width: double.infinity,
+                      decoration: BoxDecoration(color: _gridItemBgColor, borderRadius: BorderRadius.circular(20)),
+                      child: Center(child: Image.asset(c.imagePath, height: 50)),
+                    ),
+                    const SizedBox(height: 10),
+                    Text(c.label, textAlign: TextAlign.center, maxLines: 2, style: TextStyle(color: _textColor, fontSize: 11, fontWeight: FontWeight.w700, height: 1.1)),
+                  ],
                 ),
-              ),
-              const SizedBox(height: 25),
-            ],
+              );
+            },
           ),
-        )
-        .toList();
+        ),
+        const SizedBox(height: 35),
+      ],
+    )).toList();
   }
 
   Widget _buildStores() {
     return SizedBox(
-      height: 155,
+      height: 110,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         itemCount: _stores.length,
         separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (ctx, i) {
           final item = _stores[i];
-          return SizedBox(
-            width: 90,
-            child: Column(
-              children: [
-                Container(
-                  height: 100,
-                  decoration: BoxDecoration(
-                    color: item.bgColor,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(45),
-                      bottom: Radius.circular(12),
+          return GestureDetector(
+            onTap: () => _navigateToCategory(context, item.label), // 🔥 Click handler
+            child: Container(
+              width: 240,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: item.bgColor.withOpacity(0.3), borderRadius: BorderRadius.circular(16), border: Border.all(color: item.bgColor)),
+              child: Row(
+                children: [
+                  Container(width: 80, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)), child: Center(child: Image.asset(item.imagePath, height: 50))),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(item.label.replaceAll('\n', ' '), style: TextStyle(color: _textColor, fontSize: 14, fontWeight: FontWeight.w900)),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Text('Explore Store', style: TextStyle(color: kMedicalBlue, fontSize: 10, fontWeight: FontWeight.bold)),
+                            const SizedBox(width: 4),
+                            Icon(Icons.arrow_forward_rounded, color: kMedicalBlue, size: 12)
+                          ],
+                        )
+                      ],
                     ),
-                  ),
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Image.asset(item.imagePath, height: 60),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  item.label,
-                  textAlign: TextAlign.center,
-                  maxLines: 2,
-                  style: TextStyle(
-                    color: _textColor,
-                    fontSize: 10,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ],
+                  )
+                ],
+              ),
             ),
           );
         },
@@ -420,25 +330,24 @@ class _MedicalTabState extends State<MedicalTab> {
 
   Widget _buildHeader(String title, bool showSeeAll, Color themeColor) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              color: _textColor,
-              fontSize: 17,
-              fontWeight: FontWeight.w800,
-            ),
+          Row(
+            children: [
+              Container(width: 4, height: 16, decoration: BoxDecoration(color: themeColor, borderRadius: BorderRadius.circular(2))),
+              const SizedBox(width: 8),
+              Text(title, style: TextStyle(color: _textColor, fontSize: 18, fontWeight: FontWeight.w900, letterSpacing: -0.5)),
+            ],
           ),
           if (showSeeAll)
-            Text(
-              'See all',
-              style: TextStyle(
-                color: themeColor,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+            GestureDetector(
+              onTap: () => _navigateToCategory(context, title),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(color: themeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(12)),
+                child: Text('See all', style: TextStyle(color: themeColor, fontSize: 11, fontWeight: FontWeight.w800)),
               ),
             ),
         ],
@@ -447,11 +356,8 @@ class _MedicalTabState extends State<MedicalTab> {
   }
 }
 
+// 🔥 ADDED THE MISSING CLASS HERE!
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
-  Widget buildOverscrollIndicator(
-    BuildContext context,
-    Widget child,
-    ScrollableDetails details,
-  ) => child;
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;
 }
