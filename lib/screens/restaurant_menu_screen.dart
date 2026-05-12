@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_models.dart';
-import '../widgets/item_cards.dart';
+import '../widgets/adaptive_item_card.dart';
 
 class RestaurantMenuScreen extends StatelessWidget {
   final VendorRestaurant restaurant;

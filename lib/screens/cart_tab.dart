@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_models.dart';
-import '../widgets/item_cards.dart'; // ── MAIN FIX: Naye Cards aur SharedCartButton yahan se aayenge ──
+import '../widgets/adaptive_item_card.dart';
+import '../widgets/shared_card_widgets.dart';// ── MAIN FIX: Naye Cards aur SharedCartButton yahan se aayenge ──
 import 'address_screen.dart'; 
 import 'login_screen.dart';   
 
