@@ -59,3 +59,59 @@ Future<void> loadAppData() async {
   medicalCartNotifier.addListener(() { prefs.setString('medicalCart', jsonEncode(medicalCartNotifier.value)); });
   watchlistNotifier.addListener(() { prefs.setString('watchlist', jsonEncode(watchlistNotifier.value.toList())); });
 }
+
+// ── VENDOR RESTAURANT CLASS (Data pass karne ke liye Model) ──
+class VendorRestaurant {
+  final String id;
+  final String name;
+  final String categories;
+  final String rating;
+  final String time;
+  final String distance;
+  final String totalSells;
+  final String imagePath;
+  final List<Map<String, dynamic>> menu; 
+
+  VendorRestaurant({
+    required this.id, required this.name, required this.categories,
+    required this.rating, required this.time, required this.distance,
+    required this.totalSells, required this.imagePath, required this.menu,
+  });
+}
+
+// ── SMART GLOBAL RESTAURANTS (Automatically fetches from your restaurant_data.dart) ──
+List<VendorRestaurant> get globalRestaurants {
+  List<VendorRestaurant> resList = [];
+  Set<String> addedRes = {};
+
+  // restaurantData ko loop karke saare restaurants nikal rahe hain
+  restaurantData.forEach((category, items) {
+    for (var item in items) {
+      String resName = item['restaurant'] ?? 'Unknown Restaurant';
+      
+      if (!addedRes.contains(resName)) {
+        addedRes.add(resName);
+        
+        // Is restaurant ke saare items dhundh kar ek menu list bana lenge
+        List<Map<String, dynamic>> resMenu = [];
+        restaurantData.forEach((cat, itms) {
+          resMenu.addAll(itms.where((i) => i['restaurant'] == resName));
+        });
+
+        resList.add(VendorRestaurant(
+          id: resName, 
+          name: resName,
+          categories: category,
+          rating: item['rating'] ?? '4.5',
+          time: item['time'] ?? '30 Mins',
+          distance: item['distance'] ?? '2.0 km',
+          totalSells: item['totalSells'] ?? '1K+ orders',
+          imagePath: item['image'] ?? 'assets/images/broccoli.png',
+          menu: resMenu, 
+        ));
+      }
+    }
+  });
+  
+  return resList;
+}

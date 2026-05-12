@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'app_models.dart';
-import '../widgets/item_cards.dart'; // ── MAIN FIX: Naya SharedCartButton aur WatchlistIcon yahan se aayega ──
+import '../widgets/item_cards.dart'; 
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const Color kRestaurantOrange = Color(0xFFFF6B35);
+// kRestaurantRed is imported from app_models.dart to avoid conflicts
 const Color kDarkIcon = Color(0xFF1C1C1E);
 const Color kBgPage = Color(0xFFFFFFFF); 
 const Color kTextDark = Color(0xFF1A1A1A);
@@ -59,7 +60,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
     _CategoryIconModel('Biryani', 'assets/images/biryani.png'),
   ];
 
-  // ── IDs exactly matched with restaurant_data.dart ──
   final List<_FoodCardModel> _topPicks = const [
     _FoodCardModel(id: 'r1', name: 'Chicken Dum Biryani', restaurant: 'Biryani Blues', rating: '4.7', reviews: '2.1k+', deliveryTime: '28 min', deliveryFee: 'Free Delivery', price: '160', imagePath: 'assets/images/broccoli.png', isVeg: false, isBestseller: true),
     _FoodCardModel(id: 'r2', name: 'Farmhouse Veg Pizza', restaurant: 'Pizza Hub', rating: '4.5', reviews: '890+', deliveryTime: '22 min', deliveryFee: 'Free Delivery', price: '199', imagePath: 'assets/images/broccoli.png', isVeg: true, isBestseller: false),
@@ -70,21 +70,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
     _FoodCardModel(id: 'r4', name: 'Zinger Chicken Burger', restaurant: 'Burger King', rating: '4.4', reviews: '5k+', deliveryTime: '15 min', deliveryFee: '₹20 Delivery', price: '149', imagePath: 'assets/images/broccoli.png', isVeg: false, isBestseller: true),
     _FoodCardModel(id: 'r5', name: 'Veg Hakka Noodles', restaurant: 'Chowman', rating: '4.2', reviews: '1.2k+', deliveryTime: '30 min', deliveryFee: 'Free Delivery', price: '90', imagePath: 'assets/images/broccoli.png', isVeg: true, isBestseller: false),
     _FoodCardModel(id: 'r6', name: 'Classic Cold Coffee', restaurant: 'Cafe Coffee Day', rating: '4.6', reviews: '2k+', deliveryTime: '20 min', deliveryFee: 'Free Delivery', price: '120', imagePath: 'assets/images/broccoli.png', isVeg: true, isBestseller: true),
-  ];
-
-  final List<_RestaurantModel> _restaurants = const [
-    _RestaurantModel(
-      id: 'res1', name: "Rock N' Roll Subs.", categories: "Desserts, Beverages",
-      rating: "4.6", time: "30-45 Mins", costForTwo: "₹40 for two", offerText: "15% off on all items", imagePath: 'assets/images/broccoli.png',
-    ),
-    _RestaurantModel(
-      id: 'res2', name: "Sandwich All-the-Way.", categories: "Snacks, Salads, American, Fast Food",
-      rating: "4.6", time: "30-45 Mins", costForTwo: "₹40 for two", offerText: "", imagePath: 'assets/images/broccoli.png',
-    ),
-    _RestaurantModel(
-      id: 'res3', name: "Smokin' Burger", categories: "Fast Food",
-      rating: "4.6", time: "30-45 Mins", costForTwo: "₹40 for two", offerText: "10% off on all items", imagePath: 'assets/images/broccoli.png',
-    ),
   ];
 
   @override
@@ -144,7 +129,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
 
                 _buildNearestRestaurantsHeader(),
                 const SizedBox(height: 16),
-                _buildRestaurantList(),
+                _buildRestaurantList(), 
 
                 const SizedBox(height: 40),
               ],
@@ -391,7 +376,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
                   child: Image.asset(f.imagePath, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
                 ),
               ),
-              // ── MAIN FIX: Using the new WatchlistIcon ──
               Positioned(
                 top: 10, right: 10,
                 child: WatchlistIcon(itemId: f.id, themeColor: kRestaurantRed, isBgWhite: true),
@@ -447,7 +431,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('₹${f.price}', style: const TextStyle(color: kTextDark, fontSize: 16, fontWeight: FontWeight.w900)),
-                    // ── MAIN FIX: Using the new SharedCartButton ──
                     SharedCartButton(itemId: "${f.id}|0", themeColor: kRestaurantRed, cartNotifier: restaurantCartNotifier),
                   ],
                 ),
@@ -494,13 +477,13 @@ class _RestaurantTabState extends State<RestaurantTab> {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: _restaurants.length,
+      itemCount: globalRestaurants.length,
       separatorBuilder: (_, __) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Divider(color: Colors.grey.shade200, height: 1),
       ),
       itemBuilder: (ctx, i) {
-        final r = _restaurants[i];
+        final r = globalRestaurants[i];
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -520,7 +503,8 @@ class _RestaurantTabState extends State<RestaurantTab> {
                   const SizedBox(height: 4),
                   Text(r.categories, style: const TextStyle(fontSize: 12, color: kTextGrey, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
                   const SizedBox(height: 8),
-                  Row(
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
                       const Icon(Icons.star, color: kTextMedium, size: 14),
                       const SizedBox(width: 4),
@@ -528,13 +512,15 @@ class _RestaurantTabState extends State<RestaurantTab> {
                       const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('•', style: TextStyle(color: kTextGrey, fontSize: 10))),
                       Text(r.time, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kTextMedium)),
                       const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('•', style: TextStyle(color: kTextGrey, fontSize: 10))),
-                      Text(r.costForTwo, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kTextMedium)),
+                      Text(r.distance, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: kTextMedium)),
                     ],
                   ),
-                  if (r.offerText.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Text(r.offerText, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.red.shade300)),
-                  ]
+                  const SizedBox(height: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                    child: Text('📈 ${r.totalSells}', style: TextStyle(color: Colors.blue.shade700, fontSize: 10, fontWeight: FontWeight.bold)),
+                  )
                 ],
               ),
             )
@@ -567,13 +553,5 @@ class _FoodCardModel {
     required this.id, required this.name, required this.restaurant, required this.rating,
     required this.reviews, required this.deliveryTime, required this.deliveryFee,
     required this.price, required this.imagePath, required this.isVeg, required this.isBestseller,
-  });
-}
-
-class _RestaurantModel {
-  final String id, name, categories, rating, time, costForTwo, offerText, imagePath;
-  const _RestaurantModel({
-    required this.id, required this.name, required this.categories, required this.rating,
-    required this.time, required this.costForTwo, required this.offerText, required this.imagePath,
   });
 }
