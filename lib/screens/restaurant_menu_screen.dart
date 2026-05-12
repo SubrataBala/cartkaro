@@ -64,13 +64,12 @@ class RestaurantMenuScreen extends StatelessWidget {
           const SizedBox(height: 16),
 
           // ── MENU ITEMS ──
+          // ── MENU ITEMS ──
           Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
+            child: ListView.separated(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
               itemCount: restaurant.menu.length,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 245
-              ),
+              separatorBuilder: (context, index) => const SizedBox(height: 16),
               itemBuilder: (context, index) {
                 // Taaki Cart me item ka restaurant name bhi jaye
                 var menuItem = Map<String, dynamic>.from(restaurant.menu[index]);
