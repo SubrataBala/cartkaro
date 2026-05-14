@@ -12,6 +12,13 @@ class WatchlistTab extends StatelessWidget {
     return 'Grocery';
   }
 
+  // 🔥 Helper to get the correct cart notifier based on tab
+  ValueNotifier<Map<String, int>> get _activeCartNotifier {
+    if (selectedTab == 1) return restaurantCartNotifier;
+    if (selectedTab == 2) return medicalCartNotifier;
+    return groceryCartNotifier;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -23,53 +30,96 @@ class WatchlistTab extends StatelessWidget {
         ),
         Expanded(
           child: ValueListenableBuilder(
-            // 🔥 FIXED: Now properly uses your single global watchlistNotifier
             valueListenable: watchlistNotifier,
             builder: (context, Set<String> favorites, _) {
               
-              // Smart Filtering: It only looks inside the data of the currently selected tab!
-              final currentTabData = globalAllCategoryData[selectedTab] ?? {};
-              List<Map<String, dynamic>> favoriteItemsForThisTab = [];
+              // 1. Listen to the CART as well so the UI updates when items are added
+              return ValueListenableBuilder(
+                valueListenable: _activeCartNotifier,
+                builder: (context, Map<String, int> cart, _) {
+                  
+                  final currentTabData = globalAllCategoryData[selectedTab] ?? {};
+                  List<Map<String, dynamic>> favoriteItemsForThisTab = [];
 
-              for (var categoryItems in currentTabData.values) {
-                for (var item in categoryItems) {
-                  // If it's saved AND it belongs to this tab, add it to the list
-                  if (favorites.contains(item['id'])) {
-                    favoriteItemsForThisTab.add(item);
+                  for (var categoryItems in currentTabData.values) {
+                    for (var item in categoryItems) {
+                      if (favorites.contains(item['id'])) {
+                        favoriteItemsForThisTab.add(item);
+                      }
+                    }
                   }
-                }
-              }
 
-              // Empty State
-              if (favoriteItemsForThisTab.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center, 
+                  if (favoriteItemsForThisTab.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center, 
+                        children: [
+                          Icon(Icons.favorite_border_rounded, size: 80, color: Colors.grey.withOpacity(0.3)), 
+                          const SizedBox(height: 16), 
+                          Text("Your $_tabName Watchlist is empty", style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 16, fontWeight: FontWeight.w600))
+                        ]
+                      )
+                    );
+                  }
+
+                  return Stack(
                     children: [
-                      Icon(Icons.favorite_border_rounded, size: 80, color: Colors.grey.withOpacity(0.3)), 
-                      const SizedBox(height: 16), 
-                      Text("Your $_tabName Watchlist is empty", style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 16, fontWeight: FontWeight.w600))
-                    ]
-                  )
-                );
-              }
+                      GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(20, 10, 20, 100), // Added bottom padding for the button
+                        physics: const ClampingScrollPhysics(), 
+                        itemCount: favoriteItemsForThisTab.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3, 
+                          mainAxisSpacing: 16, crossAxisSpacing: 12, 
+                          mainAxisExtent: 245, 
+                        ),
+                        itemBuilder: (context, index) {
+                          return AdaptiveItemCard(
+                            item: favoriteItemsForThisTab[index], 
+                            tabIndex: selectedTab
+                          );
+                        },
+                      ),
 
-              // Populated Grid State
-              return GridView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 10, 20, 80), 
-                physics: const ClampingScrollPhysics(), 
-                itemCount: favoriteItemsForThisTab.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 3, 
-                  mainAxisSpacing: 16, crossAxisSpacing: 12, 
-                  mainAxisExtent: 245, 
-                ),
-                itemBuilder: (context, index) {
-                  return AdaptiveItemCard(
-                    item: favoriteItemsForThisTab[index], 
-                    tabIndex: selectedTab
+                      // 2. Add a "View Cart" button that appears when cart is not empty
+                      if (cart.isNotEmpty)
+                        Positioned(
+                          bottom: 20,
+                          left: 20,
+                          right: 20,
+                          child: GestureDetector(
+                            onTap: () {
+                              // Action to open cart
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                              decoration: BoxDecoration(
+                                color: selectedTab == 1 ? kRestaurantRed : (selectedTab == 2 ? Colors.blue : Colors.green),
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4))]
+                              ),
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    '${cart.length} Item${cart.length > 1 ? 's' : ''} Added',
+                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                  ),
+                                  const Row(
+                                    children: [
+                                      Text('VIEW CART', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900)),
+                                      SizedBox(width: 4),
+                                      Icon(Icons.shopping_bag_outlined, color: Colors.white, size: 18),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
                   );
-                },
+                }
               );
             }
           ),
