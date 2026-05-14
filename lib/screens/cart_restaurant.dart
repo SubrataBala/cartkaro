@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'app_models.dart';
-import '../widgets/adaptive_item_card.dart';
 import '../widgets/shared_card_widgets.dart';
 import 'address_screen.dart';
 import 'login_screen.dart';
@@ -17,10 +16,9 @@ class CartRestaurant extends StatefulWidget {
 }
 
 class _CartRestaurantState extends State<CartRestaurant> {
-  // 🔥 RESTAURANT SPECIFIC VARIABLES
   final Color _themeColor = kRestaurantRed;
   final ValueNotifier<Map<String, int>> _activeCartNotifier = restaurantCartNotifier;
-  final int _tabIndex = 1; // Tab 1 is Restaurant
+  final int _tabIndex = 1;
 
   int _selectedTip = 0;
   bool _noBagOpted = false;
@@ -51,7 +49,7 @@ class _CartRestaurantState extends State<CartRestaurant> {
                 const SizedBox(height: 8),
                 const Text("Add items to start building your cart", style: TextStyle(color: Color(0xFF757575), fontSize: 13)),
               ],
-            )
+            ),
           );
         }
 
@@ -73,10 +71,12 @@ class _CartRestaurantState extends State<CartRestaurant> {
           }
 
           if (foundItem != null) {
-            final variants = foundItem.containsKey('variants') ? foundItem['variants'] : [{'weight': foundItem['weight'], 'price': foundItem['price']}];
+            final variants = foundItem.containsKey('variants')
+                ? foundItem['variants']
+                : [{'weight': foundItem['weight'], 'price': foundItem['price']}];
             final variant = variants[vIndex];
             final price = double.parse(variant['price'].toString());
-            final oldPrice = price + 20; 
+            final oldPrice = price + 20;
             itemTotal += price * count;
 
             cartListWidgets.add(
@@ -112,12 +112,12 @@ class _CartRestaurantState extends State<CartRestaurant> {
                             const SizedBox(width: 4),
                             Text('₹$price', style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 13, fontWeight: FontWeight.w900)),
                           ],
-                        )
+                        ),
                       ],
                     ),
                   ],
                 ),
-              )
+              ),
             );
           }
         });
@@ -127,7 +127,7 @@ class _CartRestaurantState extends State<CartRestaurant> {
         double grandTotal = itemTotal + handlingFee + deliveryFee + _selectedTip;
 
         return ScrollConfiguration(
-          behavior: _NoJellyScrollBehavior(), 
+          behavior: _NoJellyScrollBehavior(),
           child: Column(
             children: [
               Padding(
@@ -140,13 +140,13 @@ class _CartRestaurantState extends State<CartRestaurant> {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(color: _themeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
                       child: Text('${cart.values.fold(0, (a, b) => a + b)} Items', style: TextStyle(color: _themeColor, fontWeight: FontWeight.bold, fontSize: 12)),
-                    )
+                    ),
                   ],
                 ),
               ),
               Expanded(
                 child: ListView(
-                  physics: const ClampingScrollPhysics(), 
+                  physics: const ClampingScrollPhysics(),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   children: [
                     _buildDeliveryDetailsCard(),
@@ -170,7 +170,7 @@ class _CartRestaurantState extends State<CartRestaurant> {
                                     Text('Superfast', style: TextStyle(color: Colors.green, fontSize: 10, fontWeight: FontWeight.bold)),
                                   ],
                                 ),
-                              )
+                              ),
                             ],
                           ),
                           Divider(color: Colors.grey.withOpacity(0.15), height: 30),
@@ -185,21 +185,25 @@ class _CartRestaurantState extends State<CartRestaurant> {
                     const SizedBox(height: 24),
                     const Text('Did you forget?', style: TextStyle(color: Color(0xFF1A1A1A), fontSize: 16, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 12),
+
+                    // ✅ Cross-sell cards — StatefulWidget with variant dropdown
                     SizedBox(
-                      height: 245,
+                      height: 330,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         physics: const ClampingScrollPhysics(),
                         itemCount: _crossSellItems.length,
                         separatorBuilder: (_, __) => const SizedBox(width: 12),
                         itemBuilder: (context, index) {
-                          return SizedBox(
-                            width: 140, 
-                            child: AdaptiveItemCard(item: _crossSellItems[index], tabIndex: _tabIndex),
+                          return _CrossSellCard(
+                            item: _crossSellItems[index],
+                            themeColor: _themeColor,
+                            cartNotifier: _activeCartNotifier,
                           );
                         },
                       ),
                     ),
+
                     const SizedBox(height: 24),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -223,9 +227,10 @@ class _CartRestaurantState extends State<CartRestaurant> {
                             ),
                           ),
                           Switch(
-                            value: _noBagOpted, activeColor: _themeColor,
+                            value: _noBagOpted,
+                            activeColor: _themeColor,
                             onChanged: (val) => setState(() => _noBagOpted = val),
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -246,9 +251,9 @@ class _CartRestaurantState extends State<CartRestaurant> {
                               _buildTipChip(10),
                               _buildTipChip(20, isMostTipped: true),
                               _buildTipChip(30),
-                              _buildTipChip(0, label: 'Clear'), 
+                              _buildTipChip(0, label: 'Clear'),
                             ],
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -269,8 +274,8 @@ class _CartRestaurantState extends State<CartRestaurant> {
                             children: [
                               const Text('Delivery Partner Tip', style: TextStyle(color: Color(0xFF757575), fontSize: 13, fontWeight: FontWeight.w500)),
                               _selectedTip > 0
-                                ? Text('₹$_selectedTip', style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 13, fontWeight: FontWeight.w600))
-                                : const Text('Add a tip', style: TextStyle(color: Colors.blueAccent, fontSize: 13, fontWeight: FontWeight.bold)),
+                                  ? Text('₹$_selectedTip', style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 13, fontWeight: FontWeight.w600))
+                                  : const Text('Add a tip', style: TextStyle(color: Colors.blueAccent, fontSize: 13, fontWeight: FontWeight.bold)),
                             ],
                           ),
                           const SizedBox(height: 12),
@@ -284,7 +289,7 @@ class _CartRestaurantState extends State<CartRestaurant> {
                                   Text('Delivery Partner Fee', style: TextStyle(color: Color(0xFF757575), fontSize: 13, fontWeight: FontWeight.w500)),
                                 ],
                               ),
-                              itemTotal < 200 
+                              itemTotal < 200
                                   ? const Text('₹30', style: TextStyle(color: Color(0xFF1A1A1A), fontSize: 13, fontWeight: FontWeight.w600))
                                   : Row(
                                       children: [
@@ -292,7 +297,7 @@ class _CartRestaurantState extends State<CartRestaurant> {
                                         const SizedBox(width: 6),
                                         const Text('FREE', style: TextStyle(color: Colors.green, fontSize: 13, fontWeight: FontWeight.bold)),
                                       ],
-                                    )
+                                    ),
                             ],
                           ),
                           if (itemTotal < 200)
@@ -316,9 +321,9 @@ class _CartRestaurantState extends State<CartRestaurant> {
                       width: double.infinity,
                       child: ElevatedButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _themeColor, 
-                          padding: const EdgeInsets.symmetric(vertical: 18), 
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))
+                          backgroundColor: _themeColor,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                         ),
                         onPressed: () {
                           if (selectedAddressNotifier.value == -1 || globalSavedAddresses.isEmpty) {
@@ -341,14 +346,14 @@ class _CartRestaurantState extends State<CartRestaurant> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 100), 
+                    const SizedBox(height: 100),
                   ],
                 ),
               ),
             ],
           ),
         );
-      }
+      },
     );
   }
 
@@ -376,7 +381,7 @@ class _CartRestaurantState extends State<CartRestaurant> {
                 decoration: BoxDecoration(color: Colors.blueAccent, borderRadius: BorderRadius.circular(4)),
                 child: const Text('Most tipped', textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 8, fontWeight: FontWeight.bold)),
               ),
-            )
+            ),
         ],
       ),
     );
@@ -398,7 +403,7 @@ class _CartRestaurantState extends State<CartRestaurant> {
                 if (subtitle != null) ...[
                   const SizedBox(height: 4),
                   Text(subtitle, style: const TextStyle(color: Color(0xFF757575), fontSize: 11)),
-                ]
+                ],
               ],
             ),
           ),
@@ -423,7 +428,7 @@ class _CartRestaurantState extends State<CartRestaurant> {
               ],
               Text('₹${amount.toStringAsFixed(1)}', style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 13, fontWeight: FontWeight.w600)),
             ],
-          )
+          ),
         ],
       ),
     );
@@ -452,15 +457,19 @@ class _CartRestaurantState extends State<CartRestaurant> {
                     onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => AddressScreen(isDark: false, themeColor: _themeColor))),
                     child: const Text('Add Delivery Address', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                   ),
-                )
+                ),
               ],
             ),
           );
         }
 
         final addr = globalSavedAddresses[selectedIndex];
-        IconData typeIcon = addr.type == 'Home' ? Icons.home_rounded : addr.type == 'Office' ? Icons.work_outline : Icons.location_on_outlined;
-        
+        IconData typeIcon = addr.type == 'Home'
+            ? Icons.home_rounded
+            : addr.type == 'Office'
+                ? Icons.work_outline
+                : Icons.location_on_outlined;
+
         return Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.withOpacity(0.15))),
@@ -500,11 +509,269 @@ class _CartRestaurantState extends State<CartRestaurant> {
                     Text(addr.phone, style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 12, fontWeight: FontWeight.w700)),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         );
-      }
+      },
+    );
+  }
+}
+
+// ============================================================
+// ✅ SEPARATE StatefulWidget — Cross-sell card with variant
+// ============================================================
+class _CrossSellCard extends StatefulWidget {
+  final Map<String, dynamic> item;
+  final Color themeColor;
+  final ValueNotifier<Map<String, int>> cartNotifier;
+
+  const _CrossSellCard({
+    required this.item,
+    required this.themeColor,
+    required this.cartNotifier,
+  });
+
+  @override
+  State<_CrossSellCard> createState() => _CrossSellCardState();
+}
+
+class _CrossSellCardState extends State<_CrossSellCard> {
+  int _selectedVariantIndex = 0;
+
+  @override
+  Widget build(BuildContext context) {
+    final item = widget.item;
+    final Color themeColor = widget.themeColor;
+
+    // Parse variants — same logic as cart
+    final List<dynamic> variants = item.containsKey('variants')
+        ? item['variants']
+        : [{'weight': item['weight'] ?? '', 'price': item['price']}];
+
+    final selectedVariant = variants[_selectedVariantIndex];
+    final double price = double.tryParse(selectedVariant['price'].toString()) ?? 0;
+    final double oldPrice = price + 20;
+    final int discount = ((oldPrice - price) / oldPrice * 100).round();
+    final String itemId = item['id'].toString();
+    final String cartKey = '$itemId|$_selectedVariantIndex';
+
+    return Container(
+      width: 165,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.grey.withOpacity(0.15)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // ── Image + badges ──
+          Stack(
+            children: [
+              Container(
+                height: 120,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                  color: Color(0xFFFFF0F0),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                ),
+                padding: const EdgeInsets.all(14),
+                child: Image.asset(item['image'], fit: BoxFit.contain),
+              ),
+              // Discount badge — left edge style
+              Positioned(
+                top: 8, left: 0,
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: themeColor,
+                    borderRadius: const BorderRadius.only(
+                      topRight: Radius.circular(6),
+                      bottomRight: Radius.circular(6),
+                    ),
+                  ),
+                  child: Text(
+                    '$discount% OFF',
+                    style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800, letterSpacing: 0.2),
+                  ),
+                ),
+              ),
+              // Heart — global watchlistNotifier
+              Positioned(
+                top: 6, right: 6,
+                child: ValueListenableBuilder<Set<String>>(
+                  valueListenable: watchlistNotifier,
+                  builder: (context, watchlist, _) {
+                    final bool isWishlisted = watchlist.contains(itemId);
+                    return GestureDetector(
+                      onTap: () {
+                        final updated = Set<String>.from(watchlistNotifier.value);
+                        isWishlisted ? updated.remove(itemId) : updated.add(itemId);
+                        watchlistNotifier.value = updated;
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.08), blurRadius: 4)],
+                        ),
+                        child: Icon(
+                          isWishlisted ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                          size: 14,
+                          color: isWishlisted ? themeColor : Colors.grey.shade400,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+
+          // ── Content ──
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Name
+                  Text(
+                    item['name'],
+                    style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 12, fontWeight: FontWeight.w800, height: 1.3),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 5),
+                  // Rating
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, color: Colors.amber, size: 13),
+                      const SizedBox(width: 3),
+                      const Text('4.5', style: TextStyle(color: Color(0xFF1A1A1A), fontSize: 10, fontWeight: FontWeight.w700)),
+                      const SizedBox(width: 4),
+                      const Text('1.2k+ bought', style: TextStyle(color: Color(0xFF9E9E9E), fontSize: 9)),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // ✅ VARIANT DROPDOWN — Half / Full / Quarter
+                  if (variants.length > 1)
+                    Container(
+                      height: 32,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: themeColor.withOpacity(0.6)),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<int>(
+                          value: _selectedVariantIndex,
+                          isDense: true,
+                          isExpanded: true,
+                          icon: Icon(Icons.keyboard_arrow_down_rounded, color: themeColor, size: 18),
+                          onChanged: (val) {
+                            if (val != null) setState(() => _selectedVariantIndex = val);
+                          },
+                          items: List.generate(variants.length, (i) {
+                            return DropdownMenuItem<int>(
+                              value: i,
+                              child: Text(
+                                variants[i]['weight'].toString(),
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(color: themeColor, fontSize: 11, fontWeight: FontWeight.w700),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                    )
+                  else
+                    // Single variant — just show weight text
+                    Text(
+                      selectedVariant['weight'].toString(),
+                      style: const TextStyle(color: Color(0xFF9E9E9E), fontSize: 10),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+
+                  const Spacer(),
+
+                  // Price row
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '₹${oldPrice.toStringAsFixed(0)}',
+                            style: const TextStyle(color: Color(0xFF9E9E9E), fontSize: 10, decoration: TextDecoration.lineThrough),
+                          ),
+                          Text(
+                            '₹${price.toStringAsFixed(0)}',
+                            style: const TextStyle(color: Color(0xFF1A1A1A), fontSize: 15, fontWeight: FontWeight.w900),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: themeColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            'You save ₹${(oldPrice - price).toStringAsFixed(0)}',
+                            style: TextStyle(color: themeColor, fontSize: 8, fontWeight: FontWeight.w700),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  // ADD button
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 7),
+                        side: BorderSide(color: themeColor, width: 1.5),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () {
+                        final current = widget.cartNotifier.value[cartKey] ?? 0;
+                        final updated = Map<String, int>.from(widget.cartNotifier.value);
+                        updated[cartKey] = current + 1;
+                        widget.cartNotifier.value = updated;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('${item['name']} (${selectedVariant['weight']}) added!'),
+                            duration: const Duration(seconds: 1),
+                            backgroundColor: themeColor,
+                          ),
+                        );
+                      },
+                      child: Text(
+                        'ADD',
+                        style: TextStyle(color: themeColor, fontSize: 12, fontWeight: FontWeight.w900, letterSpacing: 1),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
