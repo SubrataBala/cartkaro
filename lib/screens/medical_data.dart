@@ -1,168 +1,43 @@
-// Sirf Medical ka data yahan rahega
 final Map<String, List<Map<String, dynamic>>> medicalData = {
   'Daily Medicines': [
-    {
-      'id': 'm1', 
-      'name': 'Dolo 650 Tablet', 
-      'image': 'assets/images/broccoli.png', // Replace with real medicine image later
-      'isBestseller': true,
-      'variants': [
-        {'weight': '15 Tabs', 'price': 30.0},
-        {'weight': '30 Tabs', 'price': 58.0},
-      ]
-    },
-    {
-      'id': 'm2', 
-      'name': 'Paracetamol 500mg', 
-      'image': 'assets/images/broccoli.png', 
-      'isBestseller': true,
-      'variants': [
-        {'weight': '10 Tabs', 'price': 15.0},
-        {'weight': '15 Tabs', 'price': 20.0},
-      ]
-    },
-    {
-      'id': 'm3', 
-      'name': 'Crocin Advance', 
-      'image': 'assets/images/broccoli.png', 
-      'variants': [
-        {'weight': '15 Tabs', 'price': 25.0},
-      ]
-    },
-    {
-      'id': 'm4', 
-      'name': 'Vicks VapoRub', 
-      'image': 'assets/images/broccoli.png', 
-      'isBestseller': true,
-      'variants': [
-        {'weight': '25g', 'price': 45.0},
-        {'weight': '50g', 'price': 85.0},
-      ]
-    },
-    {
-      'id': 'm5', 
-      'name': 'Honitus Cough Syrup', 
-      'image': 'assets/images/broccoli.png', 
-      'variants': [
-        {'weight': '100ml', 'price': 90.0},
-      ]
-    },
-    {
-      'id': 'm6', 
-      'name': 'Digene Antacid', 
-      'image': 'assets/images/broccoli.png', 
-      'isBestseller': true,
-      'variants': [
-        {'weight': '15 Tabs', 'price': 18.0},
-        {'weight': '200ml Liquid', 'price': 115.0},
-      ]
-    },
+    {'id': 'm1', 'name': 'Dolo 650 Tablet', 'brand': 'Micro Labs', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '15 Tabs', 'price': 30.0, 'originalPrice': 36.0}, {'weight': '30 Tabs', 'price': 58.0, 'originalPrice': 72.0}]},
+    {'id': 'm2', 'name': 'Paracetamol 500mg', 'brand': 'GSK', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '10 Tabs', 'price': 15.0, 'originalPrice': 18.0}, {'weight': '15 Tabs', 'price': 20.0, 'originalPrice': 25.0}]},
+    {'id': 'm3', 'name': 'Crocin Advance', 'brand': 'GSK', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '15 Tabs', 'price': 25.0, 'originalPrice': 30.0}]},
+    {'id': 'm4', 'name': 'Vicks VapoRub', 'brand': 'P&G', 'form': 'Ointment', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '25g', 'price': 45.0, 'originalPrice': 54.0}, {'weight': '50g', 'price': 85.0, 'originalPrice': 99.0}]},
+    {'id': 'm5', 'name': 'Honitus Cough Syrup', 'brand': 'Dabur', 'form': 'Syrup', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '100ml', 'price': 90.0, 'originalPrice': 108.0}]},
+    {'id': 'm6', 'name': 'Digene Antacid', 'brand': 'Abbott', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '15 Tabs', 'price': 18.0, 'originalPrice': 22.0}, {'weight': '200ml Liquid', 'price': 115.0, 'originalPrice': 130.0}]},
+    {'id': 'm18', 'name': 'Pudin Hara Pearls', 'brand': 'Dabur', 'form': 'Capsule', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '10 Caps', 'price': 25.0, 'originalPrice': 30.0}]},
+    {'id': 'm20', 'name': 'Combiflam', 'brand': 'Sanofi', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '20 Tabs', 'price': 42.0, 'originalPrice': 50.0}]},
+    {'id': 'm21', 'name': 'Gelusil Liquid (Mint)', 'brand': 'Pfizer', 'form': 'Syrup', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '200ml', 'price': 125.0, 'originalPrice': 140.0}]},
   ],
-
   'Vitamins & Supplements': [
-    {
-      'id': 'm7', 
-      'name': 'Vitamin C Limcee', 
-      'image': 'assets/images/broccoli.png', 
-      'isBestseller': true,
-      'variants': [
-        {'weight': '15 Tabs', 'price': 22.0},
-      ]
-    },
-    {
-      'id': 'm8', 
-      'name': 'Revital H', 
-      'image': 'assets/images/broccoli.png', 
-      'variants': [
-        {'weight': '30 Caps', 'price': 299.0},
-        {'weight': '60 Caps', 'price': 550.0},
-      ]
-    },
-    {
-      'id': 'm9', 
-      'name': 'Shelcal 500', 
-      'image': 'assets/images/broccoli.png', 
-      'variants': [
-        {'weight': '15 Tabs', 'price': 110.0},
-      ]
-    },
-    {
-      'id': 'm10', 
-      'name': 'ORS Sachet (Orange)', 
-      'image': 'assets/images/broccoli.png', 
-      'isBestseller': true,
-      'variants': [
-        {'weight': '5 Sachets', 'price': 100.0},
-        {'weight': '10 Sachets', 'price': 190.0},
-      ]
-    },
+    {'id': 'm7', 'name': 'Vitamin C Limcee', 'brand': 'Abbott', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '15 Tabs', 'price': 22.0, 'originalPrice': 26.0}]},
+    {'id': 'm8', 'name': 'Revital H', 'brand': 'Sun Pharma', 'form': 'Capsule', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '30 Caps', 'price': 299.0, 'originalPrice': 350.0}, {'weight': '60 Caps', 'price': 550.0, 'originalPrice': 650.0}]},
+    {'id': 'm9', 'name': 'Shelcal 500', 'brand': 'Torrent Pharma', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '15 Tabs', 'price': 110.0, 'originalPrice': 132.0}]},
+    {'id': 'm10', 'name': 'ORS Sachet (Orange)', 'brand': 'FDC', 'form': 'Powder', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '5 Sachets', 'price': 100.0, 'originalPrice': 120.0}, {'weight': '10 Sachets', 'price': 190.0, 'originalPrice': 220.0}]},
+    {'id': 'm19', 'name': 'Zincovit', 'brand': 'Apex Labs', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '15 Tabs', 'price': 105.0, 'originalPrice': 120.0}]},
+    {'id': 'm22', 'name': 'Neurobion Forte', 'brand': 'P&G', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '30 Tabs', 'price': 38.0, 'originalPrice': 45.0}]},
+    {'id': 'm23', 'name': 'Evion 400 (Vitamin E)', 'brand': 'Merck', 'form': 'Capsule', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '10 Caps', 'price': 35.0, 'originalPrice': 42.0}]},
   ],
-
   'First Aid Kits': [
-    {
-      'id': 'm11', 
-      'name': 'Band-Aid Washproof', 
-      'image': 'assets/images/broccoli.png', 
-      'isBestseller': true,
-      'variants': [
-        {'weight': '10 Strips', 'price': 20.0},
-        {'weight': '100 Strips', 'price': 150.0},
-      ]
-    },
-    {
-      'id': 'm12', 
-      'name': 'Surgical Cotton', 
-      'image': 'assets/images/broccoli.png', 
-      'variants': [
-        {'weight': '100g', 'price': 50.0},
-      ]
-    },
-    {
-      'id': 'm13', 
-      'name': 'Dettol Liquid', 
-      'image': 'assets/images/broccoli.png', 
-      'isBestseller': true,
-      'variants': [
-        {'weight': '125ml', 'price': 65.0},
-        {'weight': '250ml', 'price': 110.0},
-      ]
-    },
-    {
-      'id': 'm14', 
-      'name': 'Digital Thermometer', 
-      'image': 'assets/images/broccoli.png', 
-      'variants': [
-        {'weight': '1 pc', 'price': 180.0},
-      ]
-    },
+    {'id': 'm11', 'name': 'Band-Aid Washproof', 'brand': 'Johnson & Johnson', 'form': 'Bandage', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '10 Strips', 'price': 20.0, 'originalPrice': 25.0}, {'weight': '100 Strips', 'price': 150.0, 'originalPrice': 180.0}]},
+    {'id': 'm12', 'name': 'Surgical Cotton', 'brand': 'Generic', 'form': 'Cotton', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '100g', 'price': 50.0, 'originalPrice': 60.0}]},
+    {'id': 'm13', 'name': 'Dettol Liquid', 'brand': 'Reckitt Benckiser', 'form': 'Liquid', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '125ml', 'price': 65.0, 'originalPrice': 75.0}, {'weight': '250ml', 'price': 110.0, 'originalPrice': 130.0}]},
+    {'id': 'm24', 'name': 'Savlon Antiseptic Cream', 'brand': 'ITC', 'form': 'Cream', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '30g', 'price': 45.0, 'originalPrice': 55.0}]},
+    {'id': 'm25', 'name': 'Crepe Bandage', 'brand': 'Flamingo', 'form': 'Bandage', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '6cm', 'price': 120.0, 'originalPrice': 150.0}, {'weight': '10cm', 'price': 180.0, 'originalPrice': 220.0}]},
   ],
-
-  'Personal Care': [
-    {
-      'id': 'm15', 
-      'name': 'Volini Pain Relief Gel', 
-      'image': 'assets/images/broccoli.png', 
-      'isBestseller': true,
-      'variants': [
-        {'weight': '30g', 'price': 115.0},
-        {'weight': '50g', 'price': 160.0},
-      ]
-    },
-    {
-      'id': 'm16', 
-      'name': 'Moov Pain Relief Spray', 
-      'image': 'assets/images/broccoli.png', 
-      'variants': [
-        {'weight': '50g', 'price': 145.0},
-      ]
-    },
-    {
-      'id': 'm17', 
-      'name': 'Cetirizine 10mg (Allergy)', 
-      'image': 'assets/images/broccoli.png', 
-      'variants': [
-        {'weight': '10 Tabs', 'price': 18.0},
-      ]
-    },
+  'Personal & Baby Care': [
+    {'id': 'm15', 'name': 'Volini Pain Relief Gel', 'brand': 'Sun Pharma', 'form': 'Gel', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '30g', 'price': 115.0, 'originalPrice': 130.0}, {'weight': '50g', 'price': 160.0, 'originalPrice': 185.0}]},
+    {'id': 'm16', 'name': 'Moov Pain Relief Spray', 'brand': 'Reckitt Benckiser', 'form': 'Spray', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '50g', 'price': 145.0, 'originalPrice': 165.0}]},
+    {'id': 'm17', 'name': 'Cetirizine 10mg (Allergy)', 'brand': 'Cipla', 'form': 'Tablet', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '10 Tabs', 'price': 18.0, 'originalPrice': 22.0}]},
+    {'id': 'm26', 'name': 'Himalaya Baby Powder', 'brand': 'Himalaya', 'form': 'Powder', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '200g', 'price': 140.0, 'originalPrice': 160.0}]},
+    {'id': 'm27', 'name': 'Pampers Active Baby', 'brand': 'Pampers', 'form': 'Diaper', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': 'Medium (M) 30 pcs', 'price': 399.0, 'originalPrice': 499.0}, {'weight': 'Large (L) 30 pcs', 'price': 450.0, 'originalPrice': 550.0}]},
+    {'id': 'm28', 'name': 'Sebamed Baby Lotion', 'brand': 'Sebamed', 'form': 'Lotion', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '100ml', 'price': 450.0, 'originalPrice': 500.0}]},
+  ],
+  'Health Devices': [
+    {'id': 'm14', 'name': 'Digital Thermometer', 'brand': 'Dr. Morepen', 'form': 'Equipment', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '1 pc', 'price': 180.0, 'originalPrice': 220.0}]},
+    {'id': 'm29', 'name': 'Pulse Oximeter', 'brand': 'OMRON', 'form': 'Equipment', 'image': 'assets/images/broccoli.png', 'isBestseller': true, 'variants': [{'weight': '1 pc', 'price': 1250.0, 'originalPrice': 1500.0}]},
+    {'id': 'm30', 'name': 'Accu-Chek Active Strips', 'brand': 'Accu-Chek', 'form': 'Equipment', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '50 Strips', 'price': 950.0, 'originalPrice': 1100.0}]},
+    {'id': 'm31', 'name': 'BP Monitor', 'brand': 'Dr. Trust', 'form': 'Equipment', 'image': 'assets/images/broccoli.png', 'variants': [{'weight': '1 pc', 'price': 1499.0, 'originalPrice': 1999.0}]},
   ],
 };

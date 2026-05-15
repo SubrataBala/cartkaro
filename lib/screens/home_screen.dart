@@ -7,11 +7,11 @@ import 'grocery_tab.dart';
 import 'restaurant_tab.dart';
 import 'medical_tab.dart';
 
-// ── NAYE SEPARATED FILES ──
 import 'watchlist_tab.dart';
 import 'cart_grocery.dart';
 import 'cart_restaurant.dart';
 import 'cart_medical.dart';
+import 'profile_screen.dart'; // 🔥 IMPORT ADDED HERE
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -69,21 +69,15 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? const RestaurantTab()
                           : const MedicalTab())
                     : _bottomNav == 1
-                    // 🔥 ROUTES TO NEW WATCHLIST FILE
                     ? WatchlistTab(selectedTab: _selectedTab)
                     : _bottomNav == 2
-                    // 🔥 ROUTES TO SEPARATE CART FILES
                     ? (_selectedTab == 0
                           ? const CartGrocery()
                           : _selectedTab == 1
                           ? const CartRestaurant()
                           : const CartMedical())
-                    : Center(
-                        child: Text(
-                          "Profile Page",
-                          style: TextStyle(color: _textPrimary, fontSize: 18),
-                        ),
-                      ),
+                    // 🔥 ROUTES TO OUR NEW PROFILE SCREEN
+                    : ProfileScreen(activeThemeColor: _activeColor),
               ),
             ],
           ),
