@@ -6,10 +6,11 @@ import 'login_screen.dart'; // 🔥 IMPORTED TO CHECK LOGIN STATE
 // ─────────────────────────────────────────────
 //  CartKaro Design Tokens
 // ─────────────────────────────────────────────
-const Color kSurface         = Color(0xFFF4F4F6);
-const Color kBg              = Color(0xFFFAFAFC);
+const Color kSurface         = Color(0xFFF4F4F6); // Light grey surface
+const Color kBg              = Color(0xFFFAFAFC); // Main scaffold background
 const Color kTextDark        = Color(0xFF1A1A2E);
 const Color kMuted           = Color(0xFF8A8A9A);
+const Color kDivider         = Color(0xFFE0E0E0);
 
 const String kFontFamily     = 'Poppins';
 
@@ -48,6 +49,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
         fontFamily: kFontFamily,
         fontSize: size,
         fontWeight: weight,
+        color: color,
+        height: height,
+        letterSpacing: letterSpacing,
+      );
+
+  // Helper for applying Poppins easily
+  TextStyle getStyle({
+    double size = 14,
+    FontWeight weight = FontWeight.w400,
+    Color color = kTextDark,
+    double? height,
+    double? letterSpacing,
+  }) =>
+      _poppins(
+        size: size,
+        weight: weight,
         color: color,
         height: height,
         letterSpacing: letterSpacing,
@@ -113,11 +130,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Center(
                   child: Text(
                     'SS', // Shyam Sundar
-                    style: _poppins(
-                      size: 26,
-                      weight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
+                    style: getStyle(size: 26, weight: FontWeight.w700, color: Colors.white),
                   ),
                 ),
               ),
@@ -159,8 +172,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Shyam Sundar', // Updated to your name!
-                  style: _poppins(
+                  'Shyam Sundar',
+                  style: getStyle(
                     size: 19,
                     weight: FontWeight.w700,
                     letterSpacing: -0.3,
@@ -174,7 +187,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(width: 5),
                     Text(
                       '+91 98765 43210',
-                      style: _poppins(size: 13, color: kMuted),
+                      style: getStyle(size: 13, color: kMuted),
                     ),
                   ],
                 ),
@@ -195,7 +208,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(width: 4),
                       Text(
                         'Verified Account',
-                        style: _poppins(
+                        style: getStyle(
                           size: 11,
                           weight: FontWeight.w600,
                           color: activeThemeColor,
@@ -280,7 +293,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           const SizedBox(width: 6),
                           Text(
                             'CartKaro Wallet',
-                            style: _poppins(
+                            style: getStyle(
                               size: 12,
                               color: Colors.white70,
                               weight: FontWeight.w500,
@@ -291,7 +304,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(height: 5),
                       Text(
                         '₹ 248.50',
-                        style: _poppins(
+                        style: getStyle(
                           size: 26,
                           weight: FontWeight.w800,
                           color: Colors.white,
@@ -313,7 +326,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           ),
                           child: Text(
                             'Add Money  +',
-                            style: _poppins(
+                            style: getStyle(
                               size: 11,
                               weight: FontWeight.w600,
                               color: Colors.white,
@@ -349,7 +362,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     const SizedBox(height: 8),
                     Text(
                       '1,240',
-                      style: _poppins(
+                      style: getStyle(
                         size: 18,
                         weight: FontWeight.w800,
                         color: Colors.white,
@@ -357,7 +370,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                     Text(
                       'CartKaro Coins',
-                      style: _poppins(
+                      style: getStyle(
                         size: 10,
                         color: Colors.white70,
                         weight: FontWeight.w500,
@@ -374,61 +387,112 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ─────────────────────────────────────────────
-  //  3. Quick Action Card (grid cell)
+  //  3. Quick Action Card — Safe Vector Watermark Version
   // ─────────────────────────────────────────────
   Widget _buildActionCard({
     required IconData icon,
     required String label,
     required String subtitle,
-    required String bgEmoji,
+    required IconData watermarkIcon, // 🔥 Now passing IconData instead of Widget
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        decoration: _cardDecoration(),
-        // 🔥 Slightly reduced padding to prevent squishing
-        padding: const EdgeInsets.fromLTRB(14, 16, 12, 14),
+        clipBehavior: Clip.hardEdge, 
+        decoration: BoxDecoration(
+          color: Colors.white, 
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.05),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
         child: Stack(
           children: [
-            // Ghost emoji background
+            // 🔥 Vector Watermark effect (massive, faded, clean)
             Positioned(
-              right: -6,
-              bottom: -8,
-              child: Text(
-                bgEmoji,
-                style: const TextStyle(fontSize: 46), // 🔥 Reduced from 52
+              right: -10, 
+              bottom: -10,
+              child: Icon(
+                watermarkIcon,
+                size: 90,
+                color: activeThemeColor.withOpacity(0.06), // Very soft tint
               ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  width: 38, // 🔥 Slightly smaller
-                  height: 38,
-                  decoration: BoxDecoration(
-                    color: activeThemeColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
+
+            // Foreground content with full padding
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Top row: glowing icon + arrow
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Glowing circular icon container
+                      Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: activeThemeColor.withOpacity(0.12),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: activeThemeColor.withOpacity(0.2),
+                              blurRadius: 10,
+                              spreadRadius: 1,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Icon(icon, color: activeThemeColor, size: 20),
+                      ),
+                      // Subtle arrow indicator
+                      Icon(Icons.arrow_forward_ios_rounded,
+                          size: 11, color: kMuted.withOpacity(0.45)),
+                    ],
                   ),
-                  child: Icon(icon, color: activeThemeColor, size: 18), // 🔥 Reduced from 20
-                ),
-                const SizedBox(height: 12), // 🔥 Reduced from 20 to give text more space
-                Text(
-                  label,
-                  style: _poppins(
-                    size: 13,
-                    weight: FontWeight.w700,
+
+                  // Bottom section: label + status pill
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: getStyle(size: 13.5, weight: FontWeight.w700),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 6),
+                      // Status pill badge with light tint
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 9, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: activeThemeColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          subtitle,
+                          style: getStyle(
+                              size: 10,
+                              weight: FontWeight.w600,
+                              color: activeThemeColor),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: _poppins(size: 10.5, color: kMuted),
-                  maxLines: 1, // Prevents overflow if text gets too long
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
           ],
         ),
@@ -442,25 +506,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
         'icon': Icons.receipt_long_rounded,
         'label': 'My Orders',
         'subtitle': '3 active orders',
-        'emoji': '📦',
+        'watermark': Icons.inventory_2_rounded, // 🔥 Clean vector icon
       },
       {
         'icon': Icons.location_on_rounded,
         'label': 'Saved Addresses',
         'subtitle': '2 locations saved',
-        'emoji': '🏠',
+        'watermark': Icons.home_rounded, // 🔥 Clean vector icon
       },
       {
         'icon': Icons.credit_card_rounded,
         'label': 'Payments',
         'subtitle': 'Cards & UPI',
-        'emoji': '💳',
+        'watermark': Icons.credit_card_rounded, // 🔥 Clean vector icon
       },
       {
         'icon': Icons.bookmark_rounded,
         'label': 'Watchlist',
         'subtitle': '12 items saved',
-        'emoji': '⭐',
+        'watermark': Icons.star_rounded, // 🔥 Clean vector icon
       },
     ];
 
@@ -471,8 +535,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         crossAxisCount: 2,
         crossAxisSpacing: 14,
         mainAxisSpacing: 14,
-        // 🔥 Changed from 1.35 to 1.15 to make the cards slightly taller and fix overflow
-        childAspectRatio: 1.15,
+        childAspectRatio: 1.15, 
       ),
       itemCount: actions.length,
       itemBuilder: (context, index) {
@@ -481,7 +544,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           icon: a['icon'] as IconData,
           label: a['label'] as String,
           subtitle: a['subtitle'] as String,
-          bgEmoji: a['emoji'] as String,
+          watermarkIcon: a['watermark'] as IconData, // Passed correctly here
           onTap: () {},
         );
       },
@@ -489,7 +552,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   // ─────────────────────────────────────────────
-  //  4. Settings List Tile
+  //  4. Settings List Tile helper
   // ─────────────────────────────────────────────
   Widget _buildListTile({
     required IconData icon,
@@ -504,8 +567,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onTap: onTap ?? () {},
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             child: Row(
               children: [
                 Container(
@@ -524,13 +586,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         title,
-                        style: _poppins(
-                            size: 13.5, weight: FontWeight.w600),
+                        style: getStyle(size: 13.5, weight: FontWeight.w600),
                       ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 2),
-                        Text(subtitle,
-                            style: _poppins(size: 11, color: kMuted)),
+                        Text(subtitle, style: getStyle(size: 11, color: kMuted)),
                       ],
                     ],
                   ),
@@ -541,13 +601,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
           ),
         ),
-        if (showDivider)
-          const Divider(
-            height: 1,
-            indent: 72,
-            endIndent: 18,
-            color: kSurface,
-          ),
+        if (showDivider) const Divider(height: 1, indent: 72, endIndent: 18, color: kDivider),
       ],
     );
   }
@@ -557,26 +611,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
       decoration: _cardDecoration(),
       child: Column(
         children: [
-          _buildListTile(
-            icon: Icons.headset_mic_rounded,
-            title: 'Customer Support',
-            subtitle: 'Chat, call or email us',
-          ),
-          _buildListTile(
-            icon: Icons.settings_rounded,
-            title: 'App Settings',
-            subtitle: 'Notifications, language & more',
-          ),
-          _buildListTile(
-            icon: Icons.help_outline_rounded,
-            title: 'FAQ',
-            subtitle: 'Frequently asked questions',
-          ),
-          _buildListTile(
-            icon: Icons.privacy_tip_outlined,
-            title: 'Terms & Conditions',
-            showDivider: false,
-          ),
+          _buildListTile(icon: Icons.headset_mic_rounded, title: 'Customer Support', subtitle: 'Chat, call or email us'),
+          _buildListTile(icon: Icons.settings_rounded, title: 'App Settings', subtitle: 'Notifications, language & more'),
+          _buildListTile(icon: Icons.help_outline_rounded, title: 'FAQ', subtitle: 'Frequently asked questions'),
+          _buildListTile(icon: Icons.privacy_tip_outlined, title: 'Terms & Conditions', showDivider: false),
         ],
       ),
     );
@@ -591,12 +629,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: OutlinedButton.icon(
         onPressed: () {
           HapticFeedback.mediumImpact();
-          _handleLogout(); 
+          _handleLogout(); // 🔥 TRIGGERS LOGOUT & SHOWS OTP SCREEN
         },
         icon: Icon(Icons.logout_rounded, color: activeThemeColor, size: 18),
         label: Text(
           'Log Out',
-          style: _poppins(
+          style: getStyle(
             size: 14,
             weight: FontWeight.w600,
             color: activeThemeColor,
@@ -605,31 +643,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 15),
           side: BorderSide(color: activeThemeColor, width: 1.6),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           backgroundColor: activeThemeColor.withOpacity(0.04),
         ),
       ),
     );
   }
 
-  // ─────────────────────────────────────────────
-  //  Section Header
-  // ─────────────────────────────────────────────
-  Widget _sectionHeader(String title) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 2, bottom: 12),
-      child: Text(
-        title,
-        style: _poppins(
-          size: 13,
-          weight: FontWeight.w700,
-          color: kMuted,
-          letterSpacing: 0.6,
+  // ── Section Header helper ───────────────
+  Widget _sectionHeader(String title) => Padding(
+        padding: const EdgeInsets.only(left: 2, bottom: 12),
+        child: Text(
+          title,
+          style: getStyle(size: 13, weight: FontWeight.w700, color: kMuted, letterSpacing: 0.6),
         ),
-      ),
-    );
-  }
+      );
 
   // ─────────────────────────────────────────────
   //  Build
@@ -638,7 +666,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     // 🔥 UNAUTHENTICATED STATE CHECK
     if (!isUserLoggedIn) {
-      return const LoginScreen(); 
+      return const LoginScreen();
     }
 
     // 🔥 AUTHENTICATED STATE UI
@@ -648,36 +676,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
         statusBarIconBrightness: Brightness.dark,
       ),
       child: Scaffold(
-        backgroundColor: kBg,
+        backgroundColor: kBg, 
         body: SafeArea(
           child: SingleChildScrollView(
             physics: const BouncingScrollPhysics(),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // ── Top App Bar ──────────────────
+                // Top App Bar
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       'My Profile',
-                      style: _poppins(
-                        size: 22,
-                        weight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
+                      style: getStyle(size: 22, weight: FontWeight.w800, letterSpacing: -0.5),
                     ),
                     Container(
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: kSurface,
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: kDivider),
                       ),
-                      child: const Icon(Icons.notifications_none_rounded,
-                          color: kTextDark, size: 20),
+                      child: const Icon(Icons.notifications_none_rounded, color: kTextDark, size: 20),
                     ),
                   ],
                 ),
@@ -694,10 +717,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
                 // ── 3. Quick Actions ─────────────
                 _sectionHeader('QUICK ACTIONS'),
-                _buildQuickActionGrid(),
+                _buildQuickActionGrid(), 
                 const SizedBox(height: 24),
 
-                // ── 4. Settings ────────────────── (🔥 PRO BANNER REMOVED FROM HERE)
+                // ── 4. Settings ──────────────────
                 _sectionHeader('MORE'),
                 _buildSettingsSection(),
                 const SizedBox(height: 24),
@@ -710,7 +733,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Center(
                   child: Text(
                     'CartKaro v2.4.1  •  Made with ❤️ in India',
-                    style: _poppins(size: 11, color: kMuted),
+                    style: getStyle(size: 11, color: kMuted),
                   ),
                 ),
                 const SizedBox(height: 80), // Padding for Bottom Nav Bar
