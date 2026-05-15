@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
 import 'items_screen.dart';
 import 'app_models.dart';
-import '../widgets/adaptive_item_card.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
+import '../widgets/adaptive_item_card.dart'; 
+import '../widgets/shared_filter_row.dart'; // ── MAIN FIX: Apni nayi file yahan IMPORT ki ──
 
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
-  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) {
-    return child;
-  }
+  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;
 }
 
-// ── Search UI ke liye simple class (sirf pastel boxes ke liye) ──
 class SearchCategoryItem {
-  final String label;
-  final String imagePath;
+  final String label, imagePath;
   SearchCategoryItem(this.label, this.imagePath);
 }
 
@@ -25,7 +22,6 @@ class SearchSection {
 
 class GrocerySearchScreen extends StatefulWidget {
   const GrocerySearchScreen({super.key});
-
   @override
   State<GrocerySearchScreen> createState() => _GrocerySearchScreenState();
 }
@@ -34,6 +30,7 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
   bool _showResults = false;
+  String _activeSort = ''; // ── FILTER STATE TRACKING ──
 
   bool get isDark => false; 
   Color get _bgColor => const Color(0xFFF8F9FA); 
@@ -41,7 +38,7 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
   Color get _textPrimary => const Color(0xFF1A1A1A); 
   Color get _textSecondary => const Color(0xFF757575);
   Color get _borderColor => Colors.grey.withOpacity(0.15);
-  Color get _themeColor => const Color(0xFF4CAF50); // Grocery Green
+  Color get _themeColor => const Color(0xFF4CAF50); 
 
   final List<Color> _pastelColors = [
     const Color(0xFFFFE082), const Color(0xFFFFCDD2), const Color(0xFFF8BBD0),
@@ -49,9 +46,6 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
     const Color(0xFFC8E6C9), const Color(0xFFDCEDC8), const Color(0xFFFFF9C4),
   ];
 
-  // ==========================================
-  // 1. PAST SEARCHES
-  // ==========================================
   final List<Map<String, dynamic>> _pastSearches = [
     {'label': 'Milk', 'icon': Icons.water_drop, 'color': const Color(0xFFFFCDD2)},
     {'label': 'Egg', 'icon': Icons.egg, 'color': const Color(0xFFC8E6C9)},
@@ -63,9 +57,6 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
     {'label': 'Sugar', 'icon': Icons.scatter_plot, 'color': const Color(0xFFF8BBD0)},
   ];
 
-  // ==========================================
-  // 2. CATEGORY BOXES UI
-  // ==========================================
   final List<SearchSection> _searchCategories = [
     SearchSection('Vegetables', [SearchCategoryItem('Potato', 'assets/images/broccoli.png'), SearchCategoryItem('Carrot', 'assets/images/broccoli.png'), SearchCategoryItem('Onion', 'assets/images/broccoli.png')]),
     SearchSection('Fruits', [SearchCategoryItem('Apple', 'assets/images/broccoli.png'), SearchCategoryItem('Banana', 'assets/images/broccoli.png'), SearchCategoryItem('Guava', 'assets/images/broccoli.png')]),
@@ -73,12 +64,9 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
     SearchSection('Snacks & Drinks', [SearchCategoryItem('Chips', 'assets/images/broccoli.png'), SearchCategoryItem('Namkeen', 'assets/images/broccoli.png'), SearchCategoryItem('Cold Drinks', 'assets/images/broccoli.png')]),
   ];
 
-  // ==========================================
-  // 3. MASTER DATA FETCHER
-  // ==========================================
   List<Map<String, dynamic>> get _allGroceryItems {
     List<Map<String, dynamic>> allItems = [];
-    final groceryMap = globalAllCategoryData[0] ?? {}; // 0 is Grocery Tab
+    final groceryMap = globalAllCategoryData[0] ?? {}; 
     
     groceryMap.forEach((categoryName, items) {
       for (var item in items) {
@@ -262,8 +250,17 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
     );
   }
 
+  // ── 🔥 MAIN FIX & FILTERING LOGIC HAPPENS HERE ──
   Widget _buildResultsView() {
-    final results = _allGroceryItems.where((p) => p['name'].toString().toLowerCase().contains(_query.toLowerCase())).toList();
+    // Basic search filtering
+    List<Map<String, dynamic>> results = _allGroceryItems.where((p) => p['name'].toString().toLowerCase().contains(_query.toLowerCase())).toList();
+    
+    // ── Apply Advanced Filtering based on _activeSort state ──
+    if (_activeSort == 'Price: Low to High') {
+      results.sort((a, b) => (a['price'] as num).compareTo(b['price'] as num));
+    } else if (_activeSort == 'Price: High to Low') {
+      results.sort((a, b) => (b['price'] as num).compareTo(a['price'] as num));
+    }
     
     List<Map<String, dynamic>> related = [];
     if (results.isNotEmpty) {
@@ -275,7 +272,15 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
 
     return Column(
       children: [
-        SingleChildScrollView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.fromLTRB(20, 8, 20, 16), child: Row(children: ['Filters', 'Sort', 'Quantity', 'Price'].map((f) => Container(margin: const EdgeInsets.only(right: 8), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(20)), child: Row(children: [Text(f, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)), const SizedBox(width: 4), const Icon(Icons.keyboard_arrow_down, size: 16)]))).toList())),
+        // ── NAYA SEPARATE WIDGET CALL KIYA GAYA HAI ──
+        SharedFilterRow(
+          tabIndex: 0, // 0 for Grocery
+          activeSort: _activeSort,
+          onSortChanged: (sortType) {
+            setState(() { _activeSort = sortType; });
+          },
+        ),
+
         Expanded(
           child: SingleChildScrollView(
             child: Column(
@@ -291,10 +296,9 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
                     mainAxisExtent: 245 
                   ),
                   itemCount: results.length,
-                  // ── MAIN FIX: Replaced old PremiumItemCard with AdaptiveItemCard ──
                   itemBuilder: (context, index) => AdaptiveItemCard(
                     item: results[index], 
-                    tabIndex: 0, // 0 For Grocery
+                    tabIndex: 0, 
                   ), 
                 ),
                 
@@ -309,7 +313,7 @@ class _GrocerySearchScreenState extends State<GrocerySearchScreen> {
                     itemCount: related.length,
                     itemBuilder: (context, index) => AdaptiveItemCard(
                       item: related[index], 
-                      tabIndex: 0, // 0 For Grocery
+                      tabIndex: 0,
                     ),
                   ),
                   const SizedBox(height: 30),
