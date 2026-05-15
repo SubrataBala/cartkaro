@@ -76,22 +76,43 @@ class _ItemsScreenState extends State<ItemsScreen> {
           Expanded(
             child: _filteredItems.isEmpty 
               ? Center(child: Text("No items available yet", style: TextStyle(color: _textColor.withOpacity(0.5), fontSize: 16)))
-              : GridView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
-                  physics: const ClampingScrollPhysics(), 
-                  itemCount: _filteredItems.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, 
-                    mainAxisSpacing: 16, 
-                    crossAxisSpacing: 12, 
-                    mainAxisExtent: 245, 
-                  ),
-                  itemBuilder: (context, index) {
-                    return AdaptiveItemCard(
-                      item: _filteredItems[index], 
-                      tabIndex: widget.tabIndex,
-                    );
-                  },
+              
+              // 🔥 JELLY EFFECT REMOVED HERE: ScrollConfiguration add kiya gaya hai
+              : ScrollConfiguration(
+                  behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
+                  
+                  child: widget.tabIndex == 0 
+                    // ── IF GROCERY (Tab 0): Use 3-Column Grid ──
+                    ? GridView.builder(
+                        padding: const EdgeInsets.fromLTRB(16, 4, 16, 20),
+                        physics: const ClampingScrollPhysics(), 
+                        itemCount: _filteredItems.length,
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3, 
+                          mainAxisSpacing: 16, 
+                          crossAxisSpacing: 12, 
+                          mainAxisExtent: 245, 
+                        ),
+                        itemBuilder: (context, index) {
+                          return AdaptiveItemCard(
+                            item: _filteredItems[index], 
+                            tabIndex: widget.tabIndex,
+                          );
+                        },
+                      )
+
+                    // ── IF RESTAURANT (Tab 1) or MEDICAL (Tab 2): Use Vertical List ──
+                    : ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 20),
+                        physics: const ClampingScrollPhysics(),
+                        itemCount: _filteredItems.length,
+                        itemBuilder: (context, index) {
+                          return AdaptiveItemCard(
+                            item: _filteredItems[index], 
+                            tabIndex: widget.tabIndex,
+                          );
+                        },
+                      ),
                 ),
           ),
         ],

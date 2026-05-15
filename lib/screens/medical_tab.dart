@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'app_models.dart';
-import 'items_screen.dart'; // Ensure this is imported for navigation
+import 'items_screen.dart'; 
+import '../widgets/medical_item_card.dart'; // 🔥 IMPORTED THE NEW CARD!
 
 class MedicalTab extends StatefulWidget {
   const MedicalTab({super.key});
@@ -94,7 +95,6 @@ class _MedicalTabState extends State<MedicalTab> {
     super.dispose();
   }
 
-  // ─── NAVIGATION HELPER ───
   void _navigateToCategory(BuildContext context, String rawCategoryName) {
     String cleanName = rawCategoryName.replaceAll('\n', ' ');
     Navigator.push(
@@ -102,7 +102,7 @@ class _MedicalTabState extends State<MedicalTab> {
       MaterialPageRoute(
         builder: (context) => ItemsScreen(
           categoryTitle: cleanName,
-          tabIndex: 2, // 🔥 TAB INDEX 2 FOR MEDICAL
+          tabIndex: 2, // Medical Tab Index
         ),
       ),
     );
@@ -113,7 +113,7 @@ class _MedicalTabState extends State<MedicalTab> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: ScrollConfiguration(
-        behavior: NoJellyScrollBehavior(), // 👈 No more errors here!
+        behavior: NoJellyScrollBehavior(), 
         child: RefreshIndicator(
           onRefresh: () async => await Future.delayed(const Duration(seconds: 1)),
           color: kMedicalBlue,
@@ -134,11 +134,37 @@ class _MedicalTabState extends State<MedicalTab> {
                 _buildHeader('Partner Pharmacies', true, kMedicalBlue),
                 const SizedBox(height: 16),
                 _buildStores(),
+                
+                const SizedBox(height: 35),
+                
+                // 🔥 NEW SECTION: TRENDING MEDICINES
+                _buildHeader('Trending Medicines', false, kMedicalBlue),
+                const SizedBox(height: 8),
+                _buildTrendingMedicines(),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  // ─── NEW: FETCH AND DISPLAY MEDICINE CARDS ───
+  Widget _buildTrendingMedicines() {
+    final medicalData = globalAllCategoryData[2] ?? {};
+    List<Map<String, dynamic>> trendingItems = [];
+    
+    // Grab the first 5 items from the medical data to show on the home tab
+    for (var itemsList in medicalData.values) {
+      trendingItems.addAll(itemsList);
+      if (trendingItems.length >= 5) break; 
+    }
+
+    // Display them using the beautiful Claude design!
+    return Column(
+      children: trendingItems.take(5).map((item) {
+        return MedicalItemCard(item: item);
+      }).toList(),
     );
   }
 
@@ -223,7 +249,7 @@ class _MedicalTabState extends State<MedicalTab> {
         itemBuilder: (ctx, i) {
           final item = _spotlights[i];
           return GestureDetector(
-            onTap: () => _navigateToCategory(context, item.title), // 🔥 Click handler
+            onTap: () => _navigateToCategory(context, item.title),
             child: Container(
               width: 100,
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: Colors.grey.shade200), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 8, offset: const Offset(0, 4))]),
@@ -261,7 +287,7 @@ class _MedicalTabState extends State<MedicalTab> {
             itemBuilder: (ctx, i) {
               final c = section.items[i];
               return GestureDetector(
-                onTap: () => _navigateToCategory(context, c.label), // 🔥 Click handler
+                onTap: () => _navigateToCategory(context, c.label), 
                 child: Column(
                   children: [
                     Container(
@@ -293,7 +319,7 @@ class _MedicalTabState extends State<MedicalTab> {
         itemBuilder: (ctx, i) {
           final item = _stores[i];
           return GestureDetector(
-            onTap: () => _navigateToCategory(context, item.label), // 🔥 Click handler
+            onTap: () => _navigateToCategory(context, item.label), 
             child: Container(
               width: 240,
               padding: const EdgeInsets.all(12),
@@ -356,7 +382,6 @@ class _MedicalTabState extends State<MedicalTab> {
   }
 }
 
-// 🔥 ADDED THE MISSING CLASS HERE!
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
   Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;

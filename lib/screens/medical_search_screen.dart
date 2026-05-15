@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'items_screen.dart'; // Iski zaroorat pad sakti hai navigation ke liye
+import 'items_screen.dart'; 
 import 'app_models.dart';   
-import '../widgets/adaptive_item_card.dart'; // ── MAIN FIX: Naya AdaptiveItemCard yahan se aayega ──
+import '../widgets/adaptive_item_card.dart'; 
 
 class NoJellyScrollBehavior extends ScrollBehavior {
   @override
@@ -316,44 +316,63 @@ class _MedicalSearchScreenState extends State<MedicalSearchScreen> {
 
     return Column(
       children: [
-        SingleChildScrollView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.fromLTRB(20, 8, 20, 16), child: Row(children: ['Filters', 'Sort', 'Quantity', 'Price'].map((f) => Container(margin: const EdgeInsets.only(right: 8), padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(20)), child: Row(children: [Text(f, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)), const SizedBox(width: 4), const Icon(Icons.keyboard_arrow_down, size: 16)]))).toList())),
+        // ── Filter Chips Row ──
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal, 
+          padding: const EdgeInsets.fromLTRB(20, 8, 20, 16), 
+          child: Row(
+            children: ['Filters', 'Sort', 'Quantity', 'Price'].map((f) => Container(
+              margin: const EdgeInsets.only(right: 8), 
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8), 
+              decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.grey.shade300), borderRadius: BorderRadius.circular(20)), 
+              child: Row(
+                children: [
+                  Text(f, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)), 
+                  const SizedBox(width: 4), 
+                  const Icon(Icons.keyboard_arrow_down, size: 16)
+                ]
+              )
+            )).toList()
+          )
+        ),
+        
+        // ── Main List Content ──
         Expanded(
           child: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3, 
-                    mainAxisSpacing: 16, 
-                    crossAxisSpacing: 12, 
-                    mainAxisExtent: 245 
-                  ),
+                
+                // ── 🔥 MAIN FIX: Using ListView instead of GridView ──
+                ListView.builder(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 0, 10),
+                  shrinkWrap: true, 
+                  physics: const NeverScrollableScrollPhysics(),
                   itemCount: results.length,
-                  // ── MAIN FIX: Calling AdaptiveItemCard for Medical Tab (Tab 2) ──
                   itemBuilder: (context, index) => AdaptiveItemCard(
                     item: results[index], 
                     tabIndex: 2, 
                   ), 
                 ),
                 
+                // ── Related Items Section ──
                 if (related.isNotEmpty) ...[
-                  const Padding(padding: EdgeInsets.fromLTRB(20, 30, 20, 16), child: Text("Frequently bought together", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
-                  GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 3, mainAxisSpacing: 16, crossAxisSpacing: 12, mainAxisExtent: 245, 
-                    ),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(20, 20, 20, 10), 
+                    child: Text("Frequently bought together", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))
+                  ),
+                  
+                  // 🔥 Using ListView for related items as well
+                  ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+                    shrinkWrap: true, 
+                    physics: const NeverScrollableScrollPhysics(),
                     itemCount: related.length,
                     itemBuilder: (context, index) => AdaptiveItemCard(
                       item: related[index], 
                       tabIndex: 2, 
                     ),
                   ),
-                  const SizedBox(height: 30),
                 ]
               ],
             ),
