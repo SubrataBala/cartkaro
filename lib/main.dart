@@ -27,5 +27,3 @@ class CartkaroApp extends StatelessWidget {
     );
   }
 }
-
-makdi;
