@@ -33,7 +33,6 @@ class WatchlistTab extends StatelessWidget {
             valueListenable: watchlistNotifier,
             builder: (context, Set<String> favorites, _) {
               
-              // 1. Listen to the CART as well so the UI updates when items are added
               return ValueListenableBuilder(
                 valueListenable: _activeCartNotifier,
                 builder: (context, Map<String, int> cart, _) {
@@ -64,24 +63,40 @@ class WatchlistTab extends StatelessWidget {
 
                   return Stack(
                     children: [
-                      GridView.builder(
-                        padding: const EdgeInsets.fromLTRB(20, 10, 20, 100), // Added bottom padding for the button
-                        physics: const ClampingScrollPhysics(), 
-                        itemCount: favoriteItemsForThisTab.length,
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3, 
-                          mainAxisSpacing: 16, crossAxisSpacing: 12, 
-                          mainAxisExtent: 245, 
-                        ),
-                        itemBuilder: (context, index) {
-                          return AdaptiveItemCard(
-                            item: favoriteItemsForThisTab[index], 
-                            tabIndex: selectedTab
-                          );
-                        },
+                      // ── MAIN FIX: Using GridView for Grocery, ListView for Medical/Restaurant ──
+                      ScrollConfiguration(
+                        behavior: ScrollConfiguration.of(context).copyWith(overscroll: false), // Jelly effect disabled
+                        child: selectedTab == 0
+                            ? GridView.builder(
+                                padding: const EdgeInsets.fromLTRB(20, 10, 20, 100), 
+                                physics: const ClampingScrollPhysics(), 
+                                itemCount: favoriteItemsForThisTab.length,
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3, 
+                                  mainAxisSpacing: 16, crossAxisSpacing: 12, 
+                                  mainAxisExtent: 245, 
+                                ),
+                                itemBuilder: (context, index) {
+                                  return AdaptiveItemCard(
+                                    item: favoriteItemsForThisTab[index], 
+                                    tabIndex: selectedTab
+                                  );
+                                },
+                              )
+                            : ListView.builder(
+                                padding: const EdgeInsets.fromLTRB(0, 10, 0, 100), // Zero horizontal padding for wide cards
+                                physics: const ClampingScrollPhysics(),
+                                itemCount: favoriteItemsForThisTab.length,
+                                itemBuilder: (context, index) {
+                                  return AdaptiveItemCard(
+                                    item: favoriteItemsForThisTab[index], 
+                                    tabIndex: selectedTab
+                                  );
+                                },
+                              ),
                       ),
 
-                      // 2. Add a "View Cart" button that appears when cart is not empty
+                      // Add a "View Cart" button that appears when cart is not empty
                       if (cart.isNotEmpty)
                         Positioned(
                           bottom: 20,
@@ -96,7 +111,7 @@ class WatchlistTab extends StatelessWidget {
                               decoration: BoxDecoration(
                                 color: selectedTab == 1 ? kRestaurantRed : (selectedTab == 2 ? Colors.blue : Colors.green),
                                 borderRadius: BorderRadius.circular(12),
-                                boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4))]
+                                boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 10, offset: Offset(0, 4))]
                               ),
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
