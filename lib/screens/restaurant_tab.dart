@@ -4,12 +4,11 @@ import 'package:flutter/services.dart';
 import 'app_models.dart';
 import '../widgets/shared_card_widgets.dart';
 
-// 🔥 IMPORT ADDED HERE 🔥
 import 'restaurant_menu_screen.dart'; 
+import '../widgets/shared_filter_row.dart'; 
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const Color kRestaurantOrange = Color(0xFFFF6B35);
-// kRestaurantRed is imported from app_models.dart to avoid conflicts
 const Color kDarkIcon = Color(0xFF1C1C1E);
 const Color kBgPage = Color(0xFFFFFFFF); 
 const Color kTextDark = Color(0xFF1A1A1A);
@@ -37,11 +36,8 @@ class _RestaurantTabState extends State<RestaurantTab> {
 
   bool _isPureVeg = false;
   bool _isNonVeg = false;
-  String _activeFilter = '';
 
-  final List<String> _filters = [
-    'Near & Fast', 'New Arrivals', 'No Packaging Charge', 'Under ₹200', 'Rating 4.0+',
-  ];
+  FilterState _filterState = FilterState();
 
   final List<_BannerModel> _banners = const [
     _BannerModel(
@@ -96,8 +92,142 @@ class _RestaurantTabState extends State<RestaurantTab> {
     super.dispose();
   }
 
+  // 🔥 1. FILTER FOR RESTAURANTS 🔥
+  List<VendorRestaurant> _getFilteredRestaurants() {
+    List<VendorRestaurant> results = List.from(globalRestaurants);
+
+    if (_isPureVeg) {
+      results = results.where((r) {
+        if (r.menu.isEmpty) return false;
+        return r.menu.every((item) => item['isVeg'] == true);
+      }).toList();
+    } else if (_isNonVeg) {
+      results = results.where((r) {
+        if (r.menu.isEmpty) return false;
+        return r.menu.any((item) => item['isVeg'] == false);
+      }).toList();
+    }
+
+    switch (_filterState.sortBy) {
+      case 'rating':
+        results.sort((a, b) {
+          final cleanA = a.rating.replaceAll(RegExp(r'[^0-9.]'), '');
+          final cleanB = b.rating.replaceAll(RegExp(r'[^0-9.]'), '');
+          return (double.tryParse(cleanB) ?? 0).compareTo(double.tryParse(cleanA) ?? 0);
+        });
+        break;
+      case 'popular':
+        results.sort((a, b) => _parseSells(b.totalSells).compareTo(_parseSells(a.totalSells)));
+        break;
+      case 'low_to_high':
+        results.sort((a, b) => _getMinPrice(a.menu).compareTo(_getMinPrice(b.menu)));
+        break;
+      case 'high_to_low':
+        results.sort((a, b) => _getMinPrice(b.menu).compareTo(_getMinPrice(a.menu)));
+        break;
+    }
+
+    if (_filterState.vegFilter == 'veg' && !_isPureVeg) {
+       results = results.where((r) => r.menu.isNotEmpty && r.menu.any((item) => item['isVeg'] == true)).toList();
+    } else if (_filterState.vegFilter == 'non_veg' && !_isNonVeg) {
+       results = results.where((r) => r.menu.isNotEmpty && r.menu.any((item) => item['isVeg'] == false)).toList();
+    }
+
+    if (_filterState.distanceFilter != 'all') {
+      final maxKm = double.tryParse(_filterState.distanceFilter.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 100;
+      results = results.where((r) {
+        return (double.tryParse(r.distance.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0) <= maxKm;
+      }).toList();
+    }
+
+    if (_filterState.minRating > 0) {
+      results = results.where((r) {
+        return (double.tryParse(r.rating.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0) >= _filterState.minRating;
+      }).toList();
+    }
+
+    return results;
+  }
+
+  // 🔥 2. FILTER FOR INDIVIDUAL FOOD CARDS (Top Picks / Trending) 🔥
+  List<_FoodCardModel> _getFilteredFoods(List<_FoodCardModel> sourceList) {
+    List<_FoodCardModel> results = List.from(sourceList);
+
+    // Veg/Non-Veg
+    if (_isPureVeg || _filterState.vegFilter == 'veg') {
+      results = results.where((f) => f.isVeg == true).toList();
+    } else if (_isNonVeg || _filterState.vegFilter == 'non_veg') {
+      results = results.where((f) => f.isVeg == false).toList();
+    }
+
+    // Minimum Rating
+    if (_filterState.minRating > 0) {
+      results = results.where((f) {
+        final rating = double.tryParse(f.rating.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+        return rating >= _filterState.minRating;
+      }).toList();
+    }
+
+    // Sorting
+    switch (_filterState.sortBy) {
+      case 'rating':
+        results.sort((a, b) {
+          final rA = double.tryParse(a.rating.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+          final rB = double.tryParse(b.rating.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+          return rB.compareTo(rA);
+        });
+        break;
+      case 'low_to_high':
+        results.sort((a, b) {
+          final pA = double.tryParse(a.price.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+          final pB = double.tryParse(b.price.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+          return pA.compareTo(pB);
+        });
+        break;
+      case 'high_to_low':
+        results.sort((a, b) {
+          final pA = double.tryParse(a.price.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+          final pB = double.tryParse(b.price.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
+          return pB.compareTo(pA);
+        });
+        break;
+      case 'popular':
+        results.sort((a, b) {
+          final rA = _parseSells(a.reviews);
+          final rB = _parseSells(b.reviews);
+          return rB.compareTo(rA);
+        });
+        break;
+    }
+
+    return results;
+  }
+
+  // Helpers
+  double _parseSells(String sells) {
+    sells = sells.toLowerCase().replaceAll('+', '').replaceAll(' orders', '').trim();
+    if (sells.endsWith('k')) return (double.tryParse(sells.replaceAll('k', '')) ?? 0) * 1000;
+    if (sells.endsWith('m')) return (double.tryParse(sells.replaceAll('m', '')) ?? 0) * 1000000;
+    return double.tryParse(sells) ?? 0;
+  }
+
+  double _getMinPrice(List<Map<String, dynamic>> menu) {
+    if (menu.isEmpty) return 0;
+    double min = double.infinity;
+    for (var item in menu) {
+      final price = (item['price'] as num? ?? 0).toDouble();
+      if (price < min) min = price;
+    }
+    return min == double.infinity ? 0 : min;
+  }
+
   @override
   Widget build(BuildContext context) {
+    // 🔥 Get all filtered lists before building the UI 🔥
+    final filteredRestaurants = _getFilteredRestaurants();
+    final filteredTopPicks = _getFilteredFoods(_topPicks);
+    final filteredTrending = _getFilteredFoods(_trendingFoods);
+
     return Scaffold(
       backgroundColor: kBgPage,
       body: ScrollConfiguration(
@@ -115,24 +245,41 @@ class _RestaurantTabState extends State<RestaurantTab> {
                 const SizedBox(height: 16),
                 _buildDietaryToggles(), 
                 const SizedBox(height: 12),
-                _buildFiltersRow(),     
+                
+                SharedFilterRow(
+                  tabIndex: 1, 
+                  filterState: _filterState,
+                  searchResults: const [], 
+                  onFilterChanged: (newState) {
+                    setState(() {
+                      _filterState = newState;
+                    });
+                  },
+                ),
+                
                 const SizedBox(height: 24),
                 _buildCategoryIcons(),  
                 const SizedBox(height: 30),
                 
-                _buildSectionHeader('Top picks for you™', showSeeAll: true),
-                const SizedBox(height: 14),
-                _buildHorizontalFoodList(_topPicks), 
-                const SizedBox(height: 30),
+                // 🔥 Conditionally show Top Picks only if items exist 🔥
+                if (filteredTopPicks.isNotEmpty) ...[
+                  _buildSectionHeader('Top picks for you™', showSeeAll: true),
+                  const SizedBox(height: 14),
+                  _buildHorizontalFoodList(filteredTopPicks), 
+                  const SizedBox(height: 30),
+                ],
 
-                _buildSectionHeader('Trending / Best Selling Foods', showSeeAll: true),
-                const SizedBox(height: 14),
-                _buildHorizontalFoodList(_trendingFoods), 
-                const SizedBox(height: 35),
+                // 🔥 Conditionally show Trending only if items exist 🔥
+                if (filteredTrending.isNotEmpty) ...[
+                  _buildSectionHeader('Trending / Best Selling Foods', showSeeAll: true),
+                  const SizedBox(height: 14),
+                  _buildHorizontalFoodList(filteredTrending), 
+                  const SizedBox(height: 35),
+                ],
 
-                _buildNearestRestaurantsHeader(),
+                _buildNearestRestaurantsHeader(filteredRestaurants.length),
                 const SizedBox(height: 16),
-                _buildRestaurantList(), 
+                _buildRestaurantList(filteredRestaurants), 
 
                 const SizedBox(height: 40),
               ],
@@ -259,39 +406,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
             Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: value ? iconColor : kTextDark)),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildFiltersRow() {
-    return SizedBox(
-      height: 36,
-      child: ListView(
-        scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16),
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12), margin: const EdgeInsets.only(right: 10),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: kBorderLight)),
-            child: const Row(
-              children: [
-                Icon(Icons.tune_rounded, size: 16, color: kTextDark), SizedBox(width: 6),
-                Text('Filters', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kTextDark)),
-                Icon(Icons.arrow_drop_down, size: 18, color: kTextDark),
-              ],
-            ),
-          ),
-          ..._filters.map((filter) {
-            final isSelected = _activeFilter == filter;
-            return GestureDetector(
-              onTap: () => setState(() => _activeFilter = isSelected ? '' : filter),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 200), padding: const EdgeInsets.symmetric(horizontal: 14), margin: const EdgeInsets.only(right: 8), alignment: Alignment.center,
-                decoration: BoxDecoration(color: isSelected ? kTextDark : Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: isSelected ? kTextDark : kBorderLight)),
-                child: Text(filter, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600, color: isSelected ? Colors.white : kTextMedium)),
-              ),
-            );
-          }),
-        ],
       ),
     );
   }
@@ -445,7 +559,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
     );
   }
 
-  Widget _buildNearestRestaurantsHeader() {
+  Widget _buildNearestRestaurantsHeader(int count) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
@@ -453,42 +567,71 @@ class _RestaurantTabState extends State<RestaurantTab> {
         children: [
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            children: const [
-              Text('All Restaurants Nearby', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kTextDark, letterSpacing: -0.3)),
-              SizedBox(height: 2),
-              Text('Discover unique tastes near you', style: TextStyle(fontSize: 13, color: kTextGrey, fontWeight: FontWeight.w500)),
+            children: [
+              const Text('All Restaurants Nearby', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: kTextDark, letterSpacing: -0.3)),
+              const SizedBox(height: 2),
+              Text('Showing $count restaurants', style: const TextStyle(fontSize: 13, color: kTextGrey, fontWeight: FontWeight.w500)),
             ],
           ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: kTextDark, width: 1)),
-            child: Row(
-              children: const [
-                Icon(Icons.tune_rounded, size: 14, color: kTextDark),
-                SizedBox(width: 4),
-                Text('Sort/Filter', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: kTextDark)),
-              ],
-            ),
-          )
+          if (_filterState.hasActiveFilters || _isPureVeg || _isNonVeg)
+             GestureDetector(
+                onTap: () => setState(() {
+                  _filterState = FilterState();
+                  _isPureVeg = false;
+                  _isNonVeg = false;
+                }),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.red.shade50,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.red.shade200),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.close_rounded, size: 12, color: Colors.red.shade600),
+                      const SizedBox(width: 4),
+                      Text('Clear Filters', style: TextStyle(color: Colors.red.shade600, fontSize: 11, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                ),
+              ),
         ],
       ),
     );
   }
 
-  Widget _buildRestaurantList() {
+  Widget _buildRestaurantList(List<VendorRestaurant> restaurants) {
+    if (restaurants.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Center(
+          child: Column(
+            children: [
+               Icon(Icons.restaurant_outlined, size: 48, color: Colors.grey.shade400),
+               const SizedBox(height: 16),
+               const Text("No restaurants found", style: TextStyle(color: kTextMedium, fontWeight: FontWeight.bold)),
+               const SizedBox(height: 4),
+               const Text("Try adjusting your filters", style: TextStyle(color: kTextGrey, fontSize: 12)),
+            ]
+          )
+        ),
+      );
+    }
+
     return ListView.separated(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      itemCount: globalRestaurants.length,
+      itemCount: restaurants.length,
       separatorBuilder: (_, __) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Divider(color: Colors.grey.shade200, height: 1),
       ),
       itemBuilder: (ctx, i) {
-        final r = globalRestaurants[i];
+        final r = restaurants[i];
         
-        // 🔥 GESTURE DETECTOR ADDED HERE 🔥
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -498,7 +641,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
               ),
             );
           },
-          behavior: HitTestBehavior.opaque, // Ensures tapping anywhere on the row registers the click
+          behavior: HitTestBehavior.opaque, 
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
