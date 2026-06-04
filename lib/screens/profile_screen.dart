@@ -1,7 +1,9 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'login_screen.dart'; // 🔥 IMPORTED TO CHECK LOGIN STATE
+// import 'login_screen.dart'; // This is no longer needed
 
 // ─────────────────────────────────────────────
 //  CartKaro Design Tokens
@@ -19,22 +21,134 @@ const String kFontFamily     = 'Poppins';
 // ─────────────────────────────────────────────
 class ProfileScreen extends StatefulWidget {
   final Color activeThemeColor;
+  final VoidCallback? onGuestLogout;
 
-  const ProfileScreen({super.key, required this.activeThemeColor});
+  const ProfileScreen({super.key, required this.activeThemeColor, this.onGuestLogout});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  String _userName = 'Loading...';
+  String _userPhone = '';
+  String _userInitials = '';
+  bool _isLoading = true;
+
   // Helper to easily access the dynamic color
   Color get activeThemeColor => widget.activeThemeColor;
 
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      setState(() {
+        _userName = 'Guest User';
+        _isLoading = false;
+      });
+      return;
+    }
+
+    try {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      if (doc.exists && doc.data() != null) {
+        final data = doc.data()!;
+        setState(() {
+          _userName = data['name'] ?? 'No Name';
+          _userPhone = data['phone'] ?? '';
+          _userInitials = _getInitials(_userName);
+          _isLoading = false;
+        });
+      } else {
+         setState(() {
+          _userName = 'User';
+          _userPhone = user.phoneNumber ?? '';
+          _userInitials = 'U';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      // It's good practice to print errors for debugging
+      debugPrint('Error loading user data: $e');
+      setState(() {
+        _userName = 'Error';
+        _isLoading = false;
+      });
+    }
+  }
+
+  String _getInitials(String name) {
+    if (name.isEmpty) return '';
+    List<String> parts = name.trim().split(' ');
+    if (parts.length > 1 && parts.last.isNotEmpty) {
+      return parts[0].substring(0, 1).toUpperCase() + parts.last.substring(0, 1).toUpperCase();
+    } else if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      return parts[0].substring(0, 1).toUpperCase();
+    }
+    return '';
+  }
+
+  Future<void> _showEditNameDialog() async {
+    final nameController = TextEditingController(text: _userName);
+    final newName = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Edit Name', style: getStyle(weight: FontWeight.w600)),
+        content: TextField(
+          controller: nameController,
+          autofocus: true,
+          decoration: const InputDecoration(hintText: 'Enter your full name'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(nameController.text.trim());
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+
+    if (newName != null && newName.isNotEmpty && newName != _userName) {
+      await _updateUserName(newName);
+    }
+  }
+
+  Future<void> _updateUserName(String newName) async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) return;
+
+    try {
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({'name': newName});
+      setState(() {
+        _userName = newName;
+        _userInitials = _getInitials(newName);
+      });
+    } catch (e) {
+      debugPrint('Error updating user name: $e');
+      // Optionally, show a snackbar to the user
+    }
+  }
+
   // ── Logout Logic ─────────────────────────────
-  void _handleLogout() {
-    setState(() {
-      isUserLoggedIn = false;
-    });
+  Future<void> _handleLogout() async {
+    // The AuthGate will listen to this and automatically navigate to the LoginScreen.
+    if (FirebaseAuth.instance.currentUser != null) {
+      await FirebaseAuth.instance.signOut();
+    } else {
+      // This is a guest user, trigger the callback to exit guest mode.
+      widget.onGuestLogout?.call();
+    }
   }
 
   // ── Helpers ──────────────────────────────────
@@ -128,10 +242,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ],
                 ),
                 child: Center(
-                  child: Text(
-                    'SS', // Shyam Sundar
-                    style: getStyle(size: 26, weight: FontWeight.w700, color: Colors.white),
-                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      : Text(
+                          _userInitials,
+                          style: getStyle(size: 26, weight: FontWeight.w700, color: Colors.white),
+                        ),
                 ),
               ),
               // Edit badge
@@ -139,7 +255,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 bottom: -2,
                 right: -2,
                 child: GestureDetector(
-                  onTap: () {},
+                  onTap: () {
+                    _showEditNameDialog();
+                  },
                   child: Container(
                     width: 26,
                     height: 26,
@@ -172,7 +290,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Shyam Sundar',
+                  _userName,
                   style: getStyle(
                     size: 19,
                     weight: FontWeight.w700,
@@ -180,17 +298,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 4),
-                Row(
-                  children: [
-                    Icon(Icons.phone_rounded,
-                        size: 13, color: activeThemeColor),
-                    const SizedBox(width: 5),
-                    Text(
-                      '+91 98765 43210',
-                      style: getStyle(size: 13, color: kMuted),
-                    ),
-                  ],
-                ),
+                if (_userPhone.isNotEmpty)
+                  Row(
+                    children: [
+                      Icon(Icons.phone_rounded,
+                          size: 13, color: activeThemeColor),
+                      const SizedBox(width: 5),
+                      Text(
+                        _userPhone,
+                        style: getStyle(size: 13, color: kMuted),
+                      ),
+                    ],
+                  ),
                 const SizedBox(height: 10),
                 // "Verified" pill
                 Container(
@@ -664,12 +783,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ─────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    // 🔥 UNAUTHENTICATED STATE CHECK
-    if (!isUserLoggedIn) {
-      return const LoginScreen();
-    }
-
-    // 🔥 AUTHENTICATED STATE UI
+    // The AuthGate ensures this screen is only reached when logged in.
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,

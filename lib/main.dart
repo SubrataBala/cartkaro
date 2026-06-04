@@ -1,29 +1,36 @@
+import 'package:cartkaro/screens/home_screen.dart';
+import 'package:cartkaro/widgets/auth_gate.dart';
+import 'package:cartkaro/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'screens/home_screen.dart';
 
-void main() {
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
-  runApp(const CartkaroApp());
+void main() async {
+  // Ensure that widget bindings are initialized before running the app.
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    print('✅ Firebase connection successful!');
+  } catch (e) {
+    print('🔥 Firebase connection failed: $e');
+  }
+
+  runApp(const MyApp());
 }
 
-class CartkaroApp extends StatelessWidget {
-  const CartkaroApp({super.key});
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Cartkaro',
-      debugShowCheckedModeBanner: false,
       theme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0C831F)),
         fontFamily: 'Poppins',
+        useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      debugShowCheckedModeBanner: false,
+      home: const AuthGate(),
     );
   }
 }

@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'app_models.dart';
 import '../widgets/shared_card_widgets.dart';
@@ -328,7 +329,7 @@ class _CartMedicalState extends State<CartMedical> {
                             ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please add/select a delivery address first!')));
                             return;
                           }
-                          if (!isUserLoggedIn) {
+                          if (FirebaseAuth.instance.currentUser == null) {
                             Navigator.push(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
                             return;
                           }

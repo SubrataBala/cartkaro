@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // ── MEMORY IMPORT ──
-import 'home_screen.dart'; 
-import 'login_screen.dart'; // To access the global isUserLoggedIn
+import 'home_screen.dart';
+// import 'login_screen.dart'; // This is no longer needed.
 
 class SignupScreen extends StatefulWidget {
-  const SignupScreen({super.key});
+  final VoidCallback? onSkip;
+  const SignupScreen({super.key, this.onSkip});
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
@@ -78,6 +80,8 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
         await _signInWithCredential(credential);
       },
       verificationFailed: (e) {
+        // Add this line to see the detailed error in your debug console
+        print('🔥 Firebase verification failed! Code: ${e.code}, Message: ${e.message}');
         if (!mounted) return;
         setState(() => _isLoading = false);
         _showSnack(_firebaseAuthErrorMessage(e), isError: true);
@@ -120,34 +124,37 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
     try {
       final userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       if (!mounted) return;
+      
+      // Store user details in Firestore for persistence across devices.
+      if (userCredential.user != null) {
+        final userRef = FirebaseFirestore.instance.collection('users').doc(userCredential.user!.uid);
+        await userRef.set({
+          'uid': userCredential.user!.uid,
+          'name': _nameController.text.trim(),
+          'phone': '+91${_mobileController.text.trim()}',
+          'createdAt': FieldValue.serverTimestamp(),
+        });
 
-      isUserLoggedIn = true;
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isLoggedIn', true);
-      await prefs.setString('userName', _nameController.text.trim());
-      await prefs.setString('userPhone', _mobileController.text.trim());
-      if (userCredential.user?.uid != null) {
+        // You can still keep the UID in SharedPreferences for quick synchronous access if needed.
+        SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('firebaseUid', userCredential.user!.uid);
       }
-
-      if (!mounted) return;
-      setState(() => _isLoading = false);
-
+      // The SnackBar may not be visible as the screen is removed immediately.
       _showSnack('Account created! Welcome to Cartkaro');
       
-      if (Navigator.canPop(context)) {
-        Navigator.pop(context);
-      } else {
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+      // The AuthGate will handle navigation. We just need to pop this screen.
+      // Using popUntil to clear the entire auth flow (login, signup) from the stack.
+      if (mounted) {
+        Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
       _showSnack(_firebaseAuthErrorMessage(e), isError: true);
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      _showSnack('Could not verify OTP. Please try again.', isError: true);
+      _showSnack('An unexpected error occurred: $e', isError: true);
     }
   }
 
@@ -200,8 +207,8 @@ class _SignupScreenState extends State<SignupScreen> with SingleTickerProviderSt
   }
 
   void _skipToHome() {
-    isUserLoggedIn = false; // Guest
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
+    // This creates a temporary guest session. Restarting app will require login.
+    widget.onSkip?.call();
   }
 
   @override
