@@ -14,7 +14,8 @@ import 'cart_medical.dart';
 import 'profile_screen.dart'; // 🔥 IMPORT ADDED HERE
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final VoidCallback? onGuestLogout;
+  const HomeScreen({super.key, this.onGuestLogout});
   @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
@@ -77,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? const CartRestaurant()
                           : const CartMedical())
                     // 🔥 ROUTES TO OUR NEW PROFILE SCREEN
-                    : ProfileScreen(activeThemeColor: _activeColor),
+                    : ProfileScreen(activeThemeColor: _activeColor, onGuestLogout: widget.onGuestLogout),
               ),
             ],
           ),
