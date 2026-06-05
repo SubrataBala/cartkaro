@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import 'login_screen.dart'; // 🔥 IMPORTED TO CHECK LOGIN STATE
+import 'login_screen.dart'; 
+import 'app_models.dart'; 
+import 'my_watchlist_screen.dart'; 
+
+// 🔥 Naye screens import kar liye gaye hain
+import 'customer_support_screen.dart'; 
+import 'app_settings_screen.dart';
+import 'faq_screen.dart';
+import 'terms_conditions_screen.dart';
 
 // ─────────────────────────────────────────────
 //  CartKaro Design Tokens
@@ -112,7 +120,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
                 child: Center(
                   child: Text(
-                    'SS', // Shyam Sundar
+                    'MB', 
                     style: _poppins(
                       size: 26,
                       weight: FontWeight.w700,
@@ -159,7 +167,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Shyam Sundar', // Updated to your name!
+                  'Mukesh Bala', 
                   style: _poppins(
                     size: 19,
                     weight: FontWeight.w700,
@@ -387,7 +395,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       onTap: onTap,
       child: Container(
         decoration: _cardDecoration(),
-        // 🔥 Slightly reduced padding to prevent squishing
         padding: const EdgeInsets.fromLTRB(14, 16, 12, 14),
         child: Stack(
           children: [
@@ -397,7 +404,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               bottom: -8,
               child: Text(
                 bgEmoji,
-                style: const TextStyle(fontSize: 46), // 🔥 Reduced from 52
+                style: const TextStyle(fontSize: 46), 
               ),
             ),
             Column(
@@ -405,15 +412,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  width: 38, // 🔥 Slightly smaller
+                  width: 38, 
                   height: 38,
                   decoration: BoxDecoration(
                     color: activeThemeColor.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: activeThemeColor, size: 18), // 🔥 Reduced from 20
+                  child: Icon(icon, color: activeThemeColor, size: 18), 
                 ),
-                const SizedBox(height: 12), // 🔥 Reduced from 20 to give text more space
+                const SizedBox(height: 12), 
                 Text(
                   label,
                   style: _poppins(
@@ -425,7 +432,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Text(
                   subtitle,
                   style: _poppins(size: 10.5, color: kMuted),
-                  maxLines: 1, // Prevents overflow if text gets too long
+                  maxLines: 1, 
                   overflow: TextOverflow.ellipsis,
                 ),
               ],
@@ -437,54 +444,74 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildQuickActionGrid() {
-    final actions = [
-      {
-        'icon': Icons.receipt_long_rounded,
-        'label': 'My Orders',
-        'subtitle': '3 active orders',
-        'emoji': '📦',
-      },
-      {
-        'icon': Icons.location_on_rounded,
-        'label': 'Saved Addresses',
-        'subtitle': '2 locations saved',
-        'emoji': '🏠',
-      },
-      {
-        'icon': Icons.credit_card_rounded,
-        'label': 'Payments',
-        'subtitle': 'Cards & UPI',
-        'emoji': '💳',
-      },
-      {
-        'icon': Icons.bookmark_rounded,
-        'label': 'Watchlist',
-        'subtitle': '12 items saved',
-        'emoji': '⭐',
-      },
-    ];
+    return ValueListenableBuilder(
+      valueListenable: watchlistNotifier,
+      builder: (context, Set<String> favorites, _) {
+        
+        int currentTabIndex = 0; 
+        if (activeThemeColor == const Color(0xFFE53935)) currentTabIndex = 1; 
+        if (activeThemeColor == const Color(0xFF1565C0)) currentTabIndex = 2; 
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 14,
-        mainAxisSpacing: 14,
-        // 🔥 Changed from 1.35 to 1.15 to make the cards slightly taller and fix overflow
-        childAspectRatio: 1.15,
-      ),
-      itemCount: actions.length,
-      itemBuilder: (context, index) {
-        final a = actions[index];
-        return _buildActionCard(
-          icon: a['icon'] as IconData,
-          label: a['label'] as String,
-          subtitle: a['subtitle'] as String,
-          bgEmoji: a['emoji'] as String,
-          onTap: () {},
+        // Count ONLY for the active tab
+        int currentTabFavCount = 0;
+        final currentTabData = globalAllCategoryData[currentTabIndex] ?? {};
+        for (var categoryItems in currentTabData.values) {
+          for (var item in categoryItems) {
+            if (favorites.contains(item['id'])) {
+              currentTabFavCount++;
+            }
+          }
+        }
+
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          crossAxisSpacing: 14,
+          mainAxisSpacing: 14,
+          childAspectRatio: 1.15,
+          children: [
+            _buildActionCard(
+              icon: Icons.receipt_long_rounded,
+              label: 'My Orders',
+              subtitle: '3 active orders',
+              bgEmoji: '📦',
+              onTap: () {},
+            ),
+            _buildActionCard(
+              icon: Icons.location_on_rounded,
+              label: 'Saved Addresses',
+              subtitle: '2 locations saved',
+              bgEmoji: '🏠',
+              onTap: () {},
+            ),
+            _buildActionCard(
+              icon: Icons.credit_card_rounded,
+              label: 'Payments',
+              subtitle: 'Cards & UPI',
+              bgEmoji: '💳',
+              onTap: () {},
+            ),
+            _buildActionCard(
+              icon: Icons.bookmark_rounded, 
+              label: 'Watchlist', 
+              subtitle: '$currentTabFavCount items saved', 
+              bgEmoji: '⭐', 
+              onTap: () {
+                Navigator.push(
+                  context, 
+                  MaterialPageRoute(
+                    builder: (_) => MyWatchlistScreen(
+                      themeColor: activeThemeColor,
+                      selectedTab: currentTabIndex, 
+                    )
+                  )
+                );
+              }
+            ),
+          ],
         );
-      },
+      }
     );
   }
 
@@ -504,8 +531,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           onTap: onTap ?? () {},
           borderRadius: BorderRadius.circular(16),
           child: Padding(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
             child: Row(
               children: [
                 Container(
@@ -524,8 +550,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Text(
                         title,
-                        style: _poppins(
-                            size: 13.5, weight: FontWeight.w600),
+                        style: _poppins(size: 13.5, weight: FontWeight.w600),
                       ),
                       if (subtitle != null) ...[
                         const SizedBox(height: 2),
@@ -542,43 +567,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
         if (showDivider)
-          const Divider(
-            height: 1,
-            indent: 72,
-            endIndent: 18,
-            color: kSurface,
-          ),
+          const Divider(height: 1, indent: 72, endIndent: 18, color: kSurface),
       ],
     );
   }
 
+  // 🔥 MAIN FIX: Properly wired Navigation logic for all screens
   Widget _buildSettingsSection() {
     return Container(
-      decoration: _cardDecoration(),
+      decoration: _cardDecoration(), 
       child: Column(
         children: [
           _buildListTile(
-            icon: Icons.headset_mic_rounded,
-            title: 'Customer Support',
+            icon: Icons.headset_mic_rounded, 
+            title: 'Customer Support', 
             subtitle: 'Chat, call or email us',
-          ),
+            onTap: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (_) => CustomerSupportScreen(themeColor: activeThemeColor)
+                )
+              );
+            }
+          ), 
           _buildListTile(
-            icon: Icons.settings_rounded,
-            title: 'App Settings',
+            icon: Icons.settings_rounded, 
+            title: 'App Settings', 
             subtitle: 'Notifications, language & more',
-          ),
+            onTap: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (_) => AppSettingsScreen(themeColor: activeThemeColor)
+                )
+              );
+            }
+          ), 
           _buildListTile(
-            icon: Icons.help_outline_rounded,
-            title: 'FAQ',
+            icon: Icons.help_outline_rounded, 
+            title: 'FAQ', 
             subtitle: 'Frequently asked questions',
-          ),
+            onTap: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (_) => FaqScreen(themeColor: activeThemeColor)
+                )
+              );
+            }
+          ), 
           _buildListTile(
-            icon: Icons.privacy_tip_outlined,
-            title: 'Terms & Conditions',
+            icon: Icons.privacy_tip_outlined, 
+            title: 'Terms & Conditions', 
             showDivider: false,
-          ),
-        ],
-      ),
+            onTap: () {
+              Navigator.push(
+                context, 
+                MaterialPageRoute(
+                  builder: (_) => TermsConditionsScreen(themeColor: activeThemeColor)
+                )
+              );
+            }
+          )
+        ]
+      )
     );
   }
 
@@ -605,8 +658,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 15),
           side: BorderSide(color: activeThemeColor, width: 1.6),
-          shape:
-              RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
           backgroundColor: activeThemeColor.withOpacity(0.04),
         ),
       ),
@@ -636,85 +688,55 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ─────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
-    // 🔥 UNAUTHENTICATED STATE CHECK
-    if (!isUserLoggedIn) {
-      return const LoginScreen(); 
-    }
-
-    // 🔥 AUTHENTICATED STATE UI
+    if (!isUserLoggedIn) return const LoginScreen(); 
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-      ),
+      value: const SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarIconBrightness: Brightness.dark),
       child: Scaffold(
         backgroundColor: kBg,
         body: SafeArea(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // ── Top App Bar ──────────────────
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'My Profile',
-                      style: _poppins(
-                        size: 22,
-                        weight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
-                    ),
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: kSurface,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Icon(Icons.notifications_none_rounded,
-                          color: kTextDark, size: 20),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-
-                // ── 1. Hero Card ─────────────────
-                _buildHeroCard(context),
-                const SizedBox(height: 20),
-
-                // ── 2. Wallet Banner ─────────────
-                _sectionHeader('WALLET & REWARDS'),
-                _buildWalletBanner(),
-                const SizedBox(height: 24),
-
-                // ── 3. Quick Actions ─────────────
-                _sectionHeader('QUICK ACTIONS'),
-                _buildQuickActionGrid(),
-                const SizedBox(height: 24),
-
-                // ── 4. Settings ────────────────── (🔥 PRO BANNER REMOVED FROM HERE)
-                _sectionHeader('MORE'),
-                _buildSettingsSection(),
-                const SizedBox(height: 24),
-
-                // ── 5. Logout ────────────────────
-                _buildLogoutButton(context),
-                const SizedBox(height: 28),
-
-                // ── Footer ───────────────────────
-                Center(
-                  child: Text(
-                    'CartKaro v2.4.1  •  Made with ❤️ in India',
-                    style: _poppins(size: 11, color: kMuted),
+          child: ScrollConfiguration(
+            behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(), 
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween, 
+                    children: [
+                      Text('My Profile', style: _poppins(size: 22, weight: FontWeight.w800, letterSpacing: -0.5)), 
+                      Container(
+                        width: 40, height: 40, 
+                        decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(12)), 
+                        child: const Icon(Icons.notifications_none_rounded, color: kTextDark, size: 20)
+                      )
+                    ]
                   ),
-                ),
-                const SizedBox(height: 80), // Padding for Bottom Nav Bar
-              ],
+                  const SizedBox(height: 20),
+
+                  _buildHeroCard(context),
+                  const SizedBox(height: 20),
+
+                  _sectionHeader('WALLET & REWARDS'),
+                  _buildWalletBanner(),
+                  const SizedBox(height: 24),
+
+                  _sectionHeader('QUICK ACTIONS'),
+                  _buildQuickActionGrid(),
+                  const SizedBox(height: 24),
+
+                  _sectionHeader('MORE'),
+                  _buildSettingsSection(),
+                  const SizedBox(height: 24),
+
+                  _buildLogoutButton(context),
+                  const SizedBox(height: 28),
+
+                  Center(child: Text('CartKaro v2.4.1  •  Made with ❤️ in India', style: _poppins(size: 11, color: kMuted))),
+                  const SizedBox(height: 80), 
+                ],
+              ),
             ),
           ),
         ),
