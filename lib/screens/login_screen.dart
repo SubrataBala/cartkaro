@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth_platform_interface/firebase_auth_platform_interface.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import 'home_screen.dart';
 
 // ════════════════════════════════════════════════════════════
 //  LOGO CONFIGURATION
@@ -636,6 +636,8 @@ class _LoginState extends State<LoginScreen>
   Timer? _timer;
   String? _verificationId;
   int? _resendToken;
+  ConfirmationResult? _webConfirmationResult;
+  RecaptchaVerifier? _webRecaptchaVerifier;
 
   late final AnimationController _ac = AnimationController(
     vsync: this,
@@ -657,6 +659,7 @@ class _LoginState extends State<LoginScreen>
     _ac.dispose();
     _phoneCtrl.dispose();
     _timer?.cancel();
+    _webRecaptchaVerifier?.clear();
     for (final c in _otpCtrl) {
       c.dispose();
     }
@@ -692,6 +695,11 @@ class _LoginState extends State<LoginScreen>
     setState(() => _loading = true);
 
     final phoneNumber = '${_country.dialCode}$ph';
+    if (kIsWeb) {
+      await _sendWebOtp(phoneNumber, ph);
+      return;
+    }
+
     await FirebaseAuth.instance.verifyPhoneNumber(
       phoneNumber: phoneNumber,
       timeout: const Duration(seconds: 60),
@@ -701,7 +709,9 @@ class _LoginState extends State<LoginScreen>
       },
       verificationFailed: (e) {
         // Add this line to see the detailed error in your debug console
-        print('🔥 Firebase verification failed! Code: ${e.code}, Message: ${e.message}');
+        print(
+          '🔥 Firebase verification failed! Code: ${e.code}, Message: ${e.message}',
+        );
         if (!mounted) return;
         setState(() => _loading = false);
         _snack(_firebaseAuthErrorMessage(e), err: true);
@@ -726,10 +736,82 @@ class _LoginState extends State<LoginScreen>
     );
   }
 
+  Future<void> _sendWebOtp(String phoneNumber, String displayPhone) async {
+    try {
+      _webRecaptchaVerifier?.clear();
+      _webRecaptchaVerifier = RecaptchaVerifier(
+        auth: FirebaseAuthPlatform.instanceFor(
+          app: FirebaseAuth.instance.app,
+          pluginConstants: const {},
+        ),
+        // By not providing a `container`, the reCAPTCHA will be invisible.
+        theme: RecaptchaVerifierTheme.light,
+        onExpired: () {
+          if (mounted) {
+            _snack('reCAPTCHA expired. Please request OTP again.', err: true);
+          }
+        },
+        onError: (error) {
+          if (mounted) {
+            _snack('reCAPTCHA failed: $error', err: true);
+          }
+        },
+      );
+
+      final confirmationResult = await FirebaseAuth.instance
+          .signInWithPhoneNumber(phoneNumber, _webRecaptchaVerifier);
+
+      if (!mounted) return;
+      setState(() {
+        _loading = false;
+        _otpSent = true;
+        _webConfirmationResult = confirmationResult;
+        _verificationId = null;
+      });
+      _startTimer();
+      Future.delayed(const Duration(milliseconds: 200), () {
+        if (mounted) _otpFN[0].requestFocus();
+      });
+      _snack('OTP sent to ${_country.dialCode} $displayPhone');
+    } on FirebaseAuthException catch (e) {
+      print(
+        '🔥 Firebase web verification failed! Code: ${e.code}, Message: ${e.message}',
+      );
+      if (!mounted) return;
+      setState(() => _loading = false);
+      _snack(_firebaseAuthErrorMessage(e), err: true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      _snack('Could not start phone verification: $e', err: true);
+    }
+  }
+
   Future<void> _verifyOtp() async {
     final otp = _otpCtrl.map((c) => c.text).join();
     if (otp.length < 6) {
       _snack('Please enter the complete 6-digit OTP', err: true);
+      return;
+    }
+    if (kIsWeb) {
+      final confirmationResult = _webConfirmationResult;
+      if (confirmationResult == null) {
+        _snack('Please request OTP again.', err: true);
+        return;
+      }
+      setState(() => _loading = true);
+      try {
+        final userCredential = await confirmationResult.confirm(otp);
+        await _handleSignedInUser(userCredential);
+      } on FirebaseAuthException catch (e) {
+        if (!mounted) return;
+        setState(() => _loading = false);
+        _snack(_firebaseAuthErrorMessage(e), err: true);
+      } catch (e) {
+        if (!mounted) return;
+        setState(() => _loading = false);
+        _snack('An unexpected error occurred: $e', err: true);
+      }
       return;
     }
     if (_verificationId == null) {
@@ -751,37 +833,7 @@ class _LoginState extends State<LoginScreen>
       final userCredential = await FirebaseAuth.instance.signInWithCredential(
         credential,
       );
-      if (!mounted) return;
-      setState(() => _loading = false);
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userPhone', _phoneCtrl.text.trim());
-      if (userCredential.user != null) {
-        final user = userCredential.user!;
-        await prefs.setString('firebaseUid', user.uid);
-
-        // Check if user document exists in Firestore, if not, create it.
-        final userDocRef =
-            FirebaseFirestore.instance.collection('users').doc(user.uid);
-        final userDoc = await userDocRef.get();
-
-        if (!userDoc.exists) {
-          // This user logged in but didn't have a Firestore document.
-          // We create one with basic information.
-          await userDocRef.set({
-            'uid': user.uid,
-            'phone':
-                user.phoneNumber, // Use the phone number from the auth credential
-            'name': 'User', // A default name they can change later
-            'createdAt': FieldValue.serverTimestamp(),
-          });
-        }
-      }
-
-      _snack('Login successful! Welcome back');
-      if (!mounted) return;
-      // The AuthGate will handle navigation. We just need to pop the auth flow.
-      Navigator.of(context).popUntil((route) => route.isFirst);
+      await _handleSignedInUser(userCredential);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       setState(() => _loading = false);
@@ -791,6 +843,41 @@ class _LoginState extends State<LoginScreen>
       setState(() => _loading = false);
       _snack('An unexpected error occurred: $e', err: true);
     }
+  }
+
+  Future<void> _handleSignedInUser(UserCredential userCredential) async {
+    if (!mounted) return;
+    setState(() => _loading = false);
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('userPhone', _phoneCtrl.text.trim());
+    if (userCredential.user != null) {
+      final user = userCredential.user!;
+      await prefs.setString('firebaseUid', user.uid);
+
+      // Check if user document exists in Firestore, if not, create it.
+      final userDocRef = FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid);
+      final userDoc = await userDocRef.get();
+
+      if (!userDoc.exists) {
+        // This user logged in but didn't have a Firestore document.
+        // We create one with basic information.
+        await userDocRef.set({
+          'uid': user.uid,
+          'phone':
+              user.phoneNumber, // Use the phone number from the auth credential
+          'name': 'User', // A default name they can change later
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+      }
+    }
+
+    _snack('Login successful! Welcome back');
+    if (!mounted) return;
+    // The AuthGate will handle navigation. We just need to pop the auth flow.
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   void _startTimer() {
@@ -1062,13 +1149,13 @@ class _LoginState extends State<LoginScreen>
       const SizedBox(height: 26),
       _btn('Send OTP', Icons.send_rounded, _sendOtp),
       const SizedBox(height: 18),
-      Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+      Wrap(
+        alignment: WrapAlignment.center,
+        spacing: 18.0, // Horizontal space between chips
+        runSpacing: 10.0, // Vertical space if they wrap
         children: const [
           _Chip(icon: Icons.security_rounded, label: 'Secure OTP'),
-          SizedBox(width: 18),
           _Chip(icon: Icons.verified_rounded, label: '100k+ users'),
-          SizedBox(width: 18),
           _Chip(icon: Icons.bolt_rounded, label: 'Delivery on time'),
         ],
       ),
