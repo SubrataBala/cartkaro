@@ -11,7 +11,11 @@ import 'watchlist_tab.dart';
 import 'cart_grocery.dart';
 import 'cart_restaurant.dart';
 import 'cart_medical.dart';
-import 'profile_screen.dart'; // 🔥 IMPORT ADDED HERE
+
+// 🔥 NEW IMPORTED PROFILE SCREENS
+import 'grocery_profile_screen.dart';
+import 'restaurant_profile_screen.dart';
+import 'medical_profile_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final VoidCallback? onGuestLogout;
@@ -26,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   final List<TabData> _tabs = const [
     TabData('Grocery', kGroceryGreen, Icons.local_grocery_store_rounded),
-    TabData('Restaurant', kRestaurantRed, Icons.restaurant_rounded),
+    TabData('Restaurant',kRestaurantRed, Icons.restaurant_rounded),
     TabData('Medical', kMedicalBlue, Icons.medical_services_rounded),
   ];
 
@@ -77,8 +81,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           : _selectedTab == 1
                           ? const CartRestaurant()
                           : const CartMedical())
-                    // 🔥 ROUTES TO OUR NEW PROFILE SCREEN
-                    : ProfileScreen(activeThemeColor: _activeColor, onGuestLogout: widget.onGuestLogout),
+                    // 🔥 MAIN FIX: Using _selectedTab to show respective Profiles
+                    : (_selectedTab == 0 
+                          ? GroceryProfileScreen(onGuestLogout: widget.onGuestLogout)
+                          : _selectedTab == 1 
+                          ? RestaurantProfileScreen(onGuestLogout: widget.onGuestLogout)
+                          : MedicalProfileScreen(onGuestLogout: widget.onGuestLogout))
               ),
             ],
           ),
