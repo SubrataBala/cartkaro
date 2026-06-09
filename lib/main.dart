@@ -1,4 +1,3 @@
-import 'package:cartkaro/screens/home_screen.dart';
 import 'package:cartkaro/widgets/auth_gate.dart';
 import 'package:cartkaro/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -8,7 +7,9 @@ void main() async {
   // Ensure that widget bindings are initialized before running the app.
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
     print('✅ Firebase connection successful!');
   } catch (e) {
     print('🔥 Firebase connection failed: $e');
@@ -30,7 +31,7 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const HomeScreen(),
+      home: const AuthGate(),
     );
   }
 }

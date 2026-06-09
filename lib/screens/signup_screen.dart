@@ -7,7 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // ── MEMORY IMPORT ──
 
-import 'login_screen.dart' show Country, kCountries, CountryPickerSheet;
+import 'login_screen.dart'
+    show Country, CountryPickerSheet, LoginScreen, kCountries;
 
 class SignupScreen extends StatefulWidget {
   final VoidCallback? onSkip;
@@ -97,50 +98,70 @@ class _SignupScreenState extends State<SignupScreen>
 
   Future<void> _sendFirebaseOtp({int? forceResendingToken}) async {
     final phoneNumber = '${_country.dialCode}${_mobileController.text.trim()}';
+    await FirebaseAuth.instance.setLanguageCode('en');
 
     if (kIsWeb) {
       await _sendWebFirebaseOtp(phoneNumber);
       return;
     }
 
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      timeout: const Duration(seconds: 60),
-      forceResendingToken: forceResendingToken,
-      verificationCompleted: (credential) async {
-        await _signInWithCredential(credential);
-      },
-      verificationFailed: (e) {
-        // Add this line to see the detailed error in your debug console
-        print(
-          '🔥 Firebase verification failed! Code: ${e.code}, Message: ${e.message}',
-        );
-        if (!mounted) return;
-        setState(() => _isLoading = false);
-        _showSnack(_firebaseAuthErrorMessage(e), isError: true);
-      },
-      codeSent: (verificationId, resendToken) {
-        if (!mounted) return;
-        setState(() {
-          _isLoading = false;
-          _otpSent = true;
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        timeout: const Duration(seconds: 60),
+        forceResendingToken: forceResendingToken,
+        verificationCompleted: (credential) async {
+          await _signInWithCredential(credential);
+        },
+        verificationFailed: (e) {
+          print(
+            'Firebase verification failed. Code: ${e.code}, Message: ${e.message}',
+          );
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+          _showSnack(_firebaseAuthErrorMessage(e), isError: true);
+        },
+        codeSent: (verificationId, resendToken) {
+          if (!mounted) return;
+          setState(() {
+            _isLoading = false;
+            _otpSent = true;
+            _verificationId = verificationId;
+            _resendToken = resendToken;
+          });
+          _startResendTimer();
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (mounted) _otpFocusNodes[0].requestFocus();
+          });
+          _showSnack(
+            'OTP sent to ${_country.dialCode} ${_mobileController.text.trim()}',
+          );
+        },
+        codeAutoRetrievalTimeout: (verificationId) {
           _verificationId = verificationId;
-          _resendToken = resendToken;
-        });
-        _startResendTimer();
-        Future.delayed(const Duration(milliseconds: 200), () {
-          if (mounted) _otpFocusNodes[0].requestFocus();
-        });
-        _showSnack('OTP sent to ${_country.dialCode} ${_mobileController.text.trim()}');
-      },
-      codeAutoRetrievalTimeout: (verificationId) {
-        _verificationId = verificationId;
-      },
-    );
+        },
+      );
+    } on FirebaseAuthException catch (e) {
+      print(
+        'Firebase verification could not start. Code: ${e.code}, Message: ${e.message}',
+      );
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showSnack(_firebaseAuthErrorMessage(e), isError: true);
+    } catch (e) {
+      print('Firebase verification could not start: $e');
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showSnack(
+        'Could not start phone verification. Please try again.',
+        isError: true,
+      );
+    }
   }
 
   Future<void> _sendWebFirebaseOtp(String phoneNumber) async {
     try {
+      await FirebaseAuth.instance.setLanguageCode('en');
       _webRecaptchaVerifier?.clear();
       _webRecaptchaVerifier = RecaptchaVerifier(
         auth: FirebaseAuthPlatform.instanceFor(
@@ -178,7 +199,9 @@ class _SignupScreenState extends State<SignupScreen>
       Future.delayed(const Duration(milliseconds: 200), () {
         if (mounted) _otpFocusNodes[0].requestFocus();
       });
-      _showSnack('OTP sent to ${_country.dialCode} ${_mobileController.text.trim()}');
+      _showSnack(
+        'OTP sent to ${_country.dialCode} ${_mobileController.text.trim()}',
+      );
     } on FirebaseAuthException catch (e) {
       print(
         '🔥 Firebase web verification failed! Code: ${e.code}, Message: ${e.message}',
@@ -394,8 +417,9 @@ class _SignupScreenState extends State<SignupScreen>
                         onTap: _otpSent
                             ? _changeNumber
                             : () {
-                                if (Navigator.canPop(context))
+                                if (Navigator.canPop(context)) {
                                   Navigator.pop(context);
+                                }
                               },
                         child: Container(
                           width: 44,
@@ -565,10 +589,12 @@ class _SignupScreenState extends State<SignupScreen>
               icon: Icons.person_outline_rounded,
             ),
             validator: (v) {
-              if (v == null || v.trim().isEmpty)
+              if (v == null || v.trim().isEmpty) {
                 return 'Please enter your full name';
-              if (v.trim().length < 3)
+              }
+              if (v.trim().length < 3) {
                 return 'Name must be at least 3 characters';
+              }
               return null;
             },
           ),
@@ -594,14 +620,25 @@ class _SignupScreenState extends State<SignupScreen>
                     ),
                     child: Row(
                       children: [
-                        Text(_country.flag, style: const TextStyle(fontSize: 18)),
+                        Text(
+                          _country.flag,
+                          style: const TextStyle(fontSize: 18),
+                        ),
                         const SizedBox(width: 6),
                         Text(
                           _country.dialCode,
                           style: const TextStyle(
-                              fontFamily: 'Poppins', fontSize: 13, fontWeight: FontWeight.w700, color: kGreen),
+                            fontFamily: 'Poppins',
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                            color: kGreen,
+                          ),
                         ),
-                        const Icon(Icons.keyboard_arrow_down_rounded, color: kGreen, size: 18),
+                        const Icon(
+                          Icons.keyboard_arrow_down_rounded,
+                          color: kGreen,
+                          size: 18,
+                        ),
                       ],
                     ),
                   ),
@@ -636,7 +673,9 @@ class _SignupScreenState extends State<SignupScreen>
                     ),
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                     validator: (v) {
-                      if (v == null || v.isEmpty) return 'Please enter your mobile number';
+                      if (v == null || v.isEmpty) {
+                        return 'Please enter your mobile number';
+                      }
                       if (v.length < 5) return 'Please enter a valid number';
                       return null;
                     },
@@ -657,7 +696,9 @@ class _SignupScreenState extends State<SignupScreen>
                   value: _agreedToTerms,
                   onChanged: (v) => setState(() => _agreedToTerms = v ?? false),
                   activeColor: kGreen,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
                   side: const BorderSide(color: kTextMuted, width: 1.5),
                 ),
               ),
@@ -666,17 +707,29 @@ class _SignupScreenState extends State<SignupScreen>
                 child: Text.rich(
                   TextSpan(
                     text: 'I agree to the ',
-                    style: TextStyle(fontFamily: 'Poppins', fontSize: 12, color: kTextMuted),
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      color: kTextMuted,
+                    ),
                     children: [
                       TextSpan(
                         text: 'Terms & Conditions',
-                        style: TextStyle(fontWeight: FontWeight.w600, color: kGreen, decoration: TextDecoration.underline),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: kGreen,
+                          decoration: TextDecoration.underline,
+                        ),
                         // recognizer: TapGestureRecognizer()..onTap = () => _launchURL('...'),
                       ),
                       TextSpan(text: ' and '),
                       TextSpan(
                         text: 'Privacy Policy',
-                        style: TextStyle(fontWeight: FontWeight.w600, color: kGreen, decoration: TextDecoration.underline),
+                        style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: kGreen,
+                          decoration: TextDecoration.underline,
+                        ),
                         // recognizer: TapGestureRecognizer()..onTap = () => _launchURL('...'),
                       ),
                     ],
@@ -695,7 +748,10 @@ class _SignupScreenState extends State<SignupScreen>
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2.5),
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
                     )
                   : const Icon(Icons.send_rounded, size: 20),
               label: _isLoading
@@ -714,4 +770,310 @@ class _SignupScreenState extends State<SignupScreen>
                 foregroundColor: Colors.white,
                 disabledBackgroundColor: kGreen.withOpacity(0.6),
                 elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildOtpStep({Key? key}) {
+    return Column(
+      key: key,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: List.generate(6, _otpBox),
+        ),
+        const SizedBox(height: 22),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              "Didn't receive OTP?  ",
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 13,
+                color: kTextMuted,
+              ),
+            ),
+            GestureDetector(
+              onTap: _canResend ? _resendOtp : null,
+              child: _canResend
+                  ? const Text(
+                      'Resend OTP',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: kGreen,
+                      ),
+                    )
+                  : Text(
+                      'Resend in ${_resendSeconds}s',
+                      style: const TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: kTextMuted,
+                      ),
+                    ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Center(
+          child: GestureDetector(
+            onTap: _changeNumber,
+            child: const Text(
+              'Change Number',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: kGreen,
+                decoration: TextDecoration.underline,
+                decorationColor: kGreen,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 26),
+        SizedBox(
+          width: double.infinity,
+          height: 56,
+          child: ElevatedButton.icon(
+            onPressed: _isLoading ? null : _verifyAndCreate,
+            icon: _isLoading
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
+                  )
+                : const Icon(Icons.verified_user_rounded, size: 20),
+            label: _isLoading
+                ? const SizedBox.shrink()
+                : const Text(
+                    'Verify & Create',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kGreen,
+              foregroundColor: Colors.white,
+              disabledBackgroundColor: kGreen.withOpacity(0.6),
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 14),
+        Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.lock_outline_rounded,
+                size: 13,
+                color: kTextMuted.withOpacity(0.7),
+              ),
+              const SizedBox(width: 5),
+              const Text(
+                'OTP valid for 10 min',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 11,
+                  color: kTextMuted,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _otpBox(int i) {
+    return SizedBox(
+      width: 46,
+      height: 56,
+      child: TextField(
+        controller: _otpControllers[i],
+        focusNode: _otpFocusNodes[i],
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        maxLength: 1,
+        style: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 22,
+          fontWeight: FontWeight.w700,
+          color: kTextDark,
+        ),
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(
+          counterText: '',
+          filled: true,
+          fillColor: kSurface,
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: kGreen, width: 2),
+          ),
+        ),
+        onChanged: (v) {
+          if (v.isNotEmpty) {
+            if (i < 5) {
+              _otpFocusNodes[i + 1].requestFocus();
+            } else {
+              _otpFocusNodes[i].unfocus();
+              _verifyAndCreate();
+            }
+          } else if (i > 0) {
+            _otpFocusNodes[i - 1].requestFocus();
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _buildLoginLink() {
+    if (_otpSent) return const SizedBox.shrink();
+
+    return Center(
+      child: TextButton(
+        onPressed: () {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(
+              builder: (_) => LoginScreen(onSkip: widget.onSkip),
+            ),
+          );
+        },
+        style: TextButton.styleFrom(foregroundColor: kGreen),
+        child: const Text.rich(
+          TextSpan(
+            text: 'Already have an account? ',
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+              color: kTextMuted,
+            ),
+            children: [
+              TextSpan(
+                text: 'Login',
+                style: TextStyle(fontWeight: FontWeight.w700, color: kGreen),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  InputDecoration _inputDecoration({
+    required String hint,
+    required IconData icon,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: const TextStyle(
+        fontFamily: 'Poppins',
+        fontSize: 14,
+        color: Color(0xFFBDBDBD),
+      ),
+      prefixIcon: Icon(icon, color: kTextMuted, size: 20),
+      filled: true,
+      fillColor: kSurface,
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: BorderSide.none,
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: const BorderSide(color: kGreen, width: 1.4),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1.2),
+      ),
+      focusedErrorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: const BorderSide(color: Colors.redAccent, width: 1.4),
+      ),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
+      errorStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 11),
+    );
+  }
+}
+
+class _PerkChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _PerkChip({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Flexible(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, color: _SignupScreenState.kGreen, size: 18),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontFamily: 'Poppins',
+              fontSize: 11,
+              height: 1.2,
+              fontWeight: FontWeight.w600,
+              color: _SignupScreenState.kGreen,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PerkDivider extends StatelessWidget {
+  const _PerkDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 34,
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      color: _SignupScreenState.kGreen.withOpacity(0.16),
+    );
+  }
+}

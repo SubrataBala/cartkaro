@@ -6,32 +6,29 @@ import 'package:flutter/services.dart';
 // ─────────────────────────────────────────────
 //  CartKaro Premium Design Tokens
 // ─────────────────────────────────────────────
-const Color kTheme     = Color(0xFF1565C0);  // Medical Blue
-const Color kBg        = Color(0xFFFFFFFF);
-const Color kSurface   = Color(0xFFFAFAFA);
-const Color kBorder    = Color(0xFFEBEBEB);
-const Color kTextDark  = Color(0xFF222222); 
-const Color kMuted     = Color(0xFF999999);
-const String kFont     = 'Poppins';
+const Color kTheme = Color(0xFF1565C0); // Medical Blue
+const Color kBg = Color(0xFFFFFFFF);
+const Color kSurface = Color(0xFFFAFAFA);
+const Color kBorder = Color(0xFFEBEBEB);
+const Color kTextDark = Color(0xFF222222);
+const Color kMuted = Color(0xFF999999);
+const String kFont = 'Poppins';
 
 class MedicalProfileScreen extends StatefulWidget {
   final VoidCallback? onGuestLogout;
 
-  const MedicalProfileScreen({
-    super.key,
-    this.onGuestLogout,
-  });
+  const MedicalProfileScreen({super.key, this.onGuestLogout});
 
   @override
   State<MedicalProfileScreen> createState() => _MedicalProfileScreenState();
 }
 
 class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
-  String _userName   = 'Loading...';
-  String _userPhone  = '';
-  String _userGmail  = '';
+  String _userName = 'Loading...';
+  String _userPhone = '';
+  String _userGmail = '';
   String _userInitials = '';
-  bool   _isLoading  = true;
+  bool _isLoading = true;
 
   @override
   void initState() {
@@ -42,12 +39,12 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
   // ── Firebase Data Loading ─────────────────────────────────────
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
-    
+
     if (user == null) {
-      setState(() { 
-        _userName = 'Guest User'; 
+      setState(() {
+        _userName = 'Guest User';
         _userInitials = 'G';
-        _isLoading = false; 
+        _isLoading = false;
       });
       return;
     }
@@ -55,19 +52,22 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
     String phone = user.phoneNumber ?? 'No Phone';
 
     try {
-      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final doc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(user.uid)
+          .get();
       if (doc.exists && doc.data() != null) {
         final d = doc.data()!;
         setState(() {
-          _userName      = d['name']  ?? 'Add Name';
-          _userPhone     = d['phone'] ?? phone;
-          _userGmail     = d['gmail'] ?? '';
-          _userInitials  = _initials(_userName);
-          _isLoading     = false;
+          _userName = d['name'] ?? 'Add Name';
+          _userPhone = d['phone'] ?? phone;
+          _userGmail = d['gmail'] ?? '';
+          _userInitials = _initials(_userName);
+          _isLoading = false;
         });
       } else {
         setState(() {
-          _userName  = 'Add Name';
+          _userName = 'Add Name';
           _userPhone = phone;
           _userInitials = 'U';
           _isLoading = false;
@@ -75,21 +75,23 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
       }
     } catch (e) {
       debugPrint('ProfileScreen Error: $e');
-      setState(() { 
-        _userName = 'Add Name'; 
+      setState(() {
+        _userName = 'Add Name';
         _userPhone = phone;
         _userInitials = 'U';
-        _isLoading = false; 
+        _isLoading = false;
       });
     }
   }
 
   // ── Get Letters for Initials ─────────────────────────
   String _initials(String name) {
-    if (name.isEmpty || name == 'Add Name' || name == 'Error Loading') return 'U';
+    if (name.isEmpty || name == 'Add Name' || name == 'Error Loading') {
+      return 'U';
+    }
     final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return 'U';
-    
+
     if (parts.length > 1) {
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
@@ -98,7 +100,9 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
 
   // ── Edit Name Dialog ──────────────────────────
   Future<void> _editName() async {
-    final ctrl = TextEditingController(text: _userName == 'Add Name' ? '' : _userName);
+    final ctrl = TextEditingController(
+      text: _userName == 'Add Name' ? '' : _userName,
+    );
     final result = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -114,30 +118,57 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
             hintStyle: _s(size: 14, color: kMuted),
             filled: true,
             fillColor: kSurface,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kTheme, width: 1.5)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: kBorder),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: kBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: kTheme, width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: _s(size: 14, color: kMuted))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: _s(size: 14, color: kMuted)),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
             style: ElevatedButton.styleFrom(
               backgroundColor: kTheme,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: Text('Save', style: _s(size: 14, weight: FontWeight.w600, color: Colors.white)),
+            child: Text(
+              'Save',
+              style: _s(size: 14, weight: FontWeight.w600, color: Colors.white),
+            ),
           ),
         ],
       ),
     );
     if (result != null && result.isNotEmpty && result != _userName) {
-      await _updateField('name', result, onSuccess: () {
-        setState(() { _userName = result; _userInitials = _initials(result); });
-      });
+      await _updateField(
+        'name',
+        result,
+        onSuccess: () {
+          setState(() {
+            _userName = result;
+            _userInitials = _initials(result);
+          });
+        },
+      );
     }
   }
 
@@ -160,38 +191,71 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
             hintStyle: _s(size: 14, color: kMuted),
             filled: true,
             fillColor: kSurface,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-            enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kBorder)),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: kTheme, width: 1.5)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: kBorder),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: kBorder),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(12),
+              borderSide: const BorderSide(color: kTheme, width: 1.5),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text('Cancel', style: _s(size: 14, color: kMuted))),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: _s(size: 14, color: kMuted)),
+          ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, ctrl.text.trim()),
             style: ElevatedButton.styleFrom(
               backgroundColor: kTheme,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: Text('Save', style: _s(size: 14, weight: FontWeight.w600, color: Colors.white)),
+            child: Text(
+              'Save',
+              style: _s(size: 14, weight: FontWeight.w600, color: Colors.white),
+            ),
           ),
         ],
       ),
     );
     if (result != null && result.isNotEmpty) {
-      await _updateField('gmail', result, onSuccess: () {
-        setState(() { _userGmail = result; });
-      });
+      await _updateField(
+        'gmail',
+        result,
+        onSuccess: () {
+          setState(() {
+            _userGmail = result;
+          });
+        },
+      );
     }
   }
 
-  Future<void> _updateField(String field, String value, {required VoidCallback onSuccess}) async {
+  Future<void> _updateField(
+    String field,
+    String value, {
+    required VoidCallback onSuccess,
+  }) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
     try {
-      await FirebaseFirestore.instance.collection('users').doc(user.uid).update({field: value});
+      await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
+        'uid': user.uid,
+        field: value,
+      }, SetOptions(merge: true));
       onSuccess();
     } catch (e) {
       debugPrint('Update $field error: $e');
@@ -207,13 +271,33 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
   }
 
   // ── Helper Methods ─────────────────────────
-  TextStyle _s({double size = 14, FontWeight weight = FontWeight.w400, Color color = kTextDark, double? letterSpacing, double? height}) =>
-      TextStyle(fontFamily: kFont, fontSize: size, fontWeight: weight, color: color, letterSpacing: letterSpacing, height: height);
+  TextStyle _s({
+    double size = 14,
+    FontWeight weight = FontWeight.w400,
+    Color color = kTextDark,
+    double? letterSpacing,
+    double? height,
+  }) => TextStyle(
+    fontFamily: kFont,
+    fontSize: size,
+    fontWeight: weight,
+    color: color,
+    letterSpacing: letterSpacing,
+    height: height,
+  );
 
   Widget _label(String text) => Padding(
-        padding: const EdgeInsets.only(left: 24, right: 24, top: 32, bottom: 12),
-        child: Text(text.toUpperCase(), style: _s(size: 12, weight: FontWeight.w700, color: kMuted, letterSpacing: 1.2)),
-      );
+    padding: const EdgeInsets.only(left: 24, right: 24, top: 32, bottom: 12),
+    child: Text(
+      text.toUpperCase(),
+      style: _s(
+        size: 12,
+        weight: FontWeight.w700,
+        color: kMuted,
+        letterSpacing: 1.2,
+      ),
+    ),
+  );
 
   // ─────────────────────────────────────────────
   //  UI WIDGETS
@@ -228,22 +312,51 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
         color: kBg,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: kBorder, width: 1),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 15, offset: const Offset(0, 5))],
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.02),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
       ),
       child: Row(
         children: [
           // Dynamic Initials Avatar - Medical Blue
           Container(
-            width: 72, height: 72,
+            width: 72,
+            height: 72,
             decoration: BoxDecoration(
-              color: kTheme, 
+              color: kTheme,
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: kTheme.withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))],
+              boxShadow: [
+                BoxShadow(
+                  color: kTheme.withOpacity(0.3),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Center(
               child: _isLoading
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : Text(_userInitials, style: const TextStyle(fontFamily: kFont, fontSize: 28, fontWeight: FontWeight.w700, color: Colors.white, letterSpacing: 1)),
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : Text(
+                      _userInitials,
+                      style: const TextStyle(
+                        fontFamily: kFont,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                        letterSpacing: 1,
+                      ),
+                    ),
             ),
           ),
           const SizedBox(width: 20),
@@ -256,7 +369,17 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   onTap: _editName,
                   child: Row(
                     children: [
-                      Expanded(child: Text(_userName, style: _s(size: 18, weight: FontWeight.w700, letterSpacing: -0.3), overflow: TextOverflow.ellipsis)),
+                      Expanded(
+                        child: Text(
+                          _userName,
+                          style: _s(
+                            size: 18,
+                            weight: FontWeight.w700,
+                            letterSpacing: -0.3,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                       const Icon(Icons.edit_outlined, size: 16, color: kMuted),
                     ],
                   ),
@@ -266,7 +389,12 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   children: [
                     const Icon(Icons.phone_outlined, size: 14, color: kMuted),
                     const SizedBox(width: 6),
-                    Text(_userPhone.isEmpty || _userPhone == 'No Phone' ? 'Add Phone' : _userPhone, style: _s(size: 13, color: kMuted)),
+                    Text(
+                      _userPhone.isEmpty || _userPhone == 'No Phone'
+                          ? 'Add Phone'
+                          : _userPhone,
+                      style: _s(size: 13, color: kMuted),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 6),
@@ -274,9 +402,22 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   onTap: _editGmail,
                   child: Row(
                     children: [
-                      const Icon(Icons.mail_outline_rounded, size: 14, color: kMuted),
+                      const Icon(
+                        Icons.mail_outline_rounded,
+                        size: 14,
+                        color: kMuted,
+                      ),
                       const SizedBox(width: 6),
-                      Expanded(child: Text(_userGmail.isEmpty ? 'Add your email' : _userGmail, style: _s(size: 13, color: _userGmail.isEmpty ? kTheme : kMuted), overflow: TextOverflow.ellipsis)),
+                      Expanded(
+                        child: Text(
+                          _userGmail.isEmpty ? 'Add your email' : _userGmail,
+                          style: _s(
+                            size: 13,
+                            color: _userGmail.isEmpty ? kTheme : kMuted,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
                       const Icon(Icons.edit_outlined, size: 14, color: kMuted),
                     ],
                   ),
@@ -297,16 +438,33 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
       decoration: BoxDecoration(
         color: kTheme, // Blue premium look
         borderRadius: BorderRadius.circular(24),
-        boxShadow: [BoxShadow(color: kTheme.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8))],
+        boxShadow: [
+          BoxShadow(
+            color: kTheme.withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.account_balance_wallet_rounded, size: 16, color: Colors.white.withOpacity(0.9)),
+              Icon(
+                Icons.account_balance_wallet_rounded,
+                size: 16,
+                color: Colors.white.withOpacity(0.9),
+              ),
               const SizedBox(width: 8),
-              Text('CartKaro Wallet', style: _s(size: 13, color: Colors.white.withOpacity(0.9), weight: FontWeight.w500)),
+              Text(
+                'CartKaro Wallet',
+                style: _s(
+                  size: 13,
+                  color: Colors.white.withOpacity(0.9),
+                  weight: FontWeight.w500,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 12),
@@ -314,17 +472,39 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('₹ 248.50', style: TextStyle(fontFamily: kFont, fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
+              Text(
+                '₹ 248.50',
+                style: TextStyle(
+                  fontFamily: kFont,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: -0.5,
+                ),
+              ),
               GestureDetector(
                 onTap: () {},
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
                   child: Row(
                     children: [
                       const Icon(Icons.add_rounded, size: 16, color: kTheme),
                       const SizedBox(width: 4),
-                      Text('Add Money', style: _s(size: 12, weight: FontWeight.w700, color: kTheme)),
+                      Text(
+                        'Add Money',
+                        style: _s(
+                          size: 12,
+                          weight: FontWeight.w700,
+                          color: kTheme,
+                        ),
+                      ),
                     ],
                   ),
                 ),
@@ -347,24 +527,47 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
             child: GestureDetector(
               onTap: () {},
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 18,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)], // Deep Ocean Blue gradient
+                    colors: [
+                      Color(0xFF0F2027),
+                      Color(0xFF203A43),
+                      Color(0xFF2C5364),
+                    ], // Deep Ocean Blue gradient
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(color: const Color(0xFF2C5364).withOpacity(0.3), blurRadius: 10, offset: const Offset(0, 4))
+                    BoxShadow(
+                      color: const Color(0xFF2C5364).withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.flash_on_rounded, color: Colors.amber, size: 24),
+                    const Icon(
+                      Icons.flash_on_rounded,
+                      color: Colors.amber,
+                      size: 24,
+                    ),
                     const SizedBox(height: 12),
-                    Text('CartKaro\nPlus', style: _s(size: 15, weight: FontWeight.w800, color: Colors.white, height: 1.1)),
+                    Text(
+                      'CartKaro\nPlus',
+                      style: _s(
+                        size: 15,
+                        weight: FontWeight.w800,
+                        color: Colors.white,
+                        height: 1.1,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -376,25 +579,50 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
             child: GestureDetector(
               onTap: () {},
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 18,
+                  horizontal: 16,
+                ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF111111), Color(0xFF2C2C2C)], // Matte Black
+                    colors: [
+                      Color(0xFF111111),
+                      Color(0xFF2C2C2C),
+                    ], // Matte Black
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 10, offset: const Offset(0, 4))
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
                   ],
-                  border: Border.all(color: const Color(0xFF444444), width: 0.5),
+                  border: Border.all(
+                    color: const Color(0xFF444444),
+                    width: 0.5,
+                  ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700), size: 24),
+                    const Icon(
+                      Icons.workspace_premium_rounded,
+                      color: Color(0xFFFFD700),
+                      size: 24,
+                    ),
                     const SizedBox(height: 12),
-                    Text('CartKaro\nElite', style: _s(size: 15, weight: FontWeight.w800, color: const Color(0xFFFFD700), height: 1.1)),
+                    Text(
+                      'CartKaro\nElite',
+                      style: _s(
+                        size: 15,
+                        weight: FontWeight.w800,
+                        color: const Color(0xFFFFD700),
+                        height: 1.1,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -409,7 +637,7 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
   Widget _buildQuickGrid() {
     final items = [
       {'icon': Icons.local_shipping_outlined, 'title': 'Track Order'},
-      {'icon': Icons.receipt_long_rounded, 'title': 'My Orders'}, 
+      {'icon': Icons.receipt_long_rounded, 'title': 'My Orders'},
       {'icon': Icons.location_on_outlined, 'title': 'Addresses'},
       {'icon': Icons.credit_card_outlined, 'title': 'Payments'},
     ];
@@ -418,11 +646,20 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
       child: GridView.builder(
         shrinkWrap: true,
         physics: const NeverScrollableScrollPhysics(),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2, crossAxisSpacing: 16, mainAxisSpacing: 16, childAspectRatio: 1.6),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 1.6,
+        ),
         itemCount: items.length,
         itemBuilder: (ctx, i) {
           return Container(
-            decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(20), border: Border.all(color: kBorder)),
+            decoration: BoxDecoration(
+              color: kSurface,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: kBorder),
+            ),
             child: InkWell(
               onTap: () {},
               borderRadius: BorderRadius.circular(20),
@@ -434,7 +671,10 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   children: [
                     Icon(items[i]['icon'] as IconData, size: 22, color: kTheme),
                     const Spacer(),
-                    Text(items[i]['title'] as String, style: _s(size: 13, weight: FontWeight.w600)),
+                    Text(
+                      items[i]['title'] as String,
+                      style: _s(size: 13, weight: FontWeight.w600),
+                    ),
                   ],
                 ),
               ),
@@ -457,17 +697,34 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(10)),
-                  child: Icon(icon, size: 18, color: kTheme), // Use theme color for icons
+                  decoration: BoxDecoration(
+                    color: kSurface,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 18,
+                    color: kTheme,
+                  ), // Use theme color for icons
                 ),
                 const SizedBox(width: 16),
-                Expanded(child: Text(title, style: _s(size: 14.5, weight: FontWeight.w500))),
-                const Icon(Icons.arrow_forward_ios_rounded, size: 14, color: kMuted),
+                Expanded(
+                  child: Text(
+                    title,
+                    style: _s(size: 14.5, weight: FontWeight.w500),
+                  ),
+                ),
+                const Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  size: 14,
+                  color: kMuted,
+                ),
               ],
             ),
           ),
         ),
-        if (showBorder) const Divider(height: 1, indent: 64, endIndent: 20, color: kBorder),
+        if (showBorder)
+          const Divider(height: 1, indent: 64, endIndent: 20, color: kBorder),
       ],
     );
   }
@@ -479,10 +736,26 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _socialBtn(Colors.transparent, const Color(0xFFEEEEEE), CustomPaint(size: const Size(28, 28), painter: _InstagramPainter())),
-          _socialBtn(Colors.black, Colors.black, CustomPaint(size: const Size(20, 20), painter: _XPainter())),
-          _socialBtn(const Color(0xFF1877F2), const Color(0xFF1877F2), CustomPaint(size: const Size(22, 22), painter: _FacebookPainter())),
-          _socialBtn(const Color(0xFFFF0000), const Color(0xFFFF0000), CustomPaint(size: const Size(26, 20), painter: _YouTubePainter())),
+          _socialBtn(
+            Colors.transparent,
+            const Color(0xFFEEEEEE),
+            CustomPaint(size: const Size(28, 28), painter: _InstagramPainter()),
+          ),
+          _socialBtn(
+            Colors.black,
+            Colors.black,
+            CustomPaint(size: const Size(20, 20), painter: _XPainter()),
+          ),
+          _socialBtn(
+            const Color(0xFF1877F2),
+            const Color(0xFF1877F2),
+            CustomPaint(size: const Size(22, 22), painter: _FacebookPainter()),
+          ),
+          _socialBtn(
+            const Color(0xFFFF0000),
+            const Color(0xFFFF0000),
+            CustomPaint(size: const Size(26, 20), painter: _YouTubePainter()),
+          ),
         ],
       ),
     );
@@ -492,12 +765,19 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
     return GestureDetector(
       onTap: () {},
       child: Container(
-        width: 70, height: 56,
+        width: 70,
+        height: 56,
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: borderColor, width: 1),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 10, offset: const Offset(0, 4))],
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Center(child: icon),
       ),
@@ -507,12 +787,17 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: const SystemUiOverlayStyle(statusBarColor: Colors.transparent, statusBarIconBrightness: Brightness.dark),
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
       child: Scaffold(
         backgroundColor: kBg,
         body: SafeArea(
           child: ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(overscroll: false), // Removes jelly effect
+            behavior: ScrollConfiguration.of(
+              context,
+            ).copyWith(overscroll: false), // Removes jelly effect
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               child: Column(
@@ -520,39 +805,68 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
                 children: [
                   // Top Padding
                   const SizedBox(height: 20),
-                  
+
                   _buildHero(),
-                  
+
                   const SizedBox(height: 24),
                   _buildWallet(),
-                  
+
                   const SizedBox(height: 16),
-                  
-                  // 🔥 PREMIUM CARDS INCLUDED 
+
+                  // 🔥 PREMIUM CARDS INCLUDED
                   _buildMembershipCards(),
 
                   _label('Quick Actions'),
                   _buildQuickGrid(),
-                  
+
                   _label('More Options'),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
-                    decoration: BoxDecoration(color: kBg, borderRadius: BorderRadius.circular(20), border: Border.all(color: kBorder)),
+                    decoration: BoxDecoration(
+                      color: kBg,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: kBorder),
+                    ),
                     child: Column(
                       children: [
                         // 🔥 NO ITEMS REMOVED. ADDED PRESCRIPTIONS AND HEALTH ARTICLES
-                        _buildListTile(Icons.medical_information_outlined, 'Prescriptions'),
-                        _buildListTile(Icons.health_and_safety_outlined, 'Health Articles'),
+                        _buildListTile(
+                          Icons.medical_information_outlined,
+                          'Prescriptions',
+                        ),
+                        _buildListTile(
+                          Icons.health_and_safety_outlined,
+                          'Health Articles',
+                        ),
                         _buildListTile(Icons.list_alt_rounded, 'Shopping List'),
                         _buildListTile(Icons.emoji_events_outlined, 'Rewards'),
-                        _buildListTile(Icons.star_outline_rounded, 'Rating & Review'),
-                        _buildListTile(Icons.card_giftcard_rounded, 'Claim Gift Card'),
-                        _buildListTile(Icons.ios_share_rounded, 'Share the App'),
+                        _buildListTile(
+                          Icons.star_outline_rounded,
+                          'Rating & Review',
+                        ),
+                        _buildListTile(
+                          Icons.card_giftcard_rounded,
+                          'Claim Gift Card',
+                        ),
+                        _buildListTile(
+                          Icons.ios_share_rounded,
+                          'Share the App',
+                        ),
                         _buildListTile(Icons.help_outline_rounded, 'FAQ'),
                         _buildListTile(Icons.info_outline_rounded, 'About Us'),
-                        _buildListTile(Icons.support_agent_rounded, 'Customer Support'),
-                        _buildListTile(Icons.description_outlined, 'Terms & Conditions'),
-                        _buildListTile(Icons.settings_outlined, 'App Settings', showBorder: false),
+                        _buildListTile(
+                          Icons.support_agent_rounded,
+                          'Customer Support',
+                        ),
+                        _buildListTile(
+                          Icons.description_outlined,
+                          'Terms & Conditions',
+                        ),
+                        _buildListTile(
+                          Icons.settings_outlined,
+                          'App Settings',
+                          showBorder: false,
+                        ),
                       ],
                     ),
                   ),
@@ -561,26 +875,43 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   _buildSocial(),
 
                   const SizedBox(height: 40),
-                  
+
                   // Logout Button
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: SizedBox(
                       width: double.infinity,
                       child: OutlinedButton(
-                        onPressed: () { HapticFeedback.mediumImpact(); _logout(); },
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          _logout();
+                        },
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           side: const BorderSide(color: kTheme, width: 1.5),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
                         ),
-                        child: Text('Log Out', style: _s(size: 15, weight: FontWeight.w600, color: kTheme)),
+                        child: Text(
+                          'Log Out',
+                          style: _s(
+                            size: 15,
+                            weight: FontWeight.w600,
+                            color: kTheme,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  
+
                   const SizedBox(height: 30),
-                  Center(child: Text('CartKaro v2.5.0', style: _s(size: 12, color: kMuted))),
+                  Center(
+                    child: Text(
+                      'CartKaro v2.5.0',
+                      style: _s(size: 12, color: kMuted),
+                    ),
+                  ),
                   const SizedBox(height: 100), // Bottom padding for Nav Bar
                 ],
               ),
@@ -600,38 +931,83 @@ class _InstagramPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final gradient = const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF), Color(0xFF515BD4)], begin: Alignment.bottomLeft, end: Alignment.topRight).createShader(rect);
-    final paint = Paint()..shader = gradient..style = PaintingStyle.stroke..strokeWidth = size.width * 0.08..strokeCap = StrokeCap.round;
-    
-    final cx = size.width / 2; final cy = size.height / 2;
-    final boxW = size.width * 0.8; final boxH = size.height * 0.8;
-    
-    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(cx - boxW/2, cy - boxH/2, boxW, boxH), Radius.circular(size.width * 0.25)), paint);
+    final gradient = const LinearGradient(
+      colors: [
+        Color(0xFFF58529),
+        Color(0xFFDD2A7B),
+        Color(0xFF8134AF),
+        Color(0xFF515BD4),
+      ],
+      begin: Alignment.bottomLeft,
+      end: Alignment.topRight,
+    ).createShader(rect);
+    final paint = Paint()
+      ..shader = gradient
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.08
+      ..strokeCap = StrokeCap.round;
+
+    final cx = size.width / 2;
+    final cy = size.height / 2;
+    final boxW = size.width * 0.8;
+    final boxH = size.height * 0.8;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(
+        Rect.fromLTWH(cx - boxW / 2, cy - boxH / 2, boxW, boxH),
+        Radius.circular(size.width * 0.25),
+      ),
+      paint,
+    );
     canvas.drawCircle(Offset(cx, cy), size.width * 0.22, paint);
-    canvas.drawCircle(Offset(cx + boxW*0.25, cy - boxH*0.25), size.width * 0.06, paint..style=PaintingStyle.fill);
+    canvas.drawCircle(
+      Offset(cx + boxW * 0.25, cy - boxH * 0.25),
+      size.width * 0.06,
+      paint..style = PaintingStyle.fill,
+    );
   }
-  @override bool shouldRepaint(_) => false;
+
+  @override
+  bool shouldRepaint(_) => false;
 }
 
 class _XPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white..style = PaintingStyle.fill;
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
     final path = Path();
-    final w = size.width; final h = size.height;
-    path.moveTo(w * 0.02, 0); path.lineTo(w * 0.40, h * 0.46); path.lineTo(w * 0.02, h); path.lineTo(w * 0.14, h);
-    path.lineTo(w * 0.47, h * 0.58); path.lineTo(w * 0.86, h); path.lineTo(w * 0.98, h); path.lineTo(w * 0.60, h * 0.52);
-    path.lineTo(w * 0.96, 0); path.lineTo(w * 0.84, 0); path.lineTo(w * 0.50, h * 0.40); path.lineTo(w * 0.14, 0); path.close();
+    final w = size.width;
+    final h = size.height;
+    path.moveTo(w * 0.02, 0);
+    path.lineTo(w * 0.40, h * 0.46);
+    path.lineTo(w * 0.02, h);
+    path.lineTo(w * 0.14, h);
+    path.lineTo(w * 0.47, h * 0.58);
+    path.lineTo(w * 0.86, h);
+    path.lineTo(w * 0.98, h);
+    path.lineTo(w * 0.60, h * 0.52);
+    path.lineTo(w * 0.96, 0);
+    path.lineTo(w * 0.84, 0);
+    path.lineTo(w * 0.50, h * 0.40);
+    path.lineTo(w * 0.14, 0);
+    path.close();
     canvas.drawPath(path, paint);
   }
-  @override bool shouldRepaint(_) => false;
+
+  @override
+  bool shouldRepaint(_) => false;
 }
 
 class _FacebookPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white..style = PaintingStyle.fill;
-    final w = size.width; final h = size.height;
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final w = size.width;
+    final h = size.height;
     final path = Path();
 
     path.moveTo(w * 0.62, h);
@@ -654,17 +1030,27 @@ class _FacebookPainter extends CustomPainter {
     path.close();
     canvas.drawPath(path, paint);
   }
-  @override bool shouldRepaint(_) => false;
+
+  @override
+  bool shouldRepaint(_) => false;
 }
 
 class _YouTubePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white..style = PaintingStyle.fill;
-    final w = size.width; final h = size.height;
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final w = size.width;
+    final h = size.height;
     final path = Path();
-    path.moveTo(w * 0.35, h * 0.25); path.lineTo(w * 0.75, h * 0.50); path.lineTo(w * 0.35, h * 0.75); path.close();
+    path.moveTo(w * 0.35, h * 0.25);
+    path.lineTo(w * 0.75, h * 0.50);
+    path.lineTo(w * 0.35, h * 0.75);
+    path.close();
     canvas.drawPath(path, paint);
   }
-  @override bool shouldRepaint(_) => false;
+
+  @override
+  bool shouldRepaint(_) => false;
 }
