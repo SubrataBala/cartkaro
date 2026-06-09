@@ -34,7 +34,8 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   Color get _searchBgColor => Colors.white;
   Color get _textPrimary => const Color(0xFF1A1A1A);
   Color get _textSecondary => const Color(0xFF757575);
-  Color get _borderColor => Colors.grey.withOpacity(0.15);
+  // FIXED: Changed to withValues
+  Color get _borderColor => Colors.grey.withValues(alpha: 0.15);
   final Color _themeColor = const Color(0xFFE53935);
   final Color _singleLightRed = const Color.fromARGB(255, 255, 128, 147);
 
@@ -481,16 +482,12 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
   }
 
   Widget _buildResultsView() {
-    // ── Pre-filtered list for dynamic tags ──
     List<Map<String, dynamic>> baseRestaurants = _matchedRestaurants;
-    
-    // ── Apply filters for actual display ──
     List<Map<String, dynamic>> restaurants = _applyAllFilters(baseRestaurants);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── 🔥 MAIN CHANGE APPLIED HERE ──
         SharedFilterRow(
           tabIndex: 1,
           filterState: _filterState,
@@ -633,13 +630,15 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
                                   children: [
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                      decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                                      // FIXED: Changed to withValues
+                                      decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                                       child: Text('📈 ${r['totalSells']}', style: TextStyle(color: Colors.blue.shade700, fontSize: 10, fontWeight: FontWeight.bold)),
                                     ),
                                     const SizedBox(width: 8),
                                     Container(
                                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(color: _themeColor.withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+                                      // FIXED: Changed to withValues
+                                      decoration: BoxDecoration(color: _themeColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(6)),
                                       child: Text('View Menu', style: TextStyle(color: _themeColor, fontSize: 10, fontWeight: FontWeight.bold)),
                                     ),
                                   ],
@@ -685,7 +684,8 @@ class _RestaurantSearchScreenState extends State<RestaurantSearchScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE53935).withOpacity(0.1),
+                  // FIXED: Changed to withValues
+                  color: const Color(0xFFE53935).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: const Color(0xFFE53935)),
                 ),
