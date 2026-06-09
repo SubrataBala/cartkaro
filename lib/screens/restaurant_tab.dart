@@ -31,10 +31,8 @@ class _RestaurantTabState extends State<RestaurantTab> {
   late final PageController _bannerController;
   Timer? _bannerTimer;
   int _bannerIndex = 0;
-  int _activeCategoryIndex = 0;
-
-  bool _isPureVeg = false;
-  bool _isNonVeg = false;
+  
+  int _activeCategoryIndex = -1;
 
   FilterState _filterState = FilterState();
 
@@ -91,19 +89,20 @@ class _RestaurantTabState extends State<RestaurantTab> {
     super.dispose();
   }
 
-  // 🔥 1. FILTER FOR RESTAURANTS 🔥
   List<VendorRestaurant> _getFilteredRestaurants() {
     List<VendorRestaurant> results = List.from(globalRestaurants);
 
-    if (_isPureVeg) {
+    if (_filterState.vegFilter == 'veg') {
+       results = results.where((r) => r.menu.isNotEmpty && r.menu.every((item) => item['isVeg'] == true)).toList();
+    } else if (_filterState.vegFilter == 'non_veg') {
+       results = results.where((r) => r.menu.isNotEmpty && r.menu.any((item) => item['isVeg'] == false)).toList();
+    }
+
+    if (_activeCategoryIndex != -1) {
+      final categoryLabel = _categories[_activeCategoryIndex].label.toLowerCase();
       results = results.where((r) {
-        if (r.menu.isEmpty) return false;
-        return r.menu.every((item) => item['isVeg'] == true);
-      }).toList();
-    } else if (_isNonVeg) {
-      results = results.where((r) {
-        if (r.menu.isEmpty) return false;
-        return r.menu.any((item) => item['isVeg'] == false);
+        return r.categories.toLowerCase().contains(categoryLabel) || 
+               r.name.toLowerCase().contains(categoryLabel);
       }).toList();
     }
 
@@ -126,12 +125,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
         break;
     }
 
-    if (_filterState.vegFilter == 'veg' && !_isPureVeg) {
-       results = results.where((r) => r.menu.isNotEmpty && r.menu.any((item) => item['isVeg'] == true)).toList();
-    } else if (_filterState.vegFilter == 'non_veg' && !_isNonVeg) {
-       results = results.where((r) => r.menu.isNotEmpty && r.menu.any((item) => item['isVeg'] == false)).toList();
-    }
-
     if (_filterState.distanceFilter != 'all') {
       final maxKm = double.tryParse(_filterState.distanceFilter.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 100;
       results = results.where((r) {
@@ -148,18 +141,20 @@ class _RestaurantTabState extends State<RestaurantTab> {
     return results;
   }
 
-  // 🔥 2. FILTER FOR INDIVIDUAL FOOD CARDS (Top Picks / Trending) 🔥
   List<_FoodCardModel> _getFilteredFoods(List<_FoodCardModel> sourceList) {
     List<_FoodCardModel> results = List.from(sourceList);
 
-    // Veg/Non-Veg
-    if (_isPureVeg || _filterState.vegFilter == 'veg') {
+    if (_filterState.vegFilter == 'veg') {
       results = results.where((f) => f.isVeg == true).toList();
-    } else if (_isNonVeg || _filterState.vegFilter == 'non_veg') {
+    } else if (_filterState.vegFilter == 'non_veg') {
       results = results.where((f) => f.isVeg == false).toList();
     }
 
-    // Minimum Rating
+    if (_activeCategoryIndex != -1) {
+      final categoryLabel = _categories[_activeCategoryIndex].label.toLowerCase();
+      results = results.where((f) => f.name.toLowerCase().contains(categoryLabel)).toList();
+    }
+
     if (_filterState.minRating > 0) {
       results = results.where((f) {
         final rating = double.tryParse(f.rating.replaceAll(RegExp(r'[^0-9.]'), '')) ?? 0;
@@ -167,7 +162,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
       }).toList();
     }
 
-    // Sorting
     switch (_filterState.sortBy) {
       case 'rating':
         results.sort((a, b) {
@@ -202,7 +196,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
     return results;
   }
 
-  // Helpers
   double _parseSells(String sells) {
     sells = sells.toLowerCase().replaceAll('+', '').replaceAll(' orders', '').trim();
     if (sells.endsWith('k')) return (double.tryParse(sells.replaceAll('k', '')) ?? 0) * 1000;
@@ -222,7 +215,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
 
   @override
   Widget build(BuildContext context) {
-    // 🔥 Get all filtered lists before building the UI 🔥
     final filteredRestaurants = _getFilteredRestaurants();
     final filteredTopPicks = _getFilteredFoods(_topPicks);
     final filteredTrending = _getFilteredFoods(_trendingFoods);
@@ -233,7 +225,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
         behavior: _NoJellyScrollBehavior(),
         child: RefreshIndicator(
           onRefresh: () async => await Future.delayed(const Duration(seconds: 1)),
-          color: kRestaurantRed,
+          color: Colors.red,
           child: SingleChildScrollView(
             physics: const ClampingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
             child: Column(
@@ -241,9 +233,8 @@ class _RestaurantTabState extends State<RestaurantTab> {
               children: [
                 const SizedBox(height: 12),
                 _buildHeroBanner(),
+                
                 const SizedBox(height: 16),
-                _buildDietaryToggles(), 
-                const SizedBox(height: 12),
                 
                 SharedFilterRow(
                   tabIndex: 1, 
@@ -260,7 +251,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
                 _buildCategoryIcons(),  
                 const SizedBox(height: 30),
                 
-                // 🔥 Conditionally show Top Picks only if items exist 🔥
                 if (filteredTopPicks.isNotEmpty) ...[
                   _buildSectionHeader('Top picks for you™', showSeeAll: true),
                   const SizedBox(height: 14),
@@ -268,7 +258,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
                   const SizedBox(height: 30),
                 ],
 
-                // 🔥 Conditionally show Trending only if items exist 🔥
                 if (filteredTrending.isNotEmpty) ...[
                   _buildSectionHeader('Trending / Best Selling Foods', showSeeAll: true),
                   const SizedBox(height: 14),
@@ -305,12 +294,12 @@ class _RestaurantTabState extends State<RestaurantTab> {
                 child: Container(
                   decoration: BoxDecoration(
                     color: b.bgColor, borderRadius: BorderRadius.circular(20),
-                    boxShadow: [BoxShadow(color: b.bgColor.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 8))],
+                    boxShadow: [BoxShadow(color: b.bgColor.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
                   ),
                   clipBehavior: Clip.hardEdge,
                   child: Stack(
                     children: [
-                      Positioned(right: -40, top: -40, child: CircleAvatar(radius: 90, backgroundColor: Colors.white.withOpacity(0.05))),
+                      Positioned(right: -40, top: -40, child: CircleAvatar(radius: 90, backgroundColor: Colors.white.withValues(alpha: 0.05))),
                       Padding(
                         padding: const EdgeInsets.all(20),
                         child: Row(
@@ -356,56 +345,11 @@ class _RestaurantTabState extends State<RestaurantTab> {
             return AnimatedContainer(
               duration: const Duration(milliseconds: 300), margin: const EdgeInsets.symmetric(horizontal: 3),
               width: i == _bannerIndex ? 20 : 6, height: 6,
-              decoration: BoxDecoration(color: i == _bannerIndex ? kRestaurantRed : Colors.grey.shade300, borderRadius: BorderRadius.circular(3)),
+              decoration: BoxDecoration(color: i == _bannerIndex ? Colors.red : Colors.grey.shade300, borderRadius: BorderRadius.circular(3)),
             );
           }),
         ),
       ],
-    );
-  }
-
-  Widget _buildDietaryToggles() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      child: Row(
-        children: [
-          _buildSwitchTile(
-            label: 'Pure Veg', iconColor: Colors.green, value: _isPureVeg,
-            onChanged: (val) => setState(() { _isPureVeg = val; if (val) _isNonVeg = false; }),
-          ),
-          const SizedBox(width: 12),
-          _buildSwitchTile(
-            label: 'Non-Veg', iconColor: Colors.red, value: _isNonVeg,
-            onChanged: (val) => setState(() { _isNonVeg = val; if (val) _isPureVeg = false; }),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSwitchTile({required String label, required Color iconColor, required bool value, required Function(bool) onChanged}) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        decoration: BoxDecoration(
-          color: value ? iconColor.withOpacity(0.1) : Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: value ? iconColor : kBorderLight, width: 1.5),
-        ),
-        child: Row(
-          children: [
-            Container(
-              width: 12, height: 12,
-              decoration: BoxDecoration(border: Border.all(color: iconColor, width: 1.5), borderRadius: BorderRadius.circular(2)),
-              child: Center(child: Container(width: 6, height: 6, decoration: BoxDecoration(color: iconColor, shape: BoxShape.circle))),
-            ),
-            const SizedBox(width: 8),
-            Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: value ? iconColor : kTextDark)),
-          ],
-        ),
-      ),
     );
   }
 
@@ -419,23 +363,30 @@ class _RestaurantTabState extends State<RestaurantTab> {
           final c = _categories[i];
           final isActive = i == _activeCategoryIndex;
           return GestureDetector(
-            onTap: () => setState(() => _activeCategoryIndex = i),
+            onTap: () {
+              setState(() {
+                _activeCategoryIndex = isActive ? -1 : i;
+              });
+            },
             child: Column(
               children: [
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 200), width: 64, height: 64,
                   decoration: BoxDecoration(
-                    color: isActive ? kRestaurantRed.withOpacity(0.1) : Colors.white, borderRadius: BorderRadius.circular(20), 
-                    border: Border.all(color: isActive ? kRestaurantRed : Colors.transparent, width: 2),
-                    boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 5, offset: const Offset(0, 2))],
+                    color: isActive ? Colors.red.withValues(alpha: 0.1) : Colors.white, borderRadius: BorderRadius.circular(20), 
+                    border: Border.all(color: isActive ? Colors.red : Colors.transparent, width: 2),
+                    boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 5, offset: const Offset(0, 2))],
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(18),
-                    child: Image.asset(c.imagePath, fit: BoxFit.cover, errorBuilder: (ctx, err, stack) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 28))),
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Image.asset(c.imagePath, fit: BoxFit.contain, errorBuilder: (ctx, err, stack) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 28))),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(c.label, style: TextStyle(fontSize: 11, fontWeight: isActive ? FontWeight.w800 : FontWeight.w600, color: isActive ? kRestaurantRed : kTextDark)),
+                Text(c.label, style: TextStyle(fontSize: 11, fontWeight: isActive ? FontWeight.w800 : FontWeight.w600, color: isActive ? Colors.red : kTextDark)),
               ],
             ),
           );
@@ -454,8 +405,8 @@ class _RestaurantTabState extends State<RestaurantTab> {
           if (showSeeAll)
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(color: kRestaurantRed.withOpacity(0.1), borderRadius: BorderRadius.circular(20)),
-              child: const Text('See all', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: kRestaurantRed)),
+              decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(20)),
+              child: const Text('See all', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: Colors.red)),
             ),
         ],
       ),
@@ -478,7 +429,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
       width: 200,
       decoration: BoxDecoration(
         color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: kBorderLight, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -488,13 +439,14 @@ class _RestaurantTabState extends State<RestaurantTab> {
               ClipRRect(
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
                 child: Container(
-                  height: 135, width: double.infinity, color: Colors.grey.shade100, 
-                  child: Image.asset(f.imagePath, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
+                  height: 135, width: double.infinity, color: Colors.white, 
+                  padding: const EdgeInsets.all(8),
+                  child: Image.asset(f.imagePath, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
                 ),
               ),
               Positioned(
                 top: 10, right: 10,
-                child: WatchlistIcon(itemId: f.id, themeColor: kRestaurantRed, isBgWhite: true),
+                child: WatchlistIcon(itemId: f.id, themeColor: Colors.red, isBgWhite: true),
               ),
               Positioned(
                 bottom: 10, left: 10,
@@ -547,7 +499,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text('₹${f.price}', style: const TextStyle(color: kTextDark, fontSize: 16, fontWeight: FontWeight.w900)),
-                    SharedCartButton(itemId: "${f.id}|0", themeColor: kRestaurantRed, cartNotifier: restaurantCartNotifier),
+                    SharedCartButton(itemId: "${f.id}|0", themeColor: Colors.red, cartNotifier: restaurantCartNotifier),
                   ],
                 ),
               ],
@@ -572,12 +524,11 @@ class _RestaurantTabState extends State<RestaurantTab> {
               Text('Showing $count restaurants', style: const TextStyle(fontSize: 13, color: kTextGrey, fontWeight: FontWeight.w500)),
             ],
           ),
-          if (_filterState.hasActiveFilters || _isPureVeg || _isNonVeg)
+          if (_filterState.hasActiveFilters || _activeCategoryIndex != -1)
              GestureDetector(
                 onTap: () => setState(() {
                   _filterState = FilterState();
-                  _isPureVeg = false;
-                  _isNonVeg = false;
+                  _activeCategoryIndex = -1;
                 }),
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -647,8 +598,9 @@ class _RestaurantTabState extends State<RestaurantTab> {
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  width: 100, height: 100, color: Colors.grey.shade100,
-                  child: Image.asset(r.imagePath, fit: BoxFit.cover, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
+                  width: 100, height: 100, color: Colors.white,
+                  padding: const EdgeInsets.all(6),
+                  child: Image.asset(r.imagePath, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
                 ),
               ),
               const SizedBox(width: 16),
@@ -675,7 +627,7 @@ class _RestaurantTabState extends State<RestaurantTab> {
                     const SizedBox(height: 6),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(color: Colors.blue.withOpacity(0.1), borderRadius: BorderRadius.circular(4)),
+                      decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                       child: Text('📈 ${r.totalSells}', style: TextStyle(color: Colors.blue.shade700, fontSize: 10, fontWeight: FontWeight.bold)),
                     )
                   ],
