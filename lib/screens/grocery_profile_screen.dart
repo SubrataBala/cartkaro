@@ -3,6 +3,25 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+// ── NAVIGATION IMPORTS ──
+import 'rewards_screen.dart';
+import 'rating_review_screen.dart';
+import 'claim_gift_card_screen.dart';
+import 'share_app_screen.dart';
+import 'faq_screen.dart';
+import 'about_us_screen.dart';
+import 'customer_support_screen.dart';
+import 'terms_conditions_screen.dart';
+import 'app_settings_screen.dart';
+import 'shopping_list_screen.dart';
+import 'track_order_screen.dart';
+import 'my_orders_screen.dart';
+import 'addresses_screen.dart';
+import 'payments_screen.dart';
+import 'wallet_screen.dart';         // 🔥 CartKaro Wallet
+import 'cartkaro_plus_screen.dart';  // 🔥 CartKaro Plus
+import 'cartkaro_elite_screen.dart'; // 🔥 CartKaro Elite
+
 // ─────────────────────────────────────────────
 //  CartKaro Premium Design Tokens
 // ─────────────────────────────────────────────
@@ -40,7 +59,6 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
 
-    // Agar koi user login nahi hai
     if (user == null) {
       setState(() {
         _userName = 'Guest User';
@@ -50,7 +68,6 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
       return;
     }
 
-    // Default phone number set kar rahe hain FirebaseAuth se directly
     String phone = user.phoneNumber ?? 'No Phone';
 
     try {
@@ -68,7 +85,6 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
           _isLoading = false;
         });
       } else {
-        // Agar naya user hai aur firestore me data nahi hai
         setState(() {
           _userName = 'Add Name';
           _userPhone = phone;
@@ -78,9 +94,8 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
       }
     } catch (e) {
       debugPrint('ProfileScreen Error: $e');
-      // Error aane par "Error Loading" ki jagah clean fallback
-      setState(() {
-        _userName = 'Add Name';
+      setState(() { 
+        _userName = 'Add Name'; 
         _userPhone = phone;
         _userInitials = 'U';
         _isLoading = false;
@@ -88,7 +103,7 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
     }
   }
 
-  // ── Get Letters for Initials (Fixed logic for 1 or 2 letters) ──
+  // ── Get Letters for Initials ─────────────────────────
   String _initials(String name) {
     if (name.isEmpty || name == 'Add Name' || name == 'Error Loading') {
       return 'U';
@@ -96,11 +111,9 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
     final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return 'U';
 
-    // Agar do ya usse zyada words hain (e.g. Mukesh Bala -> MB)
     if (parts.length > 1) {
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
-    // Agar sirf ek word hai (e.g. Mukesh -> M)
     return parts.first[0].toUpperCase();
   }
 
@@ -333,7 +346,7 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
             width: 72,
             height: 72,
             decoration: BoxDecoration(
-              color: kTheme, // Uses the grocery green theme color
+              color: kTheme,
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
@@ -371,7 +384,6 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Name Row
                 GestureDetector(
                   onTap: _editName,
                   child: Row(
@@ -392,7 +404,6 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                // Phone Row
                 Row(
                   children: [
                     const Icon(Icons.phone_outlined, size: 14, color: kMuted),
@@ -406,7 +417,6 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 6),
-                // Gmail Row
                 GestureDetector(
                   onTap: _editGmail,
                   child: Row(
@@ -439,13 +449,13 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
     );
   }
 
-  // ── Wallet Section ──
+  // ── Wallet Section (Fixed Click) ──
   Widget _buildWallet() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: kTheme, // Green premium look
+        color: kTheme, // Theme color ke hisaab se adjust hoga
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -481,18 +491,13 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                '₹ 248.50',
-                style: TextStyle(
-                  fontFamily: kFont,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
-                ),
-              ),
+              Text('₹ 248.50', style: TextStyle(fontFamily: kFont, fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
+              
+              // 🔥 YAHAN CHANGE KIYA HAI - Sirf ye button click hoga! 🔥
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => WalletScreen(themeColor: kTheme)));
+                },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -504,16 +509,9 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.add_rounded, size: 16, color: kTheme),
+                      Icon(Icons.add_rounded, size: 16, color: kTheme),
                       const SizedBox(width: 4),
-                      Text(
-                        'Add Money',
-                        style: _s(
-                          size: 12,
-                          weight: FontWeight.w700,
-                          color: kTheme,
-                        ),
-                      ), // Changed to Add Money
+                      Text('Add Money', style: _s(size: 12, weight: FontWeight.w700, color: kTheme)),
                     ],
                   ),
                 ),
@@ -534,7 +532,10 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
           // 1. CartKaro Plus (Gradient Blue)
           Expanded(
             child: GestureDetector(
-              onTap: () {},
+              onTap: () {
+                // 🔥 CartKaro Plus Navigation
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartKaroPlusScreen(themeColor: kTheme)));
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   vertical: 18,
@@ -542,11 +543,7 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
                 ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF0F2027),
-                      Color(0xFF203A43),
-                      Color(0xFF2C5364),
-                    ], // Deep Ocean Blue gradient
+                    colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -586,7 +583,10 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
           // 2. CartKaro Elite (Premium Black & Gold)
           Expanded(
             child: GestureDetector(
-              onTap: () {},
+              onTap: () {
+                // 🔥 CartKaro Elite Navigation
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartKaroEliteScreen(themeColor: kTheme)));
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   vertical: 18,
@@ -594,10 +594,7 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
                 ),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [
-                      Color(0xFF111111),
-                      Color(0xFF2C2C2C),
-                    ], // Matte Black
+                    colors: [Color(0xFF111111), Color(0xFF2C2C2C)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -670,7 +667,18 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
               border: Border.all(color: kBorder),
             ),
             child: InkWell(
-              onTap: () {},
+              onTap: () {
+                // ── QUICK ACTIONS NAVIGATION ──
+                if (items[i]['title'] == 'Track Order') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const TrackOrderScreen(themeColor: kTheme)));
+                } else if (items[i]['title'] == 'My Orders') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MyOrdersScreen(themeColor: kTheme)));
+                } else if (items[i]['title'] == 'Addresses') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressesScreen(themeColor: kTheme)));
+                } else if (items[i]['title'] == 'Payments') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentsScreen(themeColor: kTheme)));
+                }
+              },
               borderRadius: BorderRadius.circular(20),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -699,22 +707,38 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
     return Column(
       children: [
         InkWell(
-          onTap: () {},
+          onTap: () {
+            // ── MORE OPTIONS NAVIGATION ──
+            if (title == 'Rewards') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const RewardsScreen(themeColor: kTheme)));
+            } else if (title == 'Rating & Review') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const RatingReviewScreen(themeColor: kTheme)));
+            } else if (title == 'Claim Gift Card') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ClaimGiftCardScreen(themeColor: kTheme)));
+            } else if (title == 'Share the App') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ShareAppScreen(themeColor: kTheme)));
+            } else if (title == 'FAQ') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const FaqScreen(themeColor: kTheme)));
+            } else if (title == 'About Us') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsScreen(themeColor: kTheme)));
+            } else if (title == 'Customer Support') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerSupportScreen(themeColor: kTheme)));
+            } else if (title == 'Terms & Conditions') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsConditionsScreen(themeColor: kTheme)));
+            } else if (title == 'App Settings') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AppSettingsScreen(themeColor: kTheme, serviceType: "grocery",)));
+            } else if (title == 'Shopping List') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ShoppingListScreen(themeColor: kTheme, type: "grocery",)));
+            }
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: kSurface,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 18,
-                    color: kTheme,
-                  ), // Use theme color for icons
+                  decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(10)),
+                  child: Icon(icon, size: 18, color: kTheme),
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -804,30 +828,21 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
         backgroundColor: kBg,
         body: SafeArea(
           child: ScrollConfiguration(
-            behavior: ScrollConfiguration.of(
-              context,
-            ).copyWith(overscroll: false), // Removes jelly effect
+            behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Padding
                   const SizedBox(height: 20),
-
                   _buildHero(),
-
                   const SizedBox(height: 24),
                   _buildWallet(),
-
                   const SizedBox(height: 16),
-
                   // 🔥 PREMIUM MEMBERSHIP CARDS 🔥
                   _buildMembershipCards(),
-
                   _label('Quick Actions'),
                   _buildQuickGrid(),
-
                   _label('More Options'),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -870,12 +885,9 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
                       ],
                     ),
                   ),
-
                   _label('Follow Us'),
                   _buildSocial(),
-
                   const SizedBox(height: 40),
-
                   // Logout Button
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -907,15 +919,9 @@ class _GroceryProfileScreenState extends State<GroceryProfileScreen> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 30),
-                  Center(
-                    child: Text(
-                      'CartKaro v2.5.0',
-                      style: _s(size: 12, color: kMuted),
-                    ),
-                  ),
-                  const SizedBox(height: 100), // Bottom padding for Nav Bar
+                  Center(child: Text('CartKaro v2.5.0', style: _s(size: 12, color: kMuted))),
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
@@ -934,34 +940,13 @@ class _InstagramPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
-    final gradient = const LinearGradient(
-      colors: [
-        Color(0xFFF58529),
-        Color(0xFFDD2A7B),
-        Color(0xFF8134AF),
-        Color(0xFF515BD4),
-      ],
-      begin: Alignment.bottomLeft,
-      end: Alignment.topRight,
-    ).createShader(rect);
-    final paint = Paint()
-      ..shader = gradient
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.08
-      ..strokeCap = StrokeCap.round;
+    final gradient = const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF), Color(0xFF515BD4)], begin: Alignment.bottomLeft, end: Alignment.topRight).createShader(rect);
+    final paint = Paint()..shader = gradient..style = PaintingStyle.stroke..strokeWidth = size.width * 0.08..strokeCap = StrokeCap.round;
 
-    final cx = size.width / 2;
-    final cy = size.height / 2;
-    final boxW = size.width * 0.8;
-    final boxH = size.height * 0.8;
+    final cx = size.width / 2; final cy = size.height / 2;
+    final boxW = size.width * 0.8; final boxH = size.height * 0.8;
 
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(
-        Rect.fromLTWH(cx - boxW / 2, cy - boxH / 2, boxW, boxH),
-        Radius.circular(size.width * 0.25),
-      ),
-      paint,
-    );
+    canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(cx - boxW/2, cy - boxH/2, boxW, boxH), Radius.circular(size.width * 0.25)), paint);
     canvas.drawCircle(Offset(cx, cy), size.width * 0.22, paint);
     canvas.drawCircle(
       Offset(cx + boxW * 0.25, cy - boxH * 0.25),
@@ -1012,7 +997,6 @@ class _FacebookPainter extends CustomPainter {
     final w = size.width;
     final h = size.height;
     final path = Path();
-
     path.moveTo(w * 0.62, h);
     path.lineTo(w * 0.62, h * 0.55);
     path.lineTo(w * 0.78, h * 0.55);
@@ -1029,7 +1013,6 @@ class _FacebookPainter extends CustomPainter {
     path.lineTo(w * 0.22, h * 0.55);
     path.lineTo(w * 0.38, h * 0.55);
     path.lineTo(w * 0.38, h);
-
     path.close();
     canvas.drawPath(path, paint);
   }

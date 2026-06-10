@@ -3,8 +3,30 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+
+// ── NAVIGATION IMPORTS ──
+import 'rewards_screen.dart';
+import 'rating_review_screen.dart';
+import 'claim_gift_card_screen.dart';
+import 'share_app_screen.dart';
+import 'faq_screen.dart';
+import 'about_us_screen.dart';
+import 'customer_support_screen.dart';
+import 'terms_conditions_screen.dart';
+import 'app_settings_screen.dart';
+import 'shopping_list_screen.dart';
+import 'prescriptions_screen.dart';
+import 'health_articles_screen.dart';
+import 'track_order_screen.dart';
+import 'my_orders_screen.dart'; // 🔥 Updated to My Orders
+import 'addresses_screen.dart';
+import 'payments_screen.dart';
+import 'wallet_screen.dart';         // 🔥 CartKaro Wallet
+import 'cartkaro_plus_screen.dart';  // 🔥 CartKaro Plus
+import 'cartkaro_elite_screen.dart'; // 🔥 CartKaro Elite
+
 // ─────────────────────────────────────────────
-//  CartKaro Premium Design Tokens
+//  CartKaro Premium Design Tokens (Medical)
 // ─────────────────────────────────────────────
 const Color kTheme = Color(0xFF1565C0); // Medical Blue
 const Color kBg = Color(0xFFFFFFFF);
@@ -430,13 +452,13 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
     );
   }
 
-  // ── Wallet Section ──
+  // ── Wallet Section (Fixed Click) ──
   Widget _buildWallet() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: kTheme, // Blue premium look
+        color: kTheme, // Theme color ke hisaab se adjust hoga
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -472,18 +494,13 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(
-                '₹ 248.50',
-                style: TextStyle(
-                  fontFamily: kFont,
-                  fontSize: 32,
-                  fontWeight: FontWeight.w800,
-                  color: Colors.white,
-                  letterSpacing: -0.5,
-                ),
-              ),
+              Text('₹ 248.50', style: TextStyle(fontFamily: kFont, fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
+              
+              // 🔥 YAHAN CHANGE KIYA HAI - Sirf ye button click hoga! 🔥
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => WalletScreen(themeColor: kTheme)));
+                },
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 16,
@@ -495,7 +512,7 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.add_rounded, size: 16, color: kTheme),
+                      Icon(Icons.add_rounded, size: 16, color: kTheme),
                       const SizedBox(width: 4),
                       Text(
                         'Add Money',
@@ -525,7 +542,10 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
           // 1. CartKaro Plus (Gradient Blue)
           Expanded(
             child: GestureDetector(
-              onTap: () {},
+              onTap: () {
+                // 🔥 CartKaro Plus Navigation
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartKaroPlusScreen(themeColor: kTheme)));
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   vertical: 18,
@@ -577,7 +597,10 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
           // 2. CartKaro Elite (Premium Black & Gold)
           Expanded(
             child: GestureDetector(
-              onTap: () {},
+              onTap: () {
+                // 🔥 CartKaro Elite Navigation
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartKaroEliteScreen(themeColor: kTheme)));
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(
                   vertical: 18,
@@ -637,7 +660,7 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
   Widget _buildQuickGrid() {
     final items = [
       {'icon': Icons.local_shipping_outlined, 'title': 'Track Order'},
-      {'icon': Icons.receipt_long_rounded, 'title': 'My Orders'},
+      {'icon': Icons.receipt_long_rounded, 'title': 'My Orders'}, // 🔥 My Orders Setup Done
       {'icon': Icons.location_on_outlined, 'title': 'Addresses'},
       {'icon': Icons.credit_card_outlined, 'title': 'Payments'},
     ];
@@ -661,7 +684,18 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
               border: Border.all(color: kBorder),
             ),
             child: InkWell(
-              onTap: () {},
+              onTap: () {
+                // ── QUICK ACTIONS NAVIGATION ──
+                if (items[i]['title'] == 'Track Order') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const TrackOrderScreen(themeColor: kTheme)));
+                } else if (items[i]['title'] == 'My Orders') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MyOrdersScreen(themeColor: kTheme)));
+                } else if (items[i]['title'] == 'Addresses') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressesScreen(themeColor: kTheme)));
+                } else if (items[i]['title'] == 'Payments') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentsScreen(themeColor: kTheme)));
+                }
+              },
               borderRadius: BorderRadius.circular(20),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -690,22 +724,42 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
     return Column(
       children: [
         InkWell(
-          onTap: () {},
+          onTap: () {
+            // ── MORE OPTIONS NAVIGATION ──
+            if (title == 'Rewards') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const RewardsScreen(themeColor: kTheme)));
+            } else if (title == 'Rating & Review') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const RatingReviewScreen(themeColor: kTheme)));
+            } else if (title == 'Claim Gift Card') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ClaimGiftCardScreen(themeColor: kTheme)));
+            } else if (title == 'Share the App') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ShareAppScreen(themeColor: kTheme)));
+            } else if (title == 'FAQ') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const FaqScreen(themeColor: kTheme)));
+            } else if (title == 'About Us') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsScreen(themeColor: kTheme)));
+            } else if (title == 'Customer Support') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerSupportScreen(themeColor: kTheme)));
+            } else if (title == 'Terms & Conditions') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsConditionsScreen(themeColor: kTheme)));
+            } else if (title == 'App Settings') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AppSettingsScreen(themeColor: kTheme, serviceType: "medical",)));
+            } else if (title == 'Shopping List') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ShoppingListScreen(themeColor: kTheme, type: "medical",)));
+            } else if (title == 'Prescriptions') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const PrescriptionsScreen(themeColor: kTheme)));
+            } else if (title == 'Health Articles') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const HealthArticlesScreen(themeColor: kTheme)));
+            }
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
               children: [
                 Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: kSurface,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Icon(
-                    icon,
-                    size: 18,
-                    color: kTheme,
-                  ), // Use theme color for icons
+                  decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(10)),
+                  child: Icon(icon, size: 18, color: kTheme), 
                 ),
                 const SizedBox(width: 16),
                 Expanded(
@@ -809,11 +863,13 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
                   _buildHero(),
 
                   const SizedBox(height: 24),
+                  
+                  // 🔥 WALLET IS HERE
                   _buildWallet(),
 
                   const SizedBox(height: 16),
-
-                  // 🔥 PREMIUM CARDS INCLUDED
+                  
+                  // 🔥 PREMIUM CARDS ARE HERE
                   _buildMembershipCards(),
 
                   _label('Quick Actions'),
@@ -829,15 +885,8 @@ class _MedicalProfileScreenState extends State<MedicalProfileScreen> {
                     ),
                     child: Column(
                       children: [
-                        // 🔥 NO ITEMS REMOVED. ADDED PRESCRIPTIONS AND HEALTH ARTICLES
-                        _buildListTile(
-                          Icons.medical_information_outlined,
-                          'Prescriptions',
-                        ),
-                        _buildListTile(
-                          Icons.health_and_safety_outlined,
-                          'Health Articles',
-                        ),
+                        _buildListTile(Icons.medical_information_outlined, 'Prescriptions'),
+                        _buildListTile(Icons.health_and_safety_outlined, 'Health Articles'),
                         _buildListTile(Icons.list_alt_rounded, 'Shopping List'),
                         _buildListTile(Icons.emoji_events_outlined, 'Rewards'),
                         _buildListTile(
