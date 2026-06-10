@@ -695,49 +695,67 @@ class _LoginState extends State<LoginScreen>
     setState(() => _loading = true);
 
     final phoneNumber = '${_country.dialCode}$ph';
+    await FirebaseAuth.instance.setLanguageCode('en');
     if (kIsWeb) {
       await _sendWebOtp(phoneNumber, ph);
       return;
     }
 
-    await FirebaseAuth.instance.verifyPhoneNumber(
-      phoneNumber: phoneNumber,
-      timeout: const Duration(seconds: 60),
-      forceResendingToken: forceResendingToken,
-      verificationCompleted: (credential) async {
-        await _signInWithCredential(credential);
-      },
-      verificationFailed: (e) {
-        // Add this line to see the detailed error in your debug console
-        print(
-          '🔥 Firebase verification failed! Code: ${e.code}, Message: ${e.message}',
-        );
-        if (!mounted) return;
-        setState(() => _loading = false);
-        _snack(_firebaseAuthErrorMessage(e), err: true);
-      },
-      codeSent: (verificationId, resendToken) {
-        if (!mounted) return;
-        setState(() {
-          _loading = false;
-          _otpSent = true;
+    try {
+      await FirebaseAuth.instance.verifyPhoneNumber(
+        phoneNumber: phoneNumber,
+        timeout: const Duration(seconds: 60),
+        forceResendingToken: forceResendingToken,
+        verificationCompleted: (credential) async {
+          await _signInWithCredential(credential);
+        },
+        verificationFailed: (e) {
+          print(
+            'Firebase verification failed. Code: ${e.code}, Message: ${e.message}',
+          );
+          if (!mounted) return;
+          setState(() => _loading = false);
+          _snack(_firebaseAuthErrorMessage(e), err: true);
+        },
+        codeSent: (verificationId, resendToken) {
+          if (!mounted) return;
+          setState(() {
+            _loading = false;
+            _otpSent = true;
+            _verificationId = verificationId;
+            _resendToken = resendToken;
+          });
+          _startTimer();
+          Future.delayed(const Duration(milliseconds: 200), () {
+            if (mounted) _otpFN[0].requestFocus();
+          });
+          _snack('OTP sent to ${_country.dialCode} $ph');
+        },
+        codeAutoRetrievalTimeout: (verificationId) {
           _verificationId = verificationId;
-          _resendToken = resendToken;
-        });
-        _startTimer();
-        Future.delayed(const Duration(milliseconds: 200), () {
-          if (mounted) _otpFN[0].requestFocus();
-        });
-        _snack('OTP sent to ${_country.dialCode} $ph');
-      },
-      codeAutoRetrievalTimeout: (verificationId) {
-        _verificationId = verificationId;
-      },
-    );
+        },
+      );
+    } on FirebaseAuthException catch (e) {
+      print(
+        'Firebase verification could not start. Code: ${e.code}, Message: ${e.message}',
+      );
+      if (!mounted) return;
+      setState(() => _loading = false);
+      _snack(_firebaseAuthErrorMessage(e), err: true);
+    } catch (e) {
+      print('Firebase verification could not start: $e');
+      if (!mounted) return;
+      setState(() => _loading = false);
+      _snack(
+        'Could not start phone verification. Please try again.',
+        err: true,
+      );
+    }
   }
 
   Future<void> _sendWebOtp(String phoneNumber, String displayPhone) async {
     try {
+      await FirebaseAuth.instance.setLanguageCode('en');
       _webRecaptchaVerifier?.clear();
       _webRecaptchaVerifier = RecaptchaVerifier(
         auth: FirebaseAuthPlatform.instanceFor(
