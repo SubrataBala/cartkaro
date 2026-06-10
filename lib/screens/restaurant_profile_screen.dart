@@ -3,6 +3,29 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+
+// ── NAVIGATION IMPORTS ──
+import 'rating_review_screen.dart';
+import 'claim_gift_card_screen.dart';
+import 'faq_screen.dart';
+import 'about_us_screen.dart';
+import 'share_app_screen.dart';
+import 'customer_support_screen.dart';
+import 'terms_conditions_screen.dart';
+import 'app_settings_screen.dart';
+import 'track_order_screen.dart';
+import 'my_orders_screen.dart';
+import 'addresses_screen.dart';
+import 'payments_screen.dart';
+import 'saved_restaurants_screen.dart';     // 🔥 Saved Restaurants
+import 'hidden_restaurants_screen.dart';    // 🔥 Hidden Restaurants
+import 'add_your_dining_screen.dart';       // 🔥 Add Your Dining
+import 'student_rewards_screen.dart';       // 🔥 Student Rewards
+import 'send_contact_restaurant_screen.dart'; // 🔥 Send Contact to Restaurant
+import 'wallet_screen.dart';               // 🔥 CartKaro Wallet
+import 'cartkaro_plus_screen.dart';        // 🔥 CartKaro Plus
+import 'cartkaro_elite_screen.dart';       // 🔥 CartKaro Elite
+
 // ─────────────────────────────────────────────
 //  CartKaro Premium Design Tokens (RESTAURANT)
 // ─────────────────────────────────────────────
@@ -42,8 +65,7 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
   // ── Firebase Data Loading ─────────────────────────────────────
   Future<void> _loadUserData() async {
     final user = FirebaseAuth.instance.currentUser;
-    
-    // Agar koi user login nahi hai
+
     if (user == null) {
       setState(() { 
         _userName = 'Guest User'; 
@@ -53,7 +75,6 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
       return;
     }
 
-    // Default phone number set kar rahe hain FirebaseAuth se directly
     String phone = user.phoneNumber ?? 'No Phone';
 
     try {
@@ -68,7 +89,6 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
           _isLoading     = false;
         });
       } else {
-        // Agar naya user hai aur firestore me data nahi hai
         setState(() {
           _userName  = 'Add Name';
           _userPhone = phone;
@@ -78,7 +98,6 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
       }
     } catch (e) {
       debugPrint('ProfileScreen Error: $e');
-      // Error aane par "Error Loading" ki jagah clean fallback
       setState(() { 
         _userName = 'Add Name'; 
         _userPhone = phone;
@@ -93,12 +112,10 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
     if (name.isEmpty || name == 'Add Name' || name == 'Error Loading') return 'U';
     final parts = name.trim().split(' ').where((p) => p.isNotEmpty).toList();
     if (parts.isEmpty) return 'U';
-    
-    // Agar do ya usse zyada words hain (e.g. Mukesh Bala -> MB)
+
     if (parts.length > 1) {
       return '${parts.first[0]}${parts.last[0]}'.toUpperCase();
     }
-    // Agar sirf ek word hai (e.g. Mukesh -> M)
     return parts.first[0].toUpperCase();
   }
 
@@ -258,7 +275,6 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Name Row
                 GestureDetector(
                   onTap: _editName,
                   child: Row(
@@ -269,7 +285,6 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
                   ),
                 ),
                 const SizedBox(height: 6),
-                // Phone Row
                 Row(
                   children: [
                     const Icon(Icons.phone_outlined, size: 14, color: kMuted),
@@ -278,7 +293,6 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
                   ],
                 ),
                 const SizedBox(height: 6),
-                // Gmail Row
                 GestureDetector(
                   onTap: _editGmail,
                   child: Row(
@@ -298,13 +312,13 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
     );
   }
 
-  // ── Wallet Section ──
+  // ── Wallet Section (Fixed Click) ──
   Widget _buildWallet() {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 20),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: kTheme, // Red premium look
+        color: kTheme, // Theme color ke hisaab se adjust hoga
         borderRadius: BorderRadius.circular(24),
         boxShadow: [BoxShadow(color: kTheme.withOpacity(0.3), blurRadius: 20, offset: const Offset(0, 8))],
       ),
@@ -324,14 +338,18 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               Text('₹ 248.50', style: TextStyle(fontFamily: kFont, fontSize: 32, fontWeight: FontWeight.w800, color: Colors.white, letterSpacing: -0.5)),
+              
+              // 🔥 YAHAN CHANGE KIYA HAI - Sirf ye button click hoga! 🔥
               GestureDetector(
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => WalletScreen(themeColor: kTheme)));
+                },
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
                   child: Row(
                     children: [
-                      const Icon(Icons.add_rounded, size: 16, color: kTheme),
+                      Icon(Icons.add_rounded, size: 16, color: kTheme),
                       const SizedBox(width: 4),
                       Text('Add Money', style: _s(size: 12, weight: FontWeight.w700, color: kTheme)),
                     ],
@@ -354,12 +372,15 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
           // 1. CartKaro Plus (Gradient Blue)
           Expanded(
             child: GestureDetector(
-              onTap: () {},
+              onTap: () {
+                // 🔥 CartKaro Plus Navigation
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartKaroPlusScreen(themeColor: kTheme)));
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)], // Deep Ocean Blue gradient
+                    colors: [Color(0xFF0F2027), Color(0xFF203A43), Color(0xFF2C5364)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -383,12 +404,15 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
           // 2. CartKaro Elite (Premium Black & Gold)
           Expanded(
             child: GestureDetector(
-              onTap: () {},
+              onTap: () {
+                // 🔥 CartKaro Elite Navigation
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const CartKaroEliteScreen(themeColor: kTheme)));
+              },
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
-                    colors: [Color(0xFF111111), Color(0xFF2C2C2C)], // Matte Black
+                    colors: [Color(0xFF111111), Color(0xFF2C2C2C)],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
@@ -418,7 +442,7 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
   Widget _buildQuickGrid() {
     final items = [
       {'icon': Icons.local_shipping_outlined, 'title': 'Track Order'},
-      {'icon': Icons.receipt_long_rounded, 'title': 'My Orders'}, 
+      {'icon': Icons.receipt_long_rounded, 'title': 'My Orders'},
       {'icon': Icons.location_on_outlined, 'title': 'Addresses'},
       {'icon': Icons.credit_card_outlined, 'title': 'Payments'},
     ];
@@ -433,7 +457,18 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
           return Container(
             decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(20), border: Border.all(color: kBorder)),
             child: InkWell(
-              onTap: () {},
+              onTap: () {
+                // ── QUICK ACTIONS NAVIGATION ──
+                if (items[i]['title'] == 'Track Order') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const TrackOrderScreen(themeColor: kTheme)));
+                } else if (items[i]['title'] == 'My Orders') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const MyOrdersScreen(themeColor: kTheme)));
+                } else if (items[i]['title'] == 'Addresses') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const AddressesScreen(themeColor: kTheme)));
+                } else if (items[i]['title'] == 'Payments') {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const PaymentsScreen(themeColor: kTheme)));
+                }
+              },
               borderRadius: BorderRadius.circular(20),
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -459,7 +494,36 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
     return Column(
       children: [
         InkWell(
-          onTap: () {},
+          onTap: () {
+            // ── MORE OPTIONS NAVIGATION ──
+            if (title == 'Saved Restaurants') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const SavedRestaurantsScreen(themeColor: kTheme)));
+            } else if (title == 'Hidden Restaurants') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const HiddenRestaurantsScreen(themeColor: kTheme)));
+            } else if (title == 'Add Your Dining') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AddYourDiningScreen(themeColor: kTheme)));
+            } else if (title == 'Share the App') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ShareAppScreen(themeColor: kTheme)));
+            } else if (title == 'Student Rewards') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentRewardsScreen(themeColor: kTheme)));
+            } else if (title == 'Send Contact to Restaurant') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const SendContactRestaurantScreen(themeColor: kTheme)));
+            } else if (title == 'Rating & Review') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const RatingReviewScreen(themeColor: kTheme)));
+            } else if (title == 'Claim Gift Card') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const ClaimGiftCardScreen(themeColor: kTheme)));
+            } else if (title == 'FAQ') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const FaqScreen(themeColor: kTheme)));
+            } else if (title == 'About Us') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AboutUsScreen(themeColor: kTheme)));
+            } else if (title == 'Customer Support') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const CustomerSupportScreen(themeColor: kTheme)));
+            } else if (title == 'Terms & Conditions') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const TermsConditionsScreen(themeColor: kTheme)));
+            } else if (title == 'App Settings') {
+              Navigator.push(context, MaterialPageRoute(builder: (_) => const AppSettingsScreen(themeColor: kTheme, serviceType: "restaurant",)));
+            }
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             child: Row(
@@ -467,7 +531,7 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(color: kSurface, borderRadius: BorderRadius.circular(10)),
-                  child: Icon(icon, size: 18, color: kTheme), 
+                  child: Icon(icon, size: 18, color: kTheme),
                 ),
                 const SizedBox(width: 16),
                 Expanded(child: Text(title, style: _s(size: 14.5, weight: FontWeight.w500))),
@@ -521,39 +585,32 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
         backgroundColor: kBg,
         body: SafeArea(
           child: ScrollConfiguration(
-            behavior: ScrollConfiguration.of(context).copyWith(overscroll: false), // Removes jelly effect
+            behavior: ScrollConfiguration.of(context).copyWith(overscroll: false),
             child: SingleChildScrollView(
               physics: const ClampingScrollPhysics(),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Padding
                   const SizedBox(height: 20),
-                  
                   _buildHero(),
-                  
                   const SizedBox(height: 24),
                   _buildWallet(),
-                  
-                  const SizedBox(height: 16), // Space between wallet and premium cards
-                  
+                  const SizedBox(height: 16),
                   // 🔥 NEW PREMIUM MEMBERSHIP CARDS 🔥
                   _buildMembershipCards(),
-
                   _label('Quick Actions'),
                   _buildQuickGrid(),
-                  
                   _label('More Options'),
                   Container(
                     margin: const EdgeInsets.symmetric(horizontal: 20),
                     decoration: BoxDecoration(color: kBg, borderRadius: BorderRadius.circular(20), border: Border.all(color: kBorder)),
                     child: Column(
                       children: [
-                        // 🔥 UPDATED RESTAURANT SPECIFIC OPTIONS 🔥
+                        // 🔥 RESTAURANT SPECIFIC OPTIONS 🔥
                         _buildListTile(Icons.favorite_outline_rounded, 'Saved Restaurants'),
                         _buildListTile(Icons.visibility_off_outlined, 'Hidden Restaurants'),
                         _buildListTile(Icons.restaurant_menu_rounded, 'Add Your Dining'),
-                        _buildListTile(Icons.group_add_outlined, 'Invite Your Friends'),
+                        _buildListTile(Icons.ios_share_rounded, 'Share the App'),
                         _buildListTile(Icons.school_outlined, 'Student Rewards'),
                         _buildListTile(Icons.contact_mail_outlined, 'Send Contact to Restaurant'),
                         _buildListTile(Icons.star_outline_rounded, 'Rating & Review'),
@@ -566,12 +623,9 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
                       ],
                     ),
                   ),
-
                   _label('Follow Us'),
                   _buildSocial(),
-
                   const SizedBox(height: 40),
-                  
                   // Logout Button
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -588,10 +642,9 @@ class _RestaurantProfileScreenState extends State<RestaurantProfileScreen> {
                       ),
                     ),
                   ),
-                  
                   const SizedBox(height: 30),
                   Center(child: Text('CartKaro v2.5.0', style: _s(size: 12, color: kMuted))),
-                  const SizedBox(height: 100), // Bottom padding for Nav Bar
+                  const SizedBox(height: 100),
                 ],
               ),
             ),
@@ -612,10 +665,10 @@ class _InstagramPainter extends CustomPainter {
     final rect = Rect.fromLTWH(0, 0, size.width, size.height);
     final gradient = const LinearGradient(colors: [Color(0xFFF58529), Color(0xFFDD2A7B), Color(0xFF8134AF), Color(0xFF515BD4)], begin: Alignment.bottomLeft, end: Alignment.topRight).createShader(rect);
     final paint = Paint()..shader = gradient..style = PaintingStyle.stroke..strokeWidth = size.width * 0.08..strokeCap = StrokeCap.round;
-    
+
     final cx = size.width / 2; final cy = size.height / 2;
     final boxW = size.width * 0.8; final boxH = size.height * 0.8;
-    
+
     canvas.drawRRect(RRect.fromRectAndRadius(Rect.fromLTWH(cx - boxW/2, cy - boxH/2, boxW, boxH), Radius.circular(size.width * 0.25)), paint);
     canvas.drawCircle(Offset(cx, cy), size.width * 0.22, paint);
     canvas.drawCircle(Offset(cx + boxW*0.25, cy - boxH*0.25), size.width * 0.06, paint..style=PaintingStyle.fill);
@@ -643,7 +696,6 @@ class _FacebookPainter extends CustomPainter {
     final paint = Paint()..color = Colors.white..style = PaintingStyle.fill;
     final w = size.width; final h = size.height;
     final path = Path();
-
     path.moveTo(w * 0.62, h);
     path.lineTo(w * 0.62, h * 0.55);
     path.lineTo(w * 0.78, h * 0.55);
@@ -660,7 +712,6 @@ class _FacebookPainter extends CustomPainter {
     path.lineTo(w * 0.22, h * 0.55);
     path.lineTo(w * 0.38, h * 0.55);
     path.lineTo(w * 0.38, h);
-
     path.close();
     canvas.drawPath(path, paint);
   }
