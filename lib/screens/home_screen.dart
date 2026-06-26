@@ -12,7 +12,8 @@ import 'cart_grocery.dart';
 import 'cart_restaurant.dart';
 import 'cart_medical.dart';
 
-// 🔥 NEW IMPORTED PROFILE SCREENS
+import '../widgets/notification_button.dart';
+
 import 'grocery_profile_screen.dart';
 import 'restaurant_profile_screen.dart';
 import 'medical_profile_screen.dart';
@@ -81,7 +82,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           : _selectedTab == 1
                           ? const CartRestaurant()
                           : const CartMedical())
-                    // 🔥 MAIN FIX: Using _selectedTab to show respective Profiles
                     : (_selectedTab == 0 
                           ? GroceryProfileScreen(onGuestLogout: widget.onGuestLogout)
                           : _selectedTab == 1 
@@ -168,38 +168,10 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           const SizedBox(width: 10),
-          Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: _searchBgColor,
-                  shape: BoxShape.circle,
-                  border: Border.all(color: _borderColor, width: 1.2),
-                ),
-                child: Icon(
-                  Icons.notifications_outlined,
-                  color: _textPrimary,
-                  size: 22,
-                ),
-              ),
-              Positioned(
-                top: 10,
-                right: 12,
-                child: Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: _searchBgColor, width: 2),
-                  ),
-                ),
-              ),
-            ],
-          ),
+          
+          // 🔥 LOOK HOW CLEAN THIS IS NOW!
+          const NotificationButton(unreadCount: 3),
+
         ],
       ),
     );
