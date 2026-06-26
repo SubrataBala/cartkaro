@@ -2,6 +2,7 @@ import 'package:cartkaro/widgets/auth_gate.dart';
 import 'package:cartkaro/firebase_options.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:cartkaro/screens/splash_screen.dart';
 
 void main() async {
   // Ensure that widget bindings are initialized before running the app.
@@ -31,7 +32,13 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
-      home: const AuthGate(),
-    );
+      home: const SplashScreen(
+      homeRoute: '/auth',
+      loginRoute: '/auth',
+    ),
+    routes: {
+      '/auth': (context) => const AuthGate(),
+    },
+        );
   }
 }
