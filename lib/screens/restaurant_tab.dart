@@ -2,14 +2,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'app_models.dart';
 import '../widgets/shared_card_widgets.dart';
-
-import 'restaurant_menu_screen.dart'; 
-import '../widgets/shared_filter_row.dart'; 
+import '../screens/restaurant_item_details_screen.dart'; // ← ADD THIS IMPORT
+import 'restaurant_menu_screen.dart';
+import '../widgets/shared_filter_row.dart';
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 const Color kRestaurantOrange = Color(0xFFFF6B35);
 const Color kDarkIcon = Color(0xFF1C1C1E);
-const Color kBgPage = Color(0xFFFFFFFF); 
+const Color kBgPage = Color(0xFFFFFFFF);
 const Color kTextDark = Color(0xFF1A1A1A);
 const Color kTextGrey = Color(0xFF9E9E9E);
 const Color kTextMedium = Color(0xFF616161);
@@ -17,7 +17,9 @@ const Color kBorderLight = Color(0xFFEEEEEE);
 
 class _NoJellyScrollBehavior extends ScrollBehavior {
   @override
-  Widget buildOverscrollIndicator(BuildContext context, Widget child, ScrollableDetails details) => child;
+  Widget buildOverscrollIndicator(
+          BuildContext context, Widget child, ScrollableDetails details) =>
+      child;
 }
 
 // ─── RESTAURANT TAB ───────────────────────────────────────────────────────────
@@ -31,19 +33,27 @@ class _RestaurantTabState extends State<RestaurantTab> {
   late final PageController _bannerController;
   Timer? _bannerTimer;
   int _bannerIndex = 0;
-  
+
   int _activeCategoryIndex = -1;
 
   FilterState _filterState = FilterState();
 
   final List<_BannerModel> _banners = const [
     _BannerModel(
-      codeLabel: 'FIRST50', topText: 'Use code FIRST50 at checkout.', title: 'Get 50% Off\nYour First Order!',
-      cta: 'Order Now', bgColor: Color(0xFFFF6B35), imagePath: 'assets/images/broccoli.png', 
+      codeLabel: 'FIRST50',
+      topText: 'Use code FIRST50 at checkout.',
+      title: 'Get 50% Off\nYour First Order!',
+      cta: 'Order Now',
+      bgColor: Color(0xFFFF6B35),
+      imagePath: 'assets/images/broccoli.png',
     ),
     _BannerModel(
-      codeLabel: 'BIRYANI30', topText: 'Use code BIRYANI30 at checkout.', title: 'Biryani Fest\nIs Back!',
-      cta: 'Explore Now', bgColor: Color(0xFFB71C1C), imagePath: 'assets/images/broccoli.png',
+      codeLabel: 'BIRYANI30',
+      topText: 'Use code BIRYANI30 at checkout.',
+      title: 'Biryani Fest\nIs Back!',
+      cta: 'Explore Now',
+      bgColor: Color(0xFFB71C1C),
+      imagePath: 'assets/images/broccoli.png',
     ),
   ];
 
@@ -76,7 +86,9 @@ class _RestaurantTabState extends State<RestaurantTab> {
       if (_bannerController.hasClients) {
         _bannerIndex = (_bannerIndex + 1) % _banners.length;
         _bannerController.animateToPage(
-          _bannerIndex, duration: const Duration(milliseconds: 600), curve: Curves.easeOutCubic,
+          _bannerIndex,
+          duration: const Duration(milliseconds: 600),
+          curve: Curves.easeOutCubic,
         );
       }
     });
@@ -89,20 +101,45 @@ class _RestaurantTabState extends State<RestaurantTab> {
     super.dispose();
   }
 
+  // ── convert _FoodCardModel → Map<String,dynamic> ──────────────────────────
+  // This is the bridge between the tab's local model and the details screen.
+  // Matches the exact keys used in restaurant_data.dart so the details screen
+  // reads all fields correctly (name, price, rating, time, image, etc.).
+  Map<String, dynamic> _foodCardToMap(_FoodCardModel f) {
+    return {
+      'id': f.id,
+      'name': f.name,
+      'restaurant': f.restaurant,
+      'brand': f.restaurant,
+      'image': f.imagePath,
+      'rating': f.rating,
+      'time': f.deliveryTime,
+      'deliveryTime': f.deliveryTime,
+      'deliveryFee': f.deliveryFee,
+      'totalSells': f.reviews,
+      'isVeg': f.isVeg,
+      'price': double.tryParse(f.price) ?? 0.0,
+      'isBestseller': f.isBestseller,
+      'variants': [
+        {'weight': 'Standard', 'price': double.tryParse(f.price) ?? 0.0},
+      ],
+    };
+  }
+
   List<VendorRestaurant> _getFilteredRestaurants() {
     List<VendorRestaurant> results = List.from(globalRestaurants);
 
     if (_filterState.vegFilter == 'veg') {
-       results = results.where((r) => r.menu.isNotEmpty && r.menu.every((item) => item['isVeg'] == true)).toList();
+      results = results.where((r) => r.menu.isNotEmpty && r.menu.every((item) => item['isVeg'] == true)).toList();
     } else if (_filterState.vegFilter == 'non_veg') {
-       results = results.where((r) => r.menu.isNotEmpty && r.menu.any((item) => item['isVeg'] == false)).toList();
+      results = results.where((r) => r.menu.isNotEmpty && r.menu.any((item) => item['isVeg'] == false)).toList();
     }
 
     if (_activeCategoryIndex != -1) {
       final categoryLabel = _categories[_activeCategoryIndex].label.toLowerCase();
       results = results.where((r) {
-        return r.categories.toLowerCase().contains(categoryLabel) || 
-               r.name.toLowerCase().contains(categoryLabel);
+        return r.categories.toLowerCase().contains(categoryLabel) ||
+            r.name.toLowerCase().contains(categoryLabel);
       }).toList();
     }
 
@@ -233,42 +270,35 @@ class _RestaurantTabState extends State<RestaurantTab> {
               children: [
                 const SizedBox(height: 12),
                 _buildHeroBanner(),
-                
                 const SizedBox(height: 16),
-                
                 SharedFilterRow(
-                  tabIndex: 1, 
+                  tabIndex: 1,
                   filterState: _filterState,
-                  searchResults: const [], 
+                  searchResults: const [],
                   onFilterChanged: (newState) {
                     setState(() {
                       _filterState = newState;
                     });
                   },
                 ),
-                
                 const SizedBox(height: 24),
-                _buildCategoryIcons(),  
+                _buildCategoryIcons(),
                 const SizedBox(height: 30),
-                
                 if (filteredTopPicks.isNotEmpty) ...[
                   _buildSectionHeader('Top picks for you™', showSeeAll: true),
                   const SizedBox(height: 14),
-                  _buildHorizontalFoodList(filteredTopPicks), 
+                  _buildHorizontalFoodList(filteredTopPicks),
                   const SizedBox(height: 30),
                 ],
-
                 if (filteredTrending.isNotEmpty) ...[
                   _buildSectionHeader('Trending / Best Selling Foods', showSeeAll: true),
                   const SizedBox(height: 14),
-                  _buildHorizontalFoodList(filteredTrending), 
+                  _buildHorizontalFoodList(filteredTrending),
                   const SizedBox(height: 35),
                 ],
-
                 _buildNearestRestaurantsHeader(filteredRestaurants.length),
                 const SizedBox(height: 16),
-                _buildRestaurantList(filteredRestaurants), 
-
+                _buildRestaurantList(filteredRestaurants),
                 const SizedBox(height: 40),
               ],
             ),
@@ -293,7 +323,8 @@ class _RestaurantTabState extends State<RestaurantTab> {
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: b.bgColor, borderRadius: BorderRadius.circular(20),
+                    color: b.bgColor,
+                    borderRadius: BorderRadius.circular(20),
                     boxShadow: [BoxShadow(color: b.bgColor.withValues(alpha: 0.3), blurRadius: 15, offset: const Offset(0, 8))],
                   ),
                   clipBehavior: Clip.hardEdge,
@@ -343,9 +374,14 @@ class _RestaurantTabState extends State<RestaurantTab> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(_banners.length, (i) {
             return AnimatedContainer(
-              duration: const Duration(milliseconds: 300), margin: const EdgeInsets.symmetric(horizontal: 3),
-              width: i == _bannerIndex ? 20 : 6, height: 6,
-              decoration: BoxDecoration(color: i == _bannerIndex ? Colors.red : Colors.grey.shade300, borderRadius: BorderRadius.circular(3)),
+              duration: const Duration(milliseconds: 300),
+              margin: const EdgeInsets.symmetric(horizontal: 3),
+              width: i == _bannerIndex ? 20 : 6,
+              height: 6,
+              decoration: BoxDecoration(
+                color: i == _bannerIndex ? Colors.red : Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(3),
+              ),
             );
           }),
         ),
@@ -357,8 +393,10 @@ class _RestaurantTabState extends State<RestaurantTab> {
     return SizedBox(
       height: 95,
       child: ListView.separated(
-        scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _categories.length, separatorBuilder: (_, __) => const SizedBox(width: 16),
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: _categories.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 16),
         itemBuilder: (ctx, i) {
           final c = _categories[i];
           final isActive = i == _activeCategoryIndex;
@@ -371,9 +409,12 @@ class _RestaurantTabState extends State<RestaurantTab> {
             child: Column(
               children: [
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 200), width: 64, height: 64,
+                  duration: const Duration(milliseconds: 200),
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
-                    color: isActive ? Colors.red.withValues(alpha: 0.1) : Colors.white, borderRadius: BorderRadius.circular(20), 
+                    color: isActive ? Colors.red.withValues(alpha: 0.1) : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: isActive ? Colors.red : Colors.transparent, width: 2),
                     boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 5, offset: const Offset(0, 2))],
                   ),
@@ -417,95 +458,143 @@ class _RestaurantTabState extends State<RestaurantTab> {
     return SizedBox(
       height: 275,
       child: ListView.separated(
-        scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: items.length, separatorBuilder: (_, __) => const SizedBox(width: 14),
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        itemCount: items.length,
+        separatorBuilder: (_, __) => const SizedBox(width: 14),
         itemBuilder: (ctx, i) => _buildFoodCard(items[i]),
       ),
     );
   }
 
+  // ── FOOD CARD — now tappable, navigates to RestaurantItemDetailsScreen ──────
   Widget _buildFoodCard(_FoodCardModel f) {
-    return Container(
-      width: 200,
-      decoration: BoxDecoration(
-        color: Colors.white, borderRadius: BorderRadius.circular(20), border: Border.all(color: kBorderLight, width: 1.5),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-                child: Container(
-                  height: 135, width: double.infinity, color: Colors.white, 
-                  padding: const EdgeInsets.all(8),
-                  child: Image.asset(f.imagePath, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
-                ),
-              ),
-              Positioned(
-                top: 10, right: 10,
-                child: WatchlistIcon(itemId: f.id, themeColor: Colors.red, isBgWhite: true),
-              ),
-              Positioned(
-                bottom: 10, left: 10,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                  decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(8)),
-                  child: Row(
-                    children: [
-                      const Icon(Icons.access_time_rounded, color: Colors.white, size: 12), const SizedBox(width: 4),
-                      Text(f.deliveryTime, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
-                    ],
-                  ),
-                ),
-              ),
-              if (f.isBestseller)
-                Positioned(
-                  top: 10, left: 10,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(color: const Color(0xFFFF9800), borderRadius: BorderRadius.circular(6)),
-                    child: const Text('🔥 Bestseller', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
-                  ),
-                ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 14, height: 14, decoration: BoxDecoration(border: Border.all(color: f.isVeg ? Colors.green : Colors.red, width: 1.5)),
-                      child: Center(child: Container(width: 6, height: 6, decoration: BoxDecoration(color: f.isVeg ? Colors.green : Colors.red, shape: BoxShape.circle))),
-                    ),
-                    const SizedBox(width: 6),
-                    Expanded(child: Text(f.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: kTextDark), maxLines: 1, overflow: TextOverflow.ellipsis)),
-                  ],
-                ),
-                const SizedBox(height: 6),
-                Row(
-                  children: [
-                    const Icon(Icons.star_rounded, color: Color(0xFFFFB300), size: 14), const SizedBox(width: 4),
-                    Text('${f.rating} (${f.reviews})', style: const TextStyle(fontSize: 11, color: kTextMedium, fontWeight: FontWeight.w700)),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('₹${f.price}', style: const TextStyle(color: kTextDark, fontSize: 16, fontWeight: FontWeight.w900)),
-                    SharedCartButton(itemId: "${f.id}|0", themeColor: Colors.red, cartNotifier: restaurantCartNotifier),
-                  ],
-                ),
-              ],
+    return GestureDetector(
+      // Convert the local _FoodCardModel to a Map and push details screen
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => RestaurantItemDetailsScreen(
+              item: _foodCardToMap(f),
             ),
           ),
-        ],
+        );
+      },
+      child: Container(
+        width: 200,
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: kBorderLight, width: 1.5),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 4))],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+                  child: Container(
+                    height: 135,
+                    width: double.infinity,
+                    color: Colors.white,
+                    padding: const EdgeInsets.all(8),
+                    child: Image.asset(
+                      f.imagePath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40)),
+                    ),
+                  ),
+                ),
+                Positioned(
+                  top: 10,
+                  right: 10,
+                  child: WatchlistIcon(itemId: f.id, themeColor: Colors.red, isBgWhite: true),
+                ),
+                Positioned(
+                  bottom: 10,
+                  left: 10,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                    decoration: BoxDecoration(color: Colors.black87, borderRadius: BorderRadius.circular(8)),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.access_time_rounded, color: Colors.white, size: 12),
+                        const SizedBox(width: 4),
+                        Text(f.deliveryTime, style: const TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.w700)),
+                      ],
+                    ),
+                  ),
+                ),
+                if (f.isBestseller)
+                  Positioned(
+                    top: 10,
+                    left: 10,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(color: const Color(0xFFFF9800), borderRadius: BorderRadius.circular(6)),
+                      child: const Text('🔥 Bestseller', style: TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w800)),
+                    ),
+                  ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        width: 14,
+                        height: 14,
+                        decoration: BoxDecoration(border: Border.all(color: f.isVeg ? Colors.green : Colors.red, width: 1.5)),
+                        child: Center(
+                          child: Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(color: f.isVeg ? Colors.green : Colors.red, shape: BoxShape.circle),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(f.name, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: kTextDark), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      const Icon(Icons.star_rounded, color: Color(0xFFFFB300), size: 14),
+                      const SizedBox(width: 4),
+                      Text('${f.rating} (${f.reviews})', style: const TextStyle(fontSize: 11, color: kTextMedium, fontWeight: FontWeight.w700)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text('₹${f.price}', style: const TextStyle(color: kTextDark, fontSize: 16, fontWeight: FontWeight.w900)),
+                      // Stop tap from bubbling up to GestureDetector when + is pressed
+                      GestureDetector(
+                        onTap: () {}, // absorb tap so cart button works independently
+                        behavior: HitTestBehavior.opaque,
+                        child: SharedCartButton(
+                          itemId: '${f.id}|0',
+                          themeColor: Colors.red,
+                          cartNotifier: restaurantCartNotifier,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -525,28 +614,28 @@ class _RestaurantTabState extends State<RestaurantTab> {
             ],
           ),
           if (_filterState.hasActiveFilters || _activeCategoryIndex != -1)
-             GestureDetector(
-                onTap: () => setState(() {
-                  _filterState = FilterState();
-                  _activeCategoryIndex = -1;
-                }),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.red.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.red.shade200),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.close_rounded, size: 12, color: Colors.red.shade600),
-                      const SizedBox(width: 4),
-                      Text('Clear Filters', style: TextStyle(color: Colors.red.shade600, fontSize: 11, fontWeight: FontWeight.w700)),
-                    ],
-                  ),
+            GestureDetector(
+              onTap: () => setState(() {
+                _filterState = FilterState();
+                _activeCategoryIndex = -1;
+              }),
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.close_rounded, size: 12, color: Colors.red.shade600),
+                    const SizedBox(width: 4),
+                    Text('Clear Filters', style: TextStyle(color: Colors.red.shade600, fontSize: 11, fontWeight: FontWeight.w700)),
+                  ],
                 ),
               ),
+            ),
         ],
       ),
     );
@@ -559,13 +648,13 @@ class _RestaurantTabState extends State<RestaurantTab> {
         child: Center(
           child: Column(
             children: [
-               Icon(Icons.restaurant_outlined, size: 48, color: Colors.grey.shade400),
-               const SizedBox(height: 16),
-               const Text("No restaurants found", style: TextStyle(color: kTextMedium, fontWeight: FontWeight.bold)),
-               const SizedBox(height: 4),
-               const Text("Try adjusting your filters", style: TextStyle(color: kTextGrey, fontSize: 12)),
-            ]
-          )
+              Icon(Icons.restaurant_outlined, size: 48, color: Colors.grey.shade400),
+              const SizedBox(height: 16),
+              const Text('No restaurants found', style: TextStyle(color: kTextMedium, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 4),
+              const Text('Try adjusting your filters', style: TextStyle(color: kTextGrey, fontSize: 12)),
+            ],
+          ),
         ),
       );
     }
@@ -581,7 +670,6 @@ class _RestaurantTabState extends State<RestaurantTab> {
       ),
       itemBuilder: (ctx, i) {
         final r = restaurants[i];
-        
         return GestureDetector(
           onTap: () {
             Navigator.push(
@@ -591,14 +679,16 @@ class _RestaurantTabState extends State<RestaurantTab> {
               ),
             );
           },
-          behavior: HitTestBehavior.opaque, 
+          behavior: HitTestBehavior.opaque,
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
                 child: Container(
-                  width: 100, height: 100, color: Colors.white,
+                  width: 100,
+                  height: 100,
+                  color: Colors.white,
                   padding: const EdgeInsets.all(6),
                   child: Image.asset(r.imagePath, fit: BoxFit.contain, errorBuilder: (c, e, s) => const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 40))),
                 ),
@@ -629,10 +719,10 @@ class _RestaurantTabState extends State<RestaurantTab> {
                       padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                       decoration: BoxDecoration(color: Colors.blue.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(4)),
                       child: Text('📈 ${r.totalSells}', style: TextStyle(color: Colors.blue.shade700, fontSize: 10, fontWeight: FontWeight.bold)),
-                    )
+                    ),
                   ],
                 ),
-              )
+              ),
             ],
           ),
         );
@@ -646,8 +736,12 @@ class _BannerModel {
   final String codeLabel, topText, title, cta, imagePath;
   final Color bgColor;
   const _BannerModel({
-    required this.codeLabel, required this.topText, required this.title,
-    required this.cta, required this.bgColor, required this.imagePath,
+    required this.codeLabel,
+    required this.topText,
+    required this.title,
+    required this.cta,
+    required this.bgColor,
+    required this.imagePath,
   });
 }
 
@@ -660,8 +754,16 @@ class _FoodCardModel {
   final String id, name, restaurant, rating, reviews, deliveryTime, deliveryFee, price, imagePath;
   final bool isVeg, isBestseller;
   const _FoodCardModel({
-    required this.id, required this.name, required this.restaurant, required this.rating,
-    required this.reviews, required this.deliveryTime, required this.deliveryFee,
-    required this.price, required this.imagePath, required this.isVeg, required this.isBestseller,
+    required this.id,
+    required this.name,
+    required this.restaurant,
+    required this.rating,
+    required this.reviews,
+    required this.deliveryTime,
+    required this.deliveryFee,
+    required this.price,
+    required this.imagePath,
+    required this.isVeg,
+    required this.isBestseller,
   });
 }
