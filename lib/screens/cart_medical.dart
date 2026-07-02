@@ -35,10 +35,13 @@ class _CartMedicalState extends State<CartMedical> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _activeCartNotifier,
-      builder: (context, Map<String, int> cart, _) {
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    body: SafeArea(
+      child: ValueListenableBuilder(
+        valueListenable: _activeCartNotifier,
+        builder: (context, Map<String, int> cart, _) {
         if (cart.isEmpty) {
           return Center(
             child: Column(
@@ -352,8 +355,10 @@ class _CartMedicalState extends State<CartMedical> {
             ],
           ),
         );
-      },
-    );
+            },
+      ),
+    ),
+  );
   }
 
   Widget _buildTipChip(int amount, {bool isMostTipped = false, String? label}) {

@@ -198,41 +198,76 @@ class _GroceryItemDetailsScreenState extends State<GroceryItemDetailsScreen>
 
   // ─── App Bar ───────────────────────────────────────────────
 
-  PreferredSizeWidget _buildAppBar() {
-    return AppBar(
-      backgroundColor: Colors.transparent,
-      elevation: 0,
-      scrolledUnderElevation: 0,
-      automaticallyImplyLeading: false,
+PreferredSizeWidget _buildAppBar() {
+  return AppBar(
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+    scrolledUnderElevation: 0,
+    automaticallyImplyLeading: false,
 
-      leading: Padding(
-        padding: const EdgeInsets.all(8),
-        child: GroceryAppBarButton(
-          icon: Icons.arrow_back_ios_new_rounded,
-          onTap: () => Navigator.of(context).pop(),
-        ),
+    title: const Text(
+      'Details',
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+      ),
+    ),
+    centerTitle: true,
+
+    leading: Padding(
+      padding: const EdgeInsets.all(8),
+      child: GroceryAppBarButton(
+        icon: Icons.arrow_back_ios_new_rounded,
+        onTap: () => Navigator.of(context).pop(),
+      ),
+    ),
+
+    actions: [
+      ValueListenableBuilder<Set<String>>(
+        valueListenable: watchlistNotifier,
+        builder: (_, favs, __) {
+          final isFav = favs.contains(widget.item.id);
+
+          return Padding(
+            padding: const EdgeInsets.all(8),
+            child: GroceryAppBarButton(
+              icon: isFav
+                  ? Icons.favorite
+                  : Icons.favorite_border_rounded,
+              iconColor: isFav ? Colors.red : Colors.black87,
+              onTap: () {
+                final newFavs = Set<String>.from(favs);
+
+                if (isFav) {
+                  newFavs.remove(widget.item.id);
+                  _showSnack('Removed from Watchlist');
+                } else {
+                  newFavs.add(widget.item.id);
+                  _showSnack('Added to Watchlist ❤️');
+                }
+
+                watchlistNotifier.value = newFavs;
+              },
+            ),
+          );
+        },
       ),
 
-      actions: [
-        Padding(
-          padding: const EdgeInsets.all(8),
-          child: WatchlistIcon(
-            itemId: widget.item.id,
-            themeColor: GroceryTheme.primary,
-            isBgWhite: true,
-          ),
+      Padding(
+        padding: const EdgeInsets.only(
+          right: 8,
+          top: 8,
+          bottom: 8,
         ),
-
-        Padding(
-          padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-          child: GroceryAppBarButton(
-            icon: Icons.ios_share_rounded,
-            onTap: _handleShare,
-          ),
+        child: GroceryAppBarButton(
+          icon: Icons.ios_share_rounded,
+          onTap: _handleShare,
         ),
-      ],
-    );
-  }
+      ),
+    ],
+  );
+}
   // ─── Scroll Body ──────────────────────────────────────────
 
   Widget _buildScrollBody() {

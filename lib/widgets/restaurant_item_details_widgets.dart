@@ -1,3 +1,4 @@
+import 'package:cartkaro/screens/cart_restaurant.dart';
 import 'package:flutter/material.dart';
 import '../screens/app_models.dart';
 import 'shared_card_widgets.dart';
@@ -746,7 +747,7 @@ class RRecommendedCard extends StatelessWidget {
 // 10. STICKY BOTTOM BAR
 // ─────────────────────────────────────────────────────────────
 
-class RStickyBottomBar extends StatelessWidget {
+class RStickyBottomBar extends StatefulWidget {
   const RStickyBottomBar({
     super.key,
     required this.cartItemId,
@@ -763,6 +764,27 @@ class RStickyBottomBar extends StatelessWidget {
   final VoidCallback onDecrement;
   final VoidCallback onIncrement;
   final VoidCallback onAddToCart;
+
+  @override
+  State<RStickyBottomBar> createState() => _RStickyBottomBarState();
+}
+
+class _RStickyBottomBarState extends State<RStickyBottomBar> {
+  bool _added = false;
+
+  void _handleButtonTap() {
+    if (!_added) {
+      widget.onAddToCart();
+      setState(() => _added = true);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const CartRestaurant(),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -795,20 +817,20 @@ class RStickyBottomBar extends StatelessWidget {
               children: [
                 _QtyBtn(
                   icon: Icons.remove,
-                  onTap: onDecrement,
-                  enabled: quantity > 1,
+                  onTap: widget.onDecrement,
+                  enabled: widget.quantity > 1,
                 ),
                 SizedBox(
                   width: 30,
                   child: Text(
-                    quantity.toString().padLeft(2, '0'),
+                    widget.quantity.toString().padLeft(2, '0'),
                     textAlign: TextAlign.center,
                     style: RTheme.bodyMd,
                   ),
                 ),
                 _QtyBtn(
                   icon: Icons.add,
-                  onTap: onIncrement,
+                  onTap: widget.onIncrement,
                   enabled: true,
                   filled: true,
                 ),
@@ -818,7 +840,7 @@ class RStickyBottomBar extends StatelessWidget {
           const SizedBox(width: 14),
           Expanded(
             child: _PressableScale(
-              onTap: onAddToCart,
+              onTap: _handleButtonTap,
               child: Container(
                 height: 50,
                 decoration: BoxDecoration(
@@ -834,7 +856,9 @@ class RStickyBottomBar extends StatelessWidget {
                 ),
                 alignment: Alignment.center,
                 child: Text(
-                  'Add to Cart  •  ₹${totalPrice.toStringAsFixed(0)}',
+                  _added
+                      ? 'Go To Cart'
+                      : 'Add to Cart  •  ₹${widget.totalPrice.toStringAsFixed(0)}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 15,

@@ -32,6 +32,23 @@ class _MedicalItemCardState extends State<MedicalItemCard> {
   void _openDetails() {
     final item = widget.item;
 
+    final variants = item['variants'] as List? ?? [];
+
+final firstVariant =
+    variants.isNotEmpty
+        ? variants.first as Map<String, dynamic>
+        : <String, dynamic>{};
+
+final double price =
+    double.tryParse(firstVariant['price']?.toString() ?? '0') ?? 0;
+
+final double mrp =
+    double.tryParse(
+          firstVariant['originalPrice']?.toString() ??
+              price.toString(),
+        ) ??
+        price;
+
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -43,14 +60,8 @@ class _MedicalItemCardState extends State<MedicalItemCard> {
                 item['manufacturer'] ?? 'Generic Pharma',
             description: item['description'] ??
                 'No description available.',
-            price: double.tryParse(
-                    item['price']?.toString() ?? '0') ??
-                0,
-            mrp: double.tryParse(
-                    item['mrp']?.toString() ??
-                        item['price']?.toString() ??
-                        '0') ??
-                0,
+            price: price,
+            mrp: mrp, 
             discountPercent: item['discount'] ?? 0,
             imagePaths: [
               item['image'] ??
