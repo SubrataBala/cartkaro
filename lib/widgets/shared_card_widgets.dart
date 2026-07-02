@@ -54,8 +54,13 @@ class WatchlistIcon extends StatelessWidget {
       valueListenable: watchlistNotifier,
       builder: (context, Set<String> favs, _) {
         final isFav = favs.contains(itemId);
-        Widget icon = Icon(isFav ? Icons.favorite : Icons.favorite_border_rounded, color: isFav ? themeColor : Colors.grey.shade400, size: 16);
-        
+        Widget icon = Icon(
+          isFav
+              ? Icons.favorite
+              : Icons.favorite_border_rounded,
+          color: isFav ? Colors.red : Colors.black87,
+          size: 18,
+        );        
         return GestureDetector(
           onTap: () {
             var newFavs = Set<String>.from(favs);
@@ -63,7 +68,23 @@ class WatchlistIcon extends StatelessWidget {
             watchlistNotifier.value = newFavs;
           },
           child: isBgWhite 
-              ? Container(padding: const EdgeInsets.all(4), decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4)]), child: icon)
+              ? Container(
+  width: 36,
+  height: 36,
+  alignment: Alignment.center,
+  decoration: BoxDecoration(
+    color: Colors.white.withOpacity(0.9),
+    shape: BoxShape.circle,
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.08),
+        blurRadius: 8,
+        offset: const Offset(0, 2),
+      ),
+    ],
+  ),
+  child: icon,
+)
               : icon,
         );
       }

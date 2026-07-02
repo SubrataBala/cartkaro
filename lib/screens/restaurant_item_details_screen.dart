@@ -150,30 +150,29 @@ class _RestaurantItemDetailsScreenState
     current[_cartItemId] = (current[_cartItemId] ?? 0) + _quantity;
     restaurantCartNotifier.value = current;
     _snack(
-      '${_item['name']} × $_quantity added — ₹${_totalPrice.toStringAsFixed(0)}',
-      action: SnackBarAction(
-        label: 'VIEW CART',
-        textColor: Colors.white,
-        onPressed: () {
-          // navigate to cart screen if needed
-        },
-      ),
-    );
+  '${_item['name']} • Qty: $_quantity • Added to Cart !',
+   );
   }
 
-  void _snack(String msg, {SnackBarAction? action}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        duration: const Duration(seconds: 2),
-        behavior: SnackBarBehavior.floating,
-        backgroundColor: RTheme.primary,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(RTheme.rMd)),
-        action: action,
+  void _snack(String msg) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(
+        msg,
+        style: const TextStyle(
+          color: Colors.white,
+          fontWeight: FontWeight.w600,
+        ),
       ),
-    );
-  }
+      duration: const Duration(seconds: 2),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: RTheme.primary,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(RTheme.rMd),
+      ),
+    ),
+  );
+}
 
   // ── build ──────────────────────────────────────────────────
 
@@ -261,22 +260,7 @@ class _RestaurantItemDetailsScreenState
       ),
       centerTitle: true,
       actions: [
-        Padding(
-          padding: const EdgeInsets.only(right: 8, top: 8, bottom: 8),
-          child: ValueListenableBuilder<Set<String>>(
-            valueListenable: watchlistNotifier,
-            builder: (_, wishSet, __) {
-              final wishlisted =
-                  wishSet.contains(_item['id']?.toString() ?? '');
-              return RWishlistButton(
-                itemId: _item['id']?.toString() ?? '',
-                isWishlisted: wishlisted,
-                glass: true,
-                onTap: _toggleWishlist,
-              );
-            },
-          ),
-        ),
+        
         Padding(
           padding: const EdgeInsets.only(right: 16, top: 8, bottom: 8),
           child: RGlassButton(

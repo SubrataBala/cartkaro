@@ -34,11 +34,14 @@ class _CartGroceryState extends State<CartGrocery> {
     return items.take(6).toList();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: _activeCartNotifier,
-      builder: (context, Map<String, int> cart, _) {
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+    backgroundColor: Colors.white,
+    body: SafeArea(
+      child: ValueListenableBuilder(
+        valueListenable: _activeCartNotifier,
+        builder: (context, Map<String, int> cart, _) {
         if (cart.isEmpty) {
           return Center(
             child: Column(
@@ -353,7 +356,9 @@ class _CartGroceryState extends State<CartGrocery> {
           ),
         );
       },
-    );
+      ),
+    ),
+  );
   }
 
   Widget _buildTipChip(int amount, {bool isMostTipped = false, String? label}) {

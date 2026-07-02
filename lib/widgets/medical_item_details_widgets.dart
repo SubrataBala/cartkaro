@@ -1,6 +1,7 @@
 // lib/widgets/medical_item_details_widgets.dart
 // FILE 1 — Create this first.
 
+import 'package:cartkaro/screens/cart_medical.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
@@ -988,9 +989,8 @@ class _AddCartBtnState extends State<_AddCartBtn>
 }
 
 // ─────────────────────────────────────────────
-// BOTTOM BAR
+// BOTTOM BAR — Slide to Add to Cart
 // ─────────────────────────────────────────────
-
 class MedicalBottomBar extends StatefulWidget {
   final VoidCallback onAddToCart;
   final bool isInCart;
@@ -1007,26 +1007,104 @@ class MedicalBottomBar extends StatefulWidget {
 
 class _MedicalBottomBarState extends State<MedicalBottomBar>
     with SingleTickerProviderStateMixin {
-  late AnimationController _ctrl;
-  late Animation<double> _scale;
+  static const double _barHeight = 58.0;
+  static const double _basketSize = 42.0;
+  static const double _horizontalInset = 4.0;
+  static const double _arrowAreaWidth = 56.0;
+  static const Color _blue = Color(0xFF1565C0);
+
+  late AnimationController _snapCtrl;
+  Animation<double>? _snapAnim;
+
+  double _progress = 0.0; // 0.0 -> 1.0
+  bool _dragging = false;
+  bool _completed = false;
+  bool _added = false;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
+    if (widget.isInCart) {
+      _completed = true;
+      _added = true;
+      _progress = 1.0;
+    }
+    _snapCtrl = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 120),
-      lowerBound: 0.96,
-      upperBound: 1.0,
-      value: 1.0,
+      duration: const Duration(milliseconds: 320),
     );
-    _scale = _ctrl;
   }
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    _snapCtrl.dispose();
     super.dispose();
+  }
+
+  double _maxDrag(double totalWidth) {
+    final d = totalWidth -
+        _basketSize -
+        (_horizontalInset * 2) -
+        _arrowAreaWidth;
+    return d < 0 ? 0 : d;
+  }
+
+  void _animateProgressTo(double target, {VoidCallback? onComplete}) {
+    _snapCtrl.stop();
+    _snapAnim = Tween<double>(begin: _progress, end: target).animate(
+      CurvedAnimation(parent: _snapCtrl, curve: Curves.easeOutCubic),
+    )..addListener(() {
+        setState(() => _progress = _snapAnim!.value);
+      });
+
+    _snapCtrl.reset();
+    _snapCtrl.forward().whenComplete(() {
+      if (!mounted) return;
+      if (onComplete != null) onComplete();
+    });
+  }
+
+  void _onDragStart(DragStartDetails details) {
+    if (_completed) return;
+    _snapCtrl.stop();
+    setState(() => _dragging = true);
+  }
+
+  void _onDragUpdate(DragUpdateDetails details, double maxDrag) {
+    if (_completed || maxDrag <= 0) return;
+    setState(() {
+      _progress =
+          (_progress + (details.delta.dx / maxDrag)).clamp(0.0, 1.0);
+    });
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    if (_completed) return;
+    setState(() => _dragging = false);
+
+    if (_progress >= 0.9) {
+      _animateProgressTo(1.0, onComplete: () {
+        if (!mounted) return;
+        setState(() => _completed = true);
+        if (!_added) {
+          _added = true;
+          widget.onAddToCart();
+        }
+        HapticFeedback.mediumImpact();
+      });
+    } else {
+      _animateProgressTo(0.0);
+    }
+  }
+
+  void _navigateToCart() {
+    if (!_completed) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const CartMedical(),
+      ),
+    );
   }
 
   @override
@@ -1038,88 +1116,136 @@ class _MedicalBottomBarState extends State<MedicalBottomBar>
         20,
         12 + MediaQuery.of(context).padding.bottom,
       ),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: MedicalTheme.border)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Color(0x0F000000),
             blurRadius: 16,
-            offset: const Offset(0, -4),
+            offset: Offset(0, -4),
           ),
         ],
       ),
-      child: GestureDetector(
-        onTapDown: (_) => _ctrl.reverse(),
-        onTapUp: (_) {
-          _ctrl.forward();
-          widget.onAddToCart();
-          HapticFeedback.mediumImpact();
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalWidth = constraints.maxWidth;
+          final maxDrag = _maxDrag(totalWidth);
+
+          final basketLeft = _horizontalInset + (_progress * maxDrag);
+
+          final fillWidth = _completed
+              ? totalWidth
+              : (_horizontalInset +
+                      (_progress * maxDrag) +
+                      _basketSize)
+                  .clamp(0.0, totalWidth)
+                  .toDouble();
+
+          final textColor =
+              Color.lerp(_blue, Colors.white, _completed ? 1.0 : _progress)!;
+
+          return GestureDetector(
+            onTap: _completed ? _navigateToCart : null,
+            child: Container(
+              height: _barHeight,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(color: _blue, width: 2),
+                borderRadius: BorderRadius.circular(_barHeight / 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: _blue.withOpacity(0.25),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ],
+              ),
+              child: Stack(
+                alignment: Alignment.centerLeft,
+                children: [
+                  // Blue fill layer
+                  AnimatedContainer(
+                    duration: _dragging
+                        ? Duration.zero
+                        : const Duration(milliseconds: 80),
+                    width: fillWidth,
+                    height: _barHeight,
+                    decoration: const BoxDecoration(color: _blue),
+                  ),
+
+                  // Center label
+                  Align(
+                    alignment: Alignment.center,
+                    child: Text(
+                      _completed ? 'Go To Cart' : 'Add To Cart',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.2,
+                        color: textColor,
+                      ),
+                    ),
+                  ),
+
+                  // Fixed arrow on the right — always visible
+                  Positioned(
+                    right: 18,
+                    child: GestureDetector(
+                      onTap: _completed ? _navigateToCart : null,
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 22,
+                        color: _completed ? Colors.white : _blue,
+                      ),
+                    ),
+                  ),
+
+                  // Draggable basket icon
+                  AnimatedPositioned(
+                    duration: _dragging
+                        ? Duration.zero
+                        : const Duration(milliseconds: 80),
+                    curve: Curves.easeOutCubic,
+                    left: basketLeft,
+                    top: (_barHeight - _basketSize) / 2,
+                    child: GestureDetector(
+                      onHorizontalDragStart: _onDragStart,
+                      onHorizontalDragUpdate: (d) =>
+                          _onDragUpdate(d, maxDrag),
+                      onHorizontalDragEnd: _onDragEnd,
+                      child: Container(
+                        width: _basketSize,
+                        height: _basketSize,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: _blue,
+                          boxShadow: [
+                            BoxShadow(
+                              color: _blue.withOpacity(0.4),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: const Icon(
+                          Icons.shopping_cart_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
         },
-        onTapCancel: () => _ctrl.forward(),
-        child: ScaleTransition(
-          scale: _scale,
-          child: Container(
-            height: 56,
-            decoration: BoxDecoration(
-              color: MedicalTheme.primary,
-              borderRadius: BorderRadius.circular(28),
-              boxShadow: [
-                BoxShadow(
-                  color: MedicalTheme.primary.withOpacity(0.35),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Cart icon on the left
-                Positioned(
-                  left: 8,
-                  child: Container(
-                    width: 42,
-                    height: 42,
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.18),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.shopping_cart_rounded,
-                      color: Colors.white,
-                      size: 20,
-                    ),
-                  ),
-                ),
-                // Label
-                Text(
-                  widget.isInCart ? 'Go To Cart' : 'Add To Cart',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    letterSpacing: 0.2,
-                  ),
-                ),
-                // Arrow on the right
-                const Positioned(
-                  right: 20,
-                  child: Icon(
-                    Icons.arrow_forward_rounded,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }
 }
-
 // ─────────────────────────────────────────────
 // ANIMATED QUANTITY SELECTOR
 // ─────────────────────────────────────────────

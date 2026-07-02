@@ -9,6 +9,7 @@
 //   • All reusable UI widgets used by GroceryItemDetailsScreen
 // ============================================================
 
+import 'package:cartkaro/screens/cart_grocery.dart';
 import 'package:flutter/material.dart';
 
 // ════════════════════════════════════════════════════════════
@@ -984,7 +985,8 @@ class RelatedItemCard extends StatelessWidget {
 
 // ─── 4.8 StickyBottomBar ─────────────────────────────────────────────────────
 /// Fixed bottom bar: price display + quantity selector + Add to Cart CTA.
-class StickyBottomBar extends StatelessWidget {
+/// First tap adds the item to cart; subsequent taps navigate to CartGrocery.
+class StickyBottomBar extends StatefulWidget {
   const StickyBottomBar({
     super.key,
     required this.price,
@@ -1001,6 +1003,27 @@ class StickyBottomBar extends StatelessWidget {
   final VoidCallback onDecrement;
   final VoidCallback onIncrement;
   final VoidCallback onAddToCart;
+
+  @override
+  State<StickyBottomBar> createState() => _StickyBottomBarState();
+}
+
+class _StickyBottomBarState extends State<StickyBottomBar> {
+  bool _added = false;
+
+  void _handleButtonTap() {
+    if (!_added) {
+      widget.onAddToCart();
+      setState(() => _added = true);
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => const CartGrocery(),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1029,10 +1052,10 @@ class StickyBottomBar extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                '₹${(price * quantity).toStringAsFixed(0)}',
+                '₹${(widget.price * widget.quantity).toStringAsFixed(0)}',
                 style: GroceryTheme.priceLg,
               ),
-              Text(variantLabel, style: GroceryTheme.caption),
+              Text(widget.variantLabel, style: GroceryTheme.caption),
             ],
           ),
 
@@ -1049,30 +1072,39 @@ class StickyBottomBar extends StatelessWidget {
               children: [
                 _QtyButton(
                   icon: Icons.remove,
-                  onTap: onDecrement,
-                  enabled: quantity > 1,
+                  onTap: widget.onDecrement,
+                  enabled: widget.quantity > 1,
                 ),
                 SizedBox(
                   width: 32,
                   child: Text(
-                    '$quantity',
+                    '${widget.quantity}',
                     textAlign: TextAlign.center,
                     style: GroceryTheme.bodyMd,
                   ),
                 ),
-                _QtyButton(icon: Icons.add, onTap: onIncrement, enabled: true),
+                _QtyButton(
+                  icon: Icons.add,
+                  onTap: widget.onIncrement,
+                  enabled: true,
+                ),
               ],
             ),
           ),
 
           const SizedBox(width: 12),
 
-          // ── Add to Cart button ────────────────────────────
+          // ── Add to Cart / Go to Cart button ───────────────
           Expanded(
             child: ElevatedButton.icon(
-              onPressed: onAddToCart,
-              icon: const Icon(Icons.shopping_cart_outlined, size: 18),
-              label: const Text('Add to Cart'),
+              onPressed: _handleButtonTap,
+              icon: Icon(
+                _added
+                    ? Icons.arrow_forward_rounded
+                    : Icons.shopping_cart_outlined,
+                size: 18,
+              ),
+              label: Text(_added ? 'Go To Cart' : 'Add to Cart'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: GroceryTheme.primary,
                 foregroundColor: Colors.white,
